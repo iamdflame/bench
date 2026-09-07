@@ -5,7 +5,8 @@ import Footer from "@/components/shell/Footer";
 import Ticket from "@/components/instrument/Ticket";
 import { resolveAgent } from "@/lib/agent-record";
 import { jobBySegment, jobByCategory, type JobSpec } from "@/lib/categories";
-import { allowlistFor, RECIPIENT_BOUND_WRAPPER } from "@/lib/chain/allowlist";
+import { allowlistFor, RECIPIENT_BOUND_WRAPPER, wrapperSourceUrl } from "@/lib/chain/allowlist";
+import { provenFor } from "@/lib/data/proven";
 import { shopByTokenId, CUSTODY_QUOTE } from "@/lib/shops";
 import { HOUSE, houseByTokenId } from "@/lib/house";
 import type { Category } from "@/lib/config";
@@ -54,6 +55,8 @@ export default async function HireTicket({
 
   const doc = allowlistFor(job.category);
   const isHouse = Boolean(houseByTokenId(id));
+  /* The committed evidence behind this agent's authority, cited on the ticket. */
+  const evidence = agent.owner ? provenFor(agent.owner) : null;
 
   /*
     The bonded alternative in the same job, named on a shop's ticket.
@@ -155,10 +158,16 @@ export default async function HireTicket({
             ) : null}
             {RECIPIENT_BOUND_WRAPPER ? (
               <p className="meta" style={{ marginTop: "0.4rem" }}>
-                Wrapper:{" "}
-                <a className="link-accent num" href={`https://bscscan.com/address/${RECIPIENT_BOUND_WRAPPER}#code`} target="_blank" rel="noopener noreferrer" style={{ fontSize: "var(--text-2xs)" }}>
-                  {RECIPIENT_BOUND_WRAPPER} ↗
+                Wrapper{" "}
+                <a className="link-accent num" href={`https://bscscan.com/address/${RECIPIENT_BOUND_WRAPPER}`} target="_blank" rel="noopener noreferrer" style={{ fontSize: "var(--text-2xs)" }}>
+                  {RECIPIENT_BOUND_WRAPPER.slice(0, 10)}…{RECIPIENT_BOUND_WRAPPER.slice(-6)} ↗
                 </a>
+                {" · "}
+                <a className="link-accent" href={wrapperSourceUrl(RECIPIENT_BOUND_WRAPPER)} target="_blank" rel="noopener noreferrer">
+                  source verified, exact match ↗
+                </a>
+                {" · "}
+                three functions, so multicall and sweepToken are absent rather than blocked
               </p>
             ) : null}
           </div>
@@ -174,6 +183,38 @@ export default async function HireTicket({
             fallbackName={shop && houseAlt ? houseAlt.name : null}
             fallbackHref={shop ? fallbackHref : null}
           />
+
+          {evidence && evidence.touches.length > 0 ? (
+            <div style={{ marginTop: "1.25rem" }}>
+              <span className="meta">Why it is allowed to do this</span>
+              <p className="sub" style={{ fontSize: "var(--text-sm)", marginTop: "0.3rem", lineHeight: 1.55 }}>
+                Authority here is not granted because the agent says it does this job. It is granted
+                because the chain has been shown it doing this job, and these are the transactions.
+                Open any of them; none of it needs to be taken from us.
+              </p>
+              <div style={{ marginTop: "0.5rem" }}>
+                {evidence.touches.slice(0, 4).map((t) => (
+                  <div key={t.tx} className="clause">
+                    <span className="clause__mark" aria-hidden>·</span>
+                    <span>
+                      {t.label}
+                      <span className="meta" style={{ display: "block", fontSize: "var(--text-2xs)", marginTop: "0.1rem" }}>
+                        block {Number(t.block).toLocaleString()} ·{" "}
+                        <a className="link-accent num" href={`https://bscscan.com/tx/${t.tx}`} target="_blank" rel="noopener noreferrer">
+                          {t.tx.slice(0, 18)}… ↗
+                        </a>
+                      </span>
+                    </span>
+                  </div>
+                ))}
+              </div>
+              <p className="meta" style={{ marginTop: "0.5rem" }}>
+                Read over {Number(evidence.scannedBlocks).toLocaleString()} blocks to{" "}
+                {Number(evidence.scannedTo).toLocaleString()}. Regenerate with{" "}
+                <span className="num">npm run prove</span>.
+              </p>
+            </div>
+          ) : null}
 
           <p className="meta" style={{ marginTop: "1.25rem", lineHeight: 1.5 }}>
             {doc.invariant} Allowlist version {doc.version}, published at{" "}

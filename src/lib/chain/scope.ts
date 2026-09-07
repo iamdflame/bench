@@ -34,7 +34,8 @@ import {
 } from "@/lib/config";
 import type { AssayReport } from "@/lib/assay/types";
 import { findProtocolTouches } from "@/lib/sources/bsc";
-import { CATEGORY_CALLS } from "./session";
+import { provenFor } from "@/lib/data/proven";
+import { CATEGORY_CALLS, routeThroughWrapper } from "./session";
 
 /**
  * How far back a grant looks for evidence of capability.
@@ -110,6 +111,29 @@ export async function scopeFromChain(
   agent: Address,
   category: Category,
 ): Promise<ProvenScope | ScopeRefused> {
+  /*
+    The committed evidence first, and it is not a shortcut.
+
+    `npm run prove` reads two million blocks per wallet, which no request can
+    afford, and writes down the protocol, the transaction and the block for
+    every touch it finds. Reading that here is both faster and *deeper* than
+    scanning live, and it is more checkable: the grant cites transactions a
+    reader can open rather than a boolean produced inside a request nobody can
+    repeat.
+
+    A wallet the file does not cover falls through to the live scan below. An
+    absent cache entry must never become a denial, which would be the same
+    "refused for want of looking" this module keeps having to guard against.
+  */
+  const committed = provenFor(agent);
+  if (committed && committed.complete) {
+    return deriveScope(agent, category, {
+      protocols: committed.protocols,
+      complete: true,
+      scannedBlocks: committed.scannedBlocks,
+    });
+  }
+
   const { touches, scannedBlocks, complete } = await findProtocolTouches(
     agent,
     CATEGORY_EVIDENCE[category],
@@ -201,14 +225,25 @@ function deriveScope(
   }
 
   const usable = [...new Set(calls.map((c) => PROTOCOL_LABEL[c.to.toLowerCase()] ?? c.to))];
+
+  /*
+    The evidence decided what may be done; the wrapper decides where it is done.
+
+    Routing happens after the intersection, never before, so the wrapper cannot
+    widen a grant: a call the agent has not earned on the underlying protocol is
+    not earned on a contract that forwards to it either.
+  */
+  const { calls: routed, wrapper } = routeThroughWrapper(category, calls);
+
   return {
     agent,
     category,
-    calls,
+    calls: routed,
     proven: [...proven],
     withheld,
     rationale:
       `${calls.length} of ${canonical.length} ${CATEGORY_LABEL[category]} calls granted, on ${usable.join(", ")}` +
+      (wrapper ? `, routed through the recipient-bound wrapper at ${wrapper} so the destination is not an argument the agent can pass` : "") +
       (withheld.length
         ? `; ${withheld.length} withheld because the chain has not shown this agent using ${[
             ...new Set(withheld.map((w) => PROTOCOL_LABEL[w.to.toLowerCase()] ?? w.to)),

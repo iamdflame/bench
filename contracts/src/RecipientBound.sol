@@ -55,7 +55,7 @@ pragma solidity 0.8.28;
  * What is deliberately absent
  * ---------------------------------------------------------------------------
  *
- * Three functions. No `multicall`, no `sweepToken`, no `refundETH`, no
+ * Four functions. No `multicall`, no `sweepToken`, no `refundETH`, no
  * `unwrapWETH9`, no `approve` the agent can reach, no upgrade path, no owner.
  * The position manager exposes all of those, and an allowlist that names it as
  * a target has to enumerate every selector it does *not* want and be right
@@ -121,6 +121,20 @@ interface INonfungiblePositionManager {
         payable
         returns (uint256 tokenId, uint128 liquidity, uint256 amount0, uint256 amount1);
 
+    struct IncreaseLiquidityParams {
+        uint256 tokenId;
+        uint256 amount0Desired;
+        uint256 amount1Desired;
+        uint256 amount0Min;
+        uint256 amount1Min;
+        uint256 deadline;
+    }
+
+    function increaseLiquidity(IncreaseLiquidityParams calldata params)
+        external
+        payable
+        returns (uint128 liquidity, uint256 amount0, uint256 amount1);
+
     function decreaseLiquidity(DecreaseLiquidityParams calldata params)
         external
         payable
@@ -168,6 +182,7 @@ contract RecipientBound {
     uint256 public spent1;
 
     event Minted(uint256 indexed tokenId, uint128 liquidity, uint256 amount0, uint256 amount1);
+    event Increased(uint256 indexed tokenId, uint128 liquidity, uint256 amount0, uint256 amount1);
     event Decreased(uint256 indexed tokenId, uint256 amount0, uint256 amount1);
     event Collected(uint256 indexed tokenId, uint256 amount0, uint256 amount1);
 
@@ -271,6 +286,50 @@ contract RecipientBound {
         _sweepBack(token1);
 
         emit Minted(tokenId, liquidity, amount0, amount1);
+    }
+
+    /**
+     * @notice Add to a position the principal already owns.
+     * @dev No recipient argument exists on this call: the liquidity credits the
+     *      position, and the position is the principal's, which is checked. The
+     *      tokens are still pulled from the principal and the remainder pushed
+     *      straight back, so nothing rests here between transactions.
+     */
+    function increaseLiquidity(
+        uint256 tokenId,
+        uint256 amount0Desired,
+        uint256 amount1Desired,
+        uint256 amount0Min,
+        uint256 amount1Min,
+        uint256 deadline
+    ) external onlyAgent returns (uint128 liquidity, uint256 amount0, uint256 amount1) {
+        _requirePrincipalPosition(tokenId);
+        if (spent0 + amount0Desired > cap0 || spent1 + amount1Desired > cap1) revert CapExceeded();
+        spent0 += amount0Desired;
+        spent1 += amount1Desired;
+
+        _pull(token0, amount0Desired);
+        _pull(token1, amount1Desired);
+        _approve(token0, amount0Desired);
+        _approve(token1, amount1Desired);
+
+        (liquidity, amount0, amount1) = positionManager.increaseLiquidity(
+            INonfungiblePositionManager.IncreaseLiquidityParams({
+                tokenId: tokenId,
+                amount0Desired: amount0Desired,
+                amount1Desired: amount1Desired,
+                amount0Min: amount0Min,
+                amount1Min: amount1Min,
+                deadline: deadline
+            })
+        );
+
+        _approve(token0, 0);
+        _approve(token1, 0);
+        _sweepBack(token0);
+        _sweepBack(token1);
+
+        emit Increased(tokenId, liquidity, amount0, amount1);
     }
 
     /**

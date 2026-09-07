@@ -37,6 +37,7 @@ import { scopeFromChain, isRefused } from "@/lib/chain/scope";
 import { allowlistFor } from "@/lib/chain/allowlist";
 import { resolveAgent } from "@/lib/agent-record";
 import { shopByTokenId } from "@/lib/shops";
+import { checkGrantBudget, callerOf, recordGrant } from "@/lib/guard";
 import type { Address } from "viem";
 
 export const runtime = "nodejs";
@@ -145,12 +146,40 @@ export async function POST(request: Request) {
     });
   }
 
+  /*
+    The reserve is checked after the scope is derived and before anything is
+    signed, so a caller who is over the limit still sees the exact authority
+    their hire would carry. Refusing before the derivation would have told them
+    nothing, and this page's job is to be legible even when it says no.
+  */
+  const budget = await checkGrantBudget(callerOf(request));
+  if (!budget.ok) {
+    return NextResponse.json({
+      ok: true,
+      executed: false,
+      limited: true,
+      plan: {
+        capBnb,
+        ttlDays,
+        expiry: Math.floor(Date.now() / 1000) + ttlSeconds,
+        command: `npm run grant -- <mandateId> ${job.category} --cap ${capBnb} --ttl ${ttlDays}d --register`,
+      },
+      reason: budget.reason,
+      scope: { calls: scope.calls, withheld: scope.withheld, rationale: scope.rationale },
+      allowlist: allowlistFor(job.category),
+      at: new Date().toISOString(),
+    });
+  }
+
   try {
     const id = nextSessionId();
     const granted = await grantMandateSession({
       mandateId: id,
       // So the desk can name the agent rather than only its category.
       tokenId,
+      // Opened from the ticket, so it can be closed from the desk without a
+      // token. A hire nobody can undo is not a hire, it is a transfer.
+      viaWeb: true,
       scope,
       capWei,
       ttlSeconds,
@@ -159,6 +188,8 @@ export async function POST(request: Request) {
       // trade for a hire somebody is being asked to trust.
       register: true,
     });
+
+    recordGrant(callerOf(request));
 
     return NextResponse.json({
       ok: true,

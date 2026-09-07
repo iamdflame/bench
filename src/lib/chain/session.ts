@@ -29,6 +29,7 @@ import {
 import { CATEGORY_LABEL, type Category } from "@/lib/config";
 // Type-only, so the mutual reference with scope.ts is erased at runtime.
 import type { ProvenScope } from "./scope";
+import { privateKeyToAccount } from "viem/accounts";
 import { logClients, marketClient, MARKET_ADDRESS } from "./market";
 
 /**
@@ -127,6 +128,68 @@ export const CATEGORY_CALLS: Record<Category, StrictAgentCallPermission[]> = {
   ],
 };
 
+/**
+ * Where a grant is routed when a recipient-binding wrapper exists.
+ *
+ * A session key binds a target and four bytes. It cannot bind an argument, so
+ * granting PancakeSwap's `mint` grants it with whatever recipient the holder
+ * passes. `RecipientBound` closes that by writing the recipient itself, and the
+ * grant is therefore issued on the wrapper rather than on the position manager.
+ *
+ * The evidence test does not move. `granted ⊆ proven` still asks whether the
+ * chain has shown this agent using PancakeSwap V3 Positions, because that is
+ * the capability being claimed. What changes is the address the key may call:
+ * the same work, through a door that cannot be pointed anywhere else.
+ *
+ * Written as a signature-to-signature map rather than "grant everything on the
+ * wrapper", so a function added to the wrapper later is not silently included
+ * in grants that were reasoned about before it existed.
+ */
+export const WRAPPER_ROUTE: Partial<
+  Record<Category, { protocol: string; signatures: Record<string, string> }>
+> = {
+  rebalancing: {
+    protocol: "0x46a15b0b27311cedf172ab29e4f4766fbe7f4364",
+    signatures: {
+      "mint((address,address,uint24,int24,int24,uint256,uint256,uint256,uint256,address,uint256))":
+        "mint(uint24,int24,int24,uint256,uint256,uint256,uint256,uint256)",
+      "increaseLiquidity((uint256,uint256,uint256,uint256,uint256,uint256))":
+        "increaseLiquidity(uint256,uint256,uint256,uint256,uint256,uint256)",
+      "decreaseLiquidity((uint256,uint128,uint256,uint256,uint256))":
+        "decreaseLiquidity(uint256,uint128,uint256,uint256,uint256)",
+      "collect((uint256,address,uint128,uint128))": "collect(uint256,uint128,uint128)",
+    },
+  },
+};
+
+/** The wrapper this deployment routes through, when one is configured. */
+export const recipientBoundAddress = (): string | null =>
+  process.env.NEXT_PUBLIC_RECIPIENT_BOUND ?? process.env.RECIPIENT_BOUND ?? null;
+
+/**
+ * Rewrites protocol calls onto the wrapper, where one applies.
+ *
+ * Returns the calls unchanged when there is no wrapper for this category or
+ * none is configured, so a deployment without one grants exactly what it did
+ * before and says so, rather than claiming a binding it does not have.
+ */
+export function routeThroughWrapper(
+  category: Category,
+  calls: StrictAgentCallPermission[],
+): { calls: StrictAgentCallPermission[]; wrapper: string | null } {
+  const route = WRAPPER_ROUTE[category];
+  const wrapper = recipientBoundAddress();
+  if (!route || !wrapper) return { calls, wrapper: null };
+
+  const routed = calls.map((c) => {
+    const mapped = route.signatures[c.signature];
+    return mapped
+      ? { to: wrapper as `0x${string}`, signature: mapped }
+      : c;
+  });
+  return { calls: routed, wrapper };
+}
+
 // ---------------------------------------------------------------------------
 // Granting
 // ---------------------------------------------------------------------------
@@ -143,6 +206,8 @@ export interface GrantOptions {
    * grant, because it cannot be recovered afterwards.
    */
   tokenId?: string;
+  /** True when a visitor opened this from the ticket rather than the operator from a shell. */
+  viaWeb?: boolean;
   /**
    * What the agent has been *shown* able to do.
    *
@@ -232,6 +297,21 @@ export interface GrantedSession {
    * still exists and still has its term running; it simply cannot get a signer.
    */
   pausedAt?: string;
+  /**
+   * Opened by someone pressing Grant on the ticket, rather than by the operator.
+   *
+   * This is what decides who may close it. A visitor cannot be authenticated
+   * here, so the rule is the narrowest one that still makes revocation a real
+   * control: a session opened through the public ticket can be closed through
+   * the public desk, and a session the operator opened from its own machine
+   * needs the operator's token.
+   *
+   * The alternative was a Revoke button that returned 401 to everybody, which
+   * is how this shipped: the control was described, rendered, and unreachable.
+   * A described control that cannot be used is the thing this product exists to
+   * object to, and it was sitting on the one screen the Altana brief is about.
+   */
+  viaWeb?: boolean;
 }
 
 /**
@@ -290,6 +370,18 @@ export async function findRegistrationTx(
   return null;
 }
 
+/**
+ * The principal's address, for reading its own gas reserve.
+ *
+ * Derived rather than configured: an address in an environment variable can
+ * drift from the key beside it, and then the balance guard watches a wallet
+ * that pays for nothing.
+ */
+export function adminAddress(privateKey = process.env.PRIVATE_KEY): `0x${string}` {
+  if (!privateKey) throw new Error("PRIVATE_KEY is required to act as the principal.");
+  return privateKeyToAccount(norm(privateKey)).address;
+}
+
 export function adminProvider(privateKey = process.env.PRIVATE_KEY) {
   if (!privateKey) throw new Error("PRIVATE_KEY is required to act as the principal.");
   return new AltanaWalletProvider({ privateKey: norm(privateKey) });
@@ -335,6 +427,7 @@ export async function grantMandateSession(
     market: MARKET_ADDRESS,
     mandateId: opts.mandateId,
     ...(opts.tokenId ? { tokenId: opts.tokenId } : {}),
+    ...(opts.viaWeb ? { viaWeb: true } : {}),
     category: opts.scope.category,
     // publicKey is the on-chain identifier, and what revocation is keyed on.
     sessionKey: session.publicKey,

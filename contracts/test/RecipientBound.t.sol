@@ -25,6 +25,15 @@ contract StubPositionManager {
     uint256 public consume0;
     uint256 public consume1;
 
+    /// The pair, so increaseLiquidity can pull the same way mint does.
+    address public pair0;
+    address public pair1;
+
+    function setPair(address a, address b) external {
+        pair0 = a;
+        pair1 = b;
+    }
+
     function setOwner(uint256 tokenId, address owner) external {
         owners[tokenId] = owner;
     }
@@ -50,6 +59,19 @@ contract StubPositionManager {
         IERC20(p.token0).transferFrom(msg.sender, address(this), amount0);
         IERC20(p.token1).transferFrom(msg.sender, address(this), amount1);
         liquidity = uint128(amount0 + amount1);
+    }
+
+    function increaseLiquidity(INonfungiblePositionManager.IncreaseLiquidityParams calldata p)
+        external
+        returns (uint128, uint256, uint256)
+    {
+        uint256 a0 = consume0 == 0 ? p.amount0Desired : consume0;
+        uint256 a1 = consume1 == 0 ? p.amount1Desired : consume1;
+        if (pair0 != address(0)) {
+            IERC20(pair0).transferFrom(msg.sender, address(this), a0);
+            IERC20(pair1).transferFrom(msg.sender, address(this), a1);
+        }
+        return (uint128(a0 + a1), a0, a1);
     }
 
     function decreaseLiquidity(INonfungiblePositionManager.DecreaseLiquidityParams calldata p)
@@ -121,6 +143,7 @@ contract RecipientBoundTest is Test {
             principal, agent, address(pm), address(t0), address(t1), CAP, CAP, expiry
         );
 
+        pm.setPair(address(t0), address(t1));
         t0.mint(principal, 1000 ether);
         t1.mint(principal, 1000 ether);
         vm.startPrank(principal);
@@ -265,5 +288,30 @@ contract RecipientBoundTest is Test {
         assertEq(leash.principal(), principal);
         // The absence of a setter is the assertion. If one is ever added, this
         // file is where the reviewer is meant to notice it is missing here.
+    }
+
+    /* ------------------------------------------------- increaseLiquidity */
+
+    /// It may only add to a position the principal owns.
+    function test_increase_requires_a_principal_position() public {
+        pm.setOwner(9, attacker);
+        vm.prank(agent);
+        vm.expectRevert(RecipientBound.NotPrincipalPosition.selector);
+        leash.increaseLiquidity(9, 1 ether, 1 ether, 0, 0, block.timestamp + 1);
+    }
+
+    /// The cap covers topping up, not only opening.
+    function test_increase_respects_the_cap() public {
+        pm.setOwner(3, principal);
+        vm.prank(agent);
+        vm.expectRevert(RecipientBound.CapExceeded.selector);
+        leash.increaseLiquidity(3, CAP + 1, 1 ether, 0, 0, block.timestamp + 1);
+    }
+
+    function test_increase_is_agent_only() public {
+        pm.setOwner(3, principal);
+        vm.prank(attacker);
+        vm.expectRevert(RecipientBound.NotAgent.selector);
+        leash.increaseLiquidity(3, 1 ether, 1 ether, 0, 0, block.timestamp + 1);
     }
 }

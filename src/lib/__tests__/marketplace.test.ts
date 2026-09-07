@@ -1,7 +1,7 @@
 import { describe, expect, it } from "vitest";
 import { allShops, shopsForJob, shopByTokenId, shopCounts, operatorCount, CUSTODY_QUOTE } from "@/lib/shops";
 import { allowlistFor, allowlistIndex, ALLOWLIST_VERSION } from "@/lib/chain/allowlist";
-import { CATEGORY_CALLS } from "@/lib/chain/session";
+import { CATEGORY_CALLS, routeThroughWrapper, recipientBoundAddress } from "@/lib/chain/session";
 import { CATEGORIES } from "@/lib/config";
 
 /**
@@ -75,12 +75,43 @@ describe("the published allowlist", () => {
     for (const d of docs) expect(d.version).toBe(ALLOWLIST_VERSION);
   });
 
-  it("describes exactly the calls the grant carries, never more", () => {
+  it("describes exactly the calls the grant carries, on exactly the address it carries them on", () => {
+    /*
+      The one bug this file exists to prevent.
+
+      The document rendered the wrapper as the target while the grant was still
+      issued on the position manager, so the page and the signature disagreed
+      about the product's central claim. Comparing the document against the same
+      routing the grant uses is the only assertion that catches that: both are
+      derived here, from the same source, and any future divergence fails.
+    */
     for (const c of CATEGORIES) {
       const doc = allowlistFor(c);
-      expect(doc.may.map((m) => m.signature).sort()).toEqual(
-        CATEGORY_CALLS[c].map((k) => k.signature).sort(),
+      const granted = routeThroughWrapper(c, CATEGORY_CALLS[c]).calls;
+      expect(doc.may.map((m) => m.signature).sort()).toEqual(granted.map((k) => k.signature).sort());
+      expect([...new Set(doc.may.map((m) => m.to.toLowerCase()))].sort()).toEqual(
+        [...new Set(granted.map((k) => k.to.toLowerCase()))].sort(),
       );
+    }
+  });
+
+  it("routes rebalancing through the wrapper only when one is configured", () => {
+    const wrapper = recipientBoundAddress();
+    const routed = routeThroughWrapper("rebalancing", CATEGORY_CALLS.rebalancing);
+    if (wrapper) {
+      expect(routed.wrapper).toBe(wrapper);
+      // Every routed signature loses its recipient parameter: that is the point.
+      expect(routed.calls.every((c) => c.to.toLowerCase() === wrapper.toLowerCase())).toBe(true);
+      expect(routed.calls.some((c) => /recipient|address/.test(c.signature))).toBe(false);
+    } else {
+      expect(routed.wrapper).toBeNull();
+      expect(routed.calls).toEqual(CATEGORY_CALLS.rebalancing);
+    }
+  });
+
+  it("never routes a category that has no wrapper mapping", () => {
+    for (const c of ["grid-trading", "yield-optimisation", "health-factor"] as const) {
+      expect(routeThroughWrapper(c, CATEGORY_CALLS[c]).calls).toEqual(CATEGORY_CALLS[c]);
     }
   });
 
@@ -92,11 +123,17 @@ describe("the published allowlist", () => {
     }
   });
 
-  it("never grants a call it also withholds", () => {
+  it("never grants a call it also withholds, by name or by signature", () => {
     for (const c of CATEGORIES) {
       const doc = allowlistFor(c);
       const granted = new Set(doc.may.map((m) => m.signature));
-      for (const w of doc.mayNot) expect(granted.has(w.signature)).toBe(false);
+      const grantedNames = new Set(doc.may.map((m) => m.signature.split("(")[0]));
+      for (const w of doc.mayNot) {
+        expect(granted.has(w.signature)).toBe(false);
+        // Routing renames signatures, so the name is checked too: a wrapper
+        // that exposed `sweepToken` would otherwise slip past a signature diff.
+        expect(grantedNames.has(w.signature.split("(")[0])).toBe(false);
+      }
     }
   });
 

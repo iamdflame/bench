@@ -24,22 +24,6 @@ export const dynamic = "force-dynamic";
 const TOKEN = process.env.OPERATOR_TOKEN ?? "";
 
 export async function POST(request: Request) {
-  if (!TOKEN) {
-    return NextResponse.json(
-      {
-        ok: false,
-        reason:
-          "No OPERATOR_TOKEN is configured, so this deployment cannot pause from the browser. The hold still works from the operator's machine.",
-      },
-      { status: 503 },
-    );
-  }
-
-  const supplied = request.headers.get("x-operator-token") ?? "";
-  if (supplied.length !== TOKEN.length || supplied !== TOKEN) {
-    return NextResponse.json({ ok: false, reason: "Not authorised." }, { status: 401 });
-  }
-
   let mandateId: number;
   let paused: boolean;
   try {
@@ -58,6 +42,22 @@ export async function POST(request: Request) {
       { status: 404 },
     );
   }
+
+  /* Same rule as revocation: yours to hold if you opened it. */
+  if (!before.viaWeb) {
+    const supplied = request.headers.get("x-operator-token") ?? "";
+    if (!TOKEN || supplied.length !== TOKEN.length || supplied !== TOKEN) {
+      return NextResponse.json(
+        {
+          ok: false,
+          reason:
+            "This session was opened by the operator rather than from this desk, so holding it needs the operator's key.",
+        },
+        { status: 403 },
+      );
+    }
+  }
+
   if (before.revokedAt) {
     return NextResponse.json(
       {

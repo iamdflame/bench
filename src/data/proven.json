@@ -1,0 +1,71 @@
+{
+  "capturedAt": "2026-09-07T10:45:59.456Z",
+  "chainId": 56,
+  "headBlock": "120476942",
+  "lookbackBlocks": "2000000",
+  "wallets": {
+    "0xd6d11aa5046dc5c7be8d63b9223b60d7ad94cbe9": {
+      "wallet": "0xd6d11Aa5046dc5C7BE8d63B9223b60D7AD94cBe9",
+      "label": "MANDATE House Keeper A",
+      "scannedTo": "120476942",
+      "scannedBlocks": "2000000",
+      "complete": true,
+      "protocols": [
+        "0xfd36e2c2a6789db23113685031d7f16329158384",
+        "0xa07c5b74c9b40447a954e1466938b865b6bbea36",
+        "0x13f4ea83d0bd40e75c8222255bc855a974568dd4",
+        "0x10ed43c718714eb63d5aa57b78b54704e256024e"
+      ],
+      "touches": [
+        {
+          "protocol": "0xfd36e2c2a6789db23113685031d7f16329158384",
+          "label": "Venus Comptroller",
+          "tx": "0x70f044f6ab0f31c3c95ade9e630135541aee98b294c587ff6ff7964de9f15859",
+          "block": "119969941"
+        },
+        {
+          "protocol": "0xa07c5b74c9b40447a954e1466938b865b6bbea36",
+          "label": "Venus vBNB",
+          "tx": "0x70f044f6ab0f31c3c95ade9e630135541aee98b294c587ff6ff7964de9f15859",
+          "block": "119969941"
+        },
+        {
+          "protocol": "0x13f4ea83d0bd40e75c8222255bc855a974568dd4",
+          "label": "PancakeSwap V3 Router",
+          "tx": "0x55add56703fb08f0e002df2758136e19abca84168d61b3347d4d992e7bf7fb7c",
+          "block": "119954307"
+        },
+        {
+          "protocol": "0x10ed43c718714eb63d5aa57b78b54704e256024e",
+          "label": "PancakeSwap V2 Router",
+          "tx": "0x1faf6379c875b04dbb1af3e685bceeb160e002594a4be4f324d413913d09e752",
+          "block": "119953825"
+        },
+        {
+          "protocol": "0x10ed43c718714eb63d5aa57b78b54704e256024e",
+          "label": "PancakeSwap V2 Router",
+          "tx": "0xb77ef88bca3709058f49b8ded18fc4e99bc73a3da2439db7d1d3492446e76e64",
+          "block": "119954106"
+        }
+      ]
+    },
+    "0x090d19610cdb4d6bb011d9eb579910ac3296bb0a": {
+      "wallet": "0x090d19610cdb4d6bb011d9EB579910Ac3296BB0a",
+      "label": "MANDATE House Keeper B",
+      "scannedTo": "120476942",
+      "scannedBlocks": "2000000",
+      "complete": true,
+      "protocols": [],
+      "touches": []
+    },
+    "0xd6db7ade6ed34d1cf0836d7a1aac5ba3b860c82a": {
+      "wallet": "0xD6Db7AdE6ED34d1CF0836d7A1aac5ba3B860c82A",
+      "label": "Agripinaa · Agripinaa Grid",
+      "scannedTo": "120476942",
+      "scannedBlocks": "2000000",
+      "complete": false,
+      "protocols": [],
+      "touches": []
+    }
+  }
+}

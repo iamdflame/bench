@@ -33,6 +33,7 @@ export interface GrantResult {
   ok: boolean;
   executed?: boolean;
   refused?: boolean;
+  limited?: boolean;
   reason?: string;
   remedy?: string;
   fallback?: { name: string; href: string } | null;
@@ -259,6 +260,27 @@ function Outcome({
           {fallbackHref && fallbackName ? (
             <a href={fallbackHref} className="btn btn--primary">Hire {fallbackName} instead →</a>
           ) : null}
+          <button className="btn" onClick={onRetry}>Back to the ticket</button>
+        </div>
+      </div>
+    );
+  }
+
+  /* --------------------------------------------------------------- limited */
+  if (res.ok && res.limited) {
+    return (
+      <div>
+        <div style={{ display: "flex", alignItems: "center", gap: "0.6rem" }}>
+          <span className="dot" />
+          <h2 className="hd-2" style={{ fontSize: "var(--text-lg)" }}>Not this time.</h2>
+        </div>
+        <p className="sub" style={{ marginTop: "0.5rem", fontSize: "var(--text-sm)" }}>{res.reason}</p>
+        <p className="meta" style={{ marginTop: "0.7rem", lineHeight: 1.5 }}>
+          The scope above was still derived against the chain, so nothing here is hypothetical
+          except the signature. Sessions already granted are on the desk and can be revoked.
+        </p>
+        <div style={{ marginTop: "1.25rem", display: "flex", gap: "0.5rem", flexWrap: "wrap" }}>
+          <a href="/desk" className="btn btn--primary">See the desk →</a>
           <button className="btn" onClick={onRetry}>Back to the ticket</button>
         </div>
       </div>

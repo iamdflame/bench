@@ -32,7 +32,15 @@ import { PROTOCOLS } from "@/lib/config";
 const args = process.argv.slice(2);
 const flag = (name: string) => (args.includes(`--${name}`) ? args[args.indexOf(`--${name}`) + 1] : undefined);
 
-const RPC = process.env.BSC_RPC_URL ?? "https://bsc-dataseed.bnbchain.org";
+/*
+  A receipt-capable endpoint, not the default one.
+
+  publicnode answers `eth_getTransactionReceipt` for a fresh deployment with
+  "Archive requests require a personal token", so the contract landed and the
+  script reported a failure. The deploy is the expensive half; losing the
+  address to a read is a bad trade.
+*/
+const RPC = process.env.DEPLOY_RPC_URL ?? "https://bsc-dataseed.bnbchain.org";
 const KEY = process.env.PRIVATE_KEY;
 
 /** WBNB / USDT on BSC, the pair the rebalancing job actually runs. */
@@ -66,6 +74,18 @@ async function main() {
 
   const account = privateKeyToAccount((KEY.startsWith("0x") ? KEY : `0x${KEY}`) as `0x${string}`);
   const principal = (flag("principal") as Address | undefined) ?? account.address;
+
+  /*
+    The caller is the account the session executes from, not the agent's wallet.
+
+    An ERC-8183 session key is issued on the principal's own smart account, and
+    when the hired agent acts, the transaction is sent *by that account* under
+    the key's authority. So `msg.sender` at this contract is the principal's
+    account, and a wrapper bound to the agent's own wallet would reject every
+    call the session ever makes. The first deployment made exactly that mistake:
+    it was bound to the keeper's wallet, which no session key acts from, so it
+    was correct-looking and unreachable.
+  */
   const cap = BigInt(Math.round(Number(flag("cap") ?? "0.05") * 1e18));
   const expiry = BigInt(Math.floor(Date.now() / 1000) + duration(flag("ttl") ?? "30d"));
 

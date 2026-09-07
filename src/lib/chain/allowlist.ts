@@ -21,7 +21,7 @@
  *      the market. A rule with no named enforcer is a promise.
  */
 
-import { CATEGORY_CALLS } from "./session";
+import { CATEGORY_CALLS, WRAPPER_ROUTE, recipientBoundAddress } from "./session";
 import { CATEGORY_LABEL, PROTOCOL_LABEL, PROTOCOLS, type Category } from "@/lib/config";
 
 /** Bumped when the meaning of a grant changes, never for wording. */
@@ -131,8 +131,19 @@ const PLAIN: Record<string, string> = {
  * that does not exist. A published allowlist naming an undeployed address would
  * be precisely the unverifiable claim the rest of this codebase refuses.
  */
-export const RECIPIENT_BOUND_WRAPPER: string | null =
-  process.env.NEXT_PUBLIC_RECIPIENT_BOUND ?? process.env.RECIPIENT_BOUND ?? null;
+export const RECIPIENT_BOUND_WRAPPER: string | null = recipientBoundAddress();
+
+/**
+ * Where the wrapper's source can be read, by someone who does not trust us.
+ *
+ * Sourcify rather than a block explorer as the primary link: it verified the
+ * deployed bytecode against this repository's source as an exact match, needs
+ * no API key to check, and publishes the source files themselves. A reader can
+ * diff what is running against what is committed here, which is the only sense
+ * of "verified" worth the word.
+ */
+export const wrapperSourceUrl = (address: string) =>
+  `https://repo.sourcify.dev/56/${address}`;
 
 /**
  * Calls that actually carry a destination argument, keyed by full signature.
@@ -160,7 +171,7 @@ const CARRIES_RECIPIENT = new Set([
 function bindingFor(category: Category): string {
   if (category === "rebalancing") {
     return RECIPIENT_BOUND_WRAPPER
-      ? `mint and collect take a recipient argument, and a session key cannot bind an argument. So the grant is not on the position manager: it is on RecipientBound at ${RECIPIENT_BOUND_WRAPPER}, which writes the recipient itself from immutable storage. The agent has no recipient to pass.`
+      ? `mint and collect take a recipient argument, and a session key binds a target and a selector, never an argument. So this grant is not issued on the position manager. It is issued on RecipientBound at ${RECIPIENT_BOUND_WRAPPER}, whose mint and collect have no recipient parameter at all: the destination is written from immutable storage. There is nothing for the agent to pass, and nothing to get wrong.`
       : "mint and collect take a recipient argument, and a session key binds a target and a selector, never an argument. The RecipientBound wrapper that closes this is written and tested; until its address is set here, this document reports the grant as target-and-selector bound only, which is the same boundary every other operator has.";
   }
   if (category === "grid-trading") {
@@ -174,31 +185,44 @@ function bindingFor(category: Category): string {
 
 export function allowlistFor(category: Category): AllowlistDoc {
   const calls = CATEGORY_CALLS[category];
-  const useWrapper = category === "rebalancing" && RECIPIENT_BOUND_WRAPPER !== null;
+  const route = WRAPPER_ROUTE[category];
+  const wrapper = RECIPIENT_BOUND_WRAPPER;
+  /*
+    The document describes the grant that is actually issued.
+
+    It used to render the wrapper as the target whenever one was configured,
+    while `scopeFromChain` went on granting the position manager. The page and
+    the signature disagreed about the single claim this product leans on
+    hardest, which is worse than not making the claim. Both now read the same
+    routing table, so the only way they can diverge is a code change that breaks
+    the test asserting they do not.
+  */
+  const useWrapper = Boolean(route && wrapper);
 
   return {
     version: ALLOWLIST_VERSION,
     category,
     label: CATEGORY_LABEL[category],
     targets: useWrapper
-      ? [RECIPIENT_BOUND_WRAPPER as string]
+      ? [wrapper as string]
       : [...new Set(calls.map((c) => c.to))],
     may: calls.map((c) => {
       const fn = c.signature.split("(")[0];
-      const to = useWrapper ? (RECIPIENT_BOUND_WRAPPER as string) : c.to;
+      const routedSig = useWrapper ? route!.signatures[c.signature] : undefined;
+      const to = routedSig ? (wrapper as string) : c.to;
       return {
         to,
-        target: useWrapper
-          ? "RecipientBound (forwards to PancakeSwap V3 Positions)"
+        target: routedSig
+          ? `RecipientBound, forwarding to ${PROTOCOL_LABEL[c.to.toLowerCase()] ?? c.to}`
           : (PROTOCOL_LABEL[c.to.toLowerCase()] ?? c.to),
-        signature: c.signature,
+        signature: routedSig ?? c.signature,
         plain: PLAIN[fn] ?? fn,
         recipient: CARRIES_RECIPIENT.has(c.signature)
           ? {
               boundTo: "session owner" as const,
-              by: (useWrapper ? "wrapper" : "session-key") as Enforcer,
-              note: useWrapper
-                ? "written by the wrapper from immutable storage; not an argument the agent can pass"
+              by: (routedSig ? "wrapper" : "session-key") as Enforcer,
+              note: routedSig
+                ? "written by the wrapper from immutable storage; the signature has no recipient parameter for the agent to pass"
                 : "target and selector bound; the argument itself is not bindable by a session key",
             }
           : null,
