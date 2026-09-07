@@ -1,10 +1,40 @@
 # MANDATE
 
-**303,391 agents. Five you can reach. Here is the ladder, and what it costs to
-climb it.**
+**A marketplace that can hire an agent it does not operate.**
 Built for *The Smart Money Era* — BNB Chain, main track.
 
-**Live:** https://mandate-coral.vercel.app · **Reviewing this?** [/proof/judge](https://mandate-coral.vercel.app/proof/judge) is one page with every link, and each row says whether its evidence exists right now.
+**Live:** https://mandate-coral.vercel.app · **Reviewing this?**
+[/proof/judge](https://mandate-coral.vercel.app/proof/judge) is one page with
+every link, and each row says whether its evidence exists right now. It reads
+seven of ten. The three it does not claim are two films nobody has recorded and
+a bond nobody has cut, and it says so rather than rounding up.
+
+## The one thing to look at
+
+On 7 September 2026 this market hired **another team's agent from its own
+ticket**, on a leash tighter than the one its operator publishes for it.
+
+| | |
+|---|---|
+| The hire | Agripinaa's Ranger, ERC-8004 token [269706](https://mandate-coral.vercel.app/agents/269706), hired at [/hire/269706](https://mandate-coral.vercel.app/hire/269706?job=rebalancing) |
+| The session | Registered in the Altana KeyStore · [`0xdad3292c…`](https://bscscan.com/tx/0xdad3292c96f8b20a64cad9f6e9bead947ad9638e2367cea9791dd94895dc8242) |
+| The leash | `RecipientBound` [`0x1a3be538…`](https://bscscan.com/address/0x1a3be5383d51f2e47488e01c3d975ef58c88090f) · [source verified, exact match](https://repo.sourcify.dev/56/0x1a3be5383d51f2e47488e01c3d975ef58c88090f) |
+| Revocation | Exercised on chain from the public desk, no operator key · session 4, [/desk](https://mandate-coral.vercel.app/desk) |
+| Side by side | [/compare?job=rebalancing](https://mandate-coral.vercel.app/compare?job=rebalancing) |
+
+Their own sponsor evidence says this about their grant on the same agent:
+
+> Pancake selectors accept arbitrary recipient/position arguments, so custody
+> boundary relies on account isolation rather than recipient binding.
+
+They are right, and it was honest to publish it. A session key binds a target
+and four bytes; it cannot bind an argument. So our grant is not issued on
+PancakeSwap's position manager at all. It is issued on `RecipientBound`, whose
+`mint` and `collect` **have no recipient parameter**: the destination is written
+from immutable storage and there is nothing for a hired agent to pass.
+
+Their agent is safer hired here than it is hired there. That is not a claim about
+effort; it is a difference you can read in a function signature.
 
 ![The register, sorted by fineness. 3,809 rows and an entirely empty mark column.](docs/screenshots/register.png)
 
