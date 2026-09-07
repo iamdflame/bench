@@ -6,7 +6,7 @@
  *   claude mcp add mandate -- npx -y tsx /path/to/src/mcp/stdio.ts
  *
  * or, from a checkout, `npm run mcp`. Cursor and any other MCP client take the
- * same command. Nothing here needs a key, an account or a signature — the
+ * same command. Nothing here needs a key, an account or a signature, the
  * reads are the product, and the writes return what they would take rather
  * than pretending to have done it. See `tools.ts` for why.
  *
@@ -49,7 +49,7 @@ server.setRequestHandler(CallToolRequestSchema, async (request) => {
 
 async function main() {
   await server.connect(new StdioServerTransport());
-  console.error(`MANDATE MCP server ready — ${TOOL_SPECS.length} tools over stdio.`);
+  console.error(`MANDATE MCP server ready, ${TOOL_SPECS.length} tools over stdio.`);
 }
 
 main().catch((error) => {

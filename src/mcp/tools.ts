@@ -4,7 +4,7 @@
  * The register is a website, and a judge or a buyer reaches it by opening a
  * browser and reading it. An agent cannot. This is the same office served over
  * JSON-RPC so that Claude Code, Cursor, or any other MCP client can ask the
- * questions directly — which is also how BNB Agent Studio expects a skill to
+ * questions directly, which is also how BNB Agent Studio expects a skill to
  * arrive.
  *
  * --- what this server can and cannot do ---------------------------------
@@ -15,7 +15,7 @@
  *
  * The writes are the honest part. Opening a mandate escrows capital, hiring
  * over x402 spends money, and revoking a session is an authorised action on
- * chain — none of which a public server can do on a caller's behalf without
+ * chain, none of which a public server can do on a caller's behalf without
  * holding their keys, and this office does not hold anyone's keys. So the
  * write tools return the exact transaction, challenge or command that performs
  * the action, and say plainly that they have not performed it.
@@ -217,7 +217,7 @@ const checkDuplication: Handler = async (a) => {
     duplicateShare: Number((d.duplicateShare * 100).toFixed(1)),
     collapseRatio: Number(d.collapse.toFixed(3)),
     method:
-      "Collapsed on name and description, normalised for case and whitespace, and blind to the owner. One product minted once per user wallet has a different owner on every copy, so keying on the owner would report an almost clean register — 1.02x against 1.23x. Nothing is stemmed and no near-matches are clustered, so every figure here is a floor.",
+      "Collapsed on name and description, normalised for case and whitespace, and blind to the owner. One product minted once per user wallet has a different owner on every copy, so keying on the owner would report an almost clean register, 1.02x against 1.23x. Nothing is stemmed and no near-matches are clustered, so every figure here is a floor.",
     scope: `Measured over the ${d.counted.toLocaleString()} rows this office has read, not the ${index.registry.registered.toLocaleString()} registered. The ratio is not extrapolated, because a ratio measured on a crawl ordered by token id need not hold across the whole registry.`,
     mostRegistered: d.clusters.slice(0, top).map((c) => ({
       name: c.name,
@@ -237,7 +237,7 @@ const checkDuplication: Handler = async (a) => {
 
 /*
   These do not execute. Each returns what performing the action requires, and
-  says so in the payload rather than only in the tool description — a client
+  says so in the payload rather than only in the tool description, a client
   that ignores descriptions still cannot mistake the result for a receipt.
 */
 
@@ -341,14 +341,14 @@ export const TOOLS: Array<ToolSpec & { handler: Handler }> = [
   {
     name: "list_offices",
     description:
-      "The four offices this market runs — grid trading, rebalancing, yield optimisation and health factor — with how many registered agents are classified into each and which house agents work there. No key required.",
+      "The four offices this market runs, grid trading, rebalancing, yield optimisation and health factor, with how many registered agents are classified into each and which house agents work there. No key required.",
     inputSchema: { type: "object", properties: {}, additionalProperties: false },
     handler: listOffices,
   },
   {
     name: "assay_agent",
     description:
-      "Run the full assay against any ERC-8004 agent on BNB Smart Chain: six checks — identity, custody, activity, capability, reputation, performance — returning a millesimal fineness. Below 375 no hallmark is struck. Works for any token id, including agents being pitched elsewhere. Free, no key, nothing to sign.",
+      "Run the full assay against any ERC-8004 agent on BNB Smart Chain: six checks, identity, custody, activity, capability, reputation, performance, returning a millesimal fineness. Below 375 no hallmark is struck. Works for any token id, including agents being pitched elsewhere. Free, no key, nothing to sign.",
     inputSchema: {
       type: "object",
       properties: {
@@ -400,7 +400,7 @@ export const TOOLS: Array<ToolSpec & { handler: Handler }> = [
   {
     name: "open_mandate",
     description:
-      "PREPARES a mandate. Returns the contract call and command that open one, and does NOT send a transaction — this server holds no keys. Opening a mandate escrows the principal's own capital.",
+      "PREPARES a mandate. Returns the contract call and command that open one, and does NOT send a transaction, this server holds no keys. Opening a mandate escrows the principal's own capital.",
     inputSchema: {
       type: "object",
       properties: {
@@ -414,7 +414,7 @@ export const TOOLS: Array<ToolSpec & { handler: Handler }> = [
   {
     name: "hire_over_x402",
     description:
-      "PREPARES a paid hire. Reads the live x402 payment challenge from the agent's endpoint and returns its terms. Does NOT pay — this server holds no keys and cannot spend on your behalf.",
+      "PREPARES a paid hire. Reads the live x402 payment challenge from the agent's endpoint and returns its terms. Does NOT pay, this server holds no keys and cannot spend on your behalf.",
     inputSchema: {
       type: "object",
       properties: {
@@ -429,7 +429,7 @@ export const TOOLS: Array<ToolSpec & { handler: Handler }> = [
   {
     name: "revoke_session",
     description:
-      "PREPARES a revocation of an agent's session authority. Returns the command and the authorised HTTP route, and does NOT revoke — that is an authorised action this server cannot take for you.",
+      "PREPARES a revocation of an agent's session authority. Returns the command and the authorised HTTP route, and does NOT revoke, that is an authorised action this server cannot take for you.",
     inputSchema: {
       type: "object",
       properties: {

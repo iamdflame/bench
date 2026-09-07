@@ -92,7 +92,7 @@ export const yieldStrategy: Strategy = {
 
     if (expectedGain < moveCost * WORTH_MOVING) {
       return idle(
-        `Venus pays ${(apr * 100).toFixed(2)}% APR — ${deployable.toFixed(6)} BNB would earn ${expectedGain.toFixed(8)} BNB over ${termDays}d against ${moveCost.toFixed(8)} to move; not worth it`,
+        `Venus pays ${(apr * 100).toFixed(2)}% APR, ${deployable.toFixed(6)} BNB would earn ${expectedGain.toFixed(8)} BNB over ${termDays}d against ${moveCost.toFixed(8)} to move; not worth it`,
         ctx.state,
       );
     }

@@ -130,7 +130,7 @@ function deriveScope(
     return {
       refused: true,
       reason:
-        "the capability scan was incomplete — a provider refused part of the range, so the absence of evidence here is not evidence of absence",
+        "the capability scan was incomplete, a provider refused part of the range, so the absence of evidence here is not evidence of absence",
       remedy:
         "set ARCHIVE_RPC_URL, or retry when a provider will serve the range; an unreadable scan must not become a silent denial",
     };

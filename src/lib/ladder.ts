@@ -297,7 +297,7 @@ async function readLadderUncached(): Promise<LadderReading> {
       source:
         probes.answered > 0
           ? `A floor, and our own call rather than someone else's flag: ${probes.answered} of ${probes.probed} endpoints answered when this office called them ${ago(probes.at)}, with the status and latency of each recorded. Everything outside those ${probes.probed} is unprobed, not silent. For comparison, 8004scan's own verification flag reports ${registry.withEndpoint} across the whole registry.`
-          : "Endpoint verified against the registry's own record rather than by a call we made — no census of ours has run.",
+          : "Endpoint verified against the registry's own record rather than by a call we made. No census of ours has run.",
       verify: "npm run probe",
     },
     {
@@ -306,7 +306,7 @@ async function readLadderUncached(): Promise<LadderReading> {
       test: "Its wallet has transacted and touched the protocols its category implies.",
       population: null,
       source:
-        "Measured per agent on request, not yet swept across the registry — that needs the 8004scan Pro tier. A number here would be a guess, so there isn't one.",
+        "Measured per agent on request, not yet swept across the registry, which needs the 8004scan Pro tier. A number here would be a guess, so there isn't one.",
       verify: "npm run assay -- <tokenId>",
     },
     {

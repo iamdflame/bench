@@ -27,7 +27,27 @@ const config: NextConfig = {
    */
   async redirects() {
     return [
-      { source: "/method", destination: "/assay", permanent: false },
+      // The rebuild moved every room. Old links, bookmarks and preview cards
+      // must land somewhere real, not on a 404 — a dead end is worse than a
+      // redirect on a site whose whole case is that its claims are checkable.
+      { source: "/agent/:tokenId", destination: "/agent/56/:tokenId", permanent: false },
+      { source: "/agents", destination: "/registry", permanent: false },
+      { source: "/offices", destination: "/", permanent: false },
+      { source: "/office/rebalancing", destination: "/hire/rebalancing", permanent: false },
+      { source: "/office/grid-trading", destination: "/hire/grid", permanent: false },
+      { source: "/office/yield-optimisation", destination: "/hire/yield", permanent: false },
+      { source: "/office/health-factor", destination: "/hire/health", permanent: false },
+      { source: "/market", destination: "/hire/health", permanent: false },
+      { source: "/floor", destination: "/dashboard", permanent: false },
+      { source: "/bench", destination: "/registry", permanent: false },
+      { source: "/compare", destination: "/hire/health", permanent: false },
+      { source: "/authority", destination: "/dashboard", permanent: false },
+      { source: "/start", destination: "/", permanent: false },
+      { source: "/assay", destination: "/method", permanent: false },
+      { source: "/evidence", destination: "/method", permanent: false },
+      { source: "/list-your-agent", destination: "/registry", permanent: false },
+      { source: "/mandate/:id", destination: "/settlement/:id", permanent: false },
+      { source: "/ledger/:deployment/:id", destination: "/settlement/:id", permanent: false },
     ];
   },
   serverExternalPackages: [

@@ -5,7 +5,7 @@
  * around a reference, buy the asset as price crosses down through a level and
  * sell as it crosses up through one. It makes money from oscillation and loses
  * to trend, which is exactly the honest behaviour to put in front of a
- * benchmark — a grid that beats hold in a chop and trails it in a rally is a
+ * benchmark, a grid that beats hold in a chop and trails it in a rally is a
  * real result, and inventing something that always wins was the thing this
  * whole rebuild exists to stop doing.
  *

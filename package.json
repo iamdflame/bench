@@ -29,6 +29,7 @@
     "adjudicator": "tsx src/scripts/adjudicator.ts",
     "index": "tsx src/scripts/index-agents.ts",
     "agent": "tsx src/agents/run.ts",
+    "roster": "tsx --env-file=.env --env-file=.env.local src/scripts/roster.ts",
     "settle": "tsx src/scripts/settle.ts",
     "grant": "tsx src/scripts/grant.ts",
     "verify": "tsx packages/mandate-verify/src/cli.ts",
@@ -68,7 +69,8 @@
     "db:check": "tsx --env-file=.env --env-file=.env.local src/scripts/db-check.ts",
     "cross-check": "tsx --env-file=.env --env-file=.env.local src/scripts/cross-check.ts",
     "check:agreement": "tsx --env-file=.env --env-file=.env.local src/scripts/cross-check.ts 0xd6d11Aa5046dc5C7BE8d63B9223b60D7AD94cBe9 0x54c06cC2623aAA2Dcc38B17fA07aD2e99b363C90",
-    "check:doctrine": "node src/scripts/check-doctrine.mjs"
+    "check:doctrine": "node src/scripts/check-doctrine.mjs",
+    "check:budget": "node src/scripts/check-budget.mjs"
   },
   "dependencies": {
     "@altananetwork/sdk": "^0.7.1",
@@ -83,11 +85,13 @@
     "viem": "^2.56.3"
   },
   "devDependencies": {
+    "@tailwindcss/postcss": "^4.3.3",
     "@types/node": "^24.10.1",
     "@types/react": "^19.2.7",
     "@types/react-dom": "^19.2.4",
     "drizzle-kit": "^0.31.10",
     "playwright-core": "^1.62.1",
+    "tailwindcss": "^4.3.3",
     "tsx": "^4.23.13",
     "typescript": "^5.9.3",
     "vitest": "^5.0.0"

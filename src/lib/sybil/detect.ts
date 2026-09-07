@@ -174,7 +174,7 @@ export function detectCoordination(
     if (median < 60_000) {
       add(
         p.address,
-        `Median gap between submissions is ${Math.round(median / 1000)}s — machine cadence`,
+        `Median gap between submissions is ${Math.round(median / 1000)}s, machine cadence`,
       );
     }
     if (p.maxPerAgent >= 8) {

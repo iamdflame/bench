@@ -85,6 +85,13 @@ jobs:
           NEXT_PUBLIC_MARKET_DEPLOY_BLOCK: "119898276"
         run: npm run build
 
+      # "The Instrument" is meant to read in ten seconds on a phone. That rots
+      # one heavy import at a time, so the first-load JS of every read path is
+      # summed from the build manifest and checked against a cap — a route that
+      # balloons past the framework floor fails the build.
+      - name: Performance budget
+        run: npm run check:budget
+
   verifier:
     name: verifier
     runs-on: ubuntu-latest

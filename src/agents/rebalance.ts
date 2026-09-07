@@ -6,7 +6,7 @@
  * and re-centres when price leaves the band: withdraw, collect, mint a fresh
  * range around spot.
  *
- * The trade-off is real and the agent does not pretend otherwise — every
+ * The trade-off is real and the agent does not pretend otherwise, every
  * re-centre crystallises impermanent loss and costs gas, so widening the
  * tolerance is not obviously worse than tightening it. The benchmark it is
  * settled against is holding the two tokens un-pooled, which is the honest
@@ -166,7 +166,7 @@ export const rebalanceStrategy: Strategy = {
 
     const deadline = BigInt(Math.floor(ctx.now / 1000) + 600);
     return {
-      observed: `position #${tokenId} range [${tickLower}, ${tickUpper}] but pool tick is ${tick} — ${drift} ticks outside, earning nothing`,
+      observed: `position #${tokenId} range [${tickLower}, ${tickUpper}] but pool tick is ${tick}, ${drift} ticks outside, earning nothing`,
       state: { ...ctx.state, lastRebalanceTick: tick },
       actions: [
         {
