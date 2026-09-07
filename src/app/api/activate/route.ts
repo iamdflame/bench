@@ -32,7 +32,7 @@
 
 import { NextResponse } from "next/server";
 import { jobBySegment } from "@/lib/categories";
-import { grantMandateSession, nextSessionId } from "@/lib/chain/session";
+import { grantMandateSession, nextSessionId, readPublicIndex } from "@/lib/chain/session";
 import { scopeFromChain, isRefused } from "@/lib/chain/scope";
 import { allowlistFor } from "@/lib/chain/allowlist";
 import { resolveAgent } from "@/lib/agent-record";
@@ -154,10 +154,35 @@ export async function POST(request: Request) {
   */
   const budget = await checkGrantBudget(callerOf(request));
   if (!budget.ok) {
+    /*
+      A refusal should hand over evidence, not an apology.
+
+      "Trust us, hiring works" is worth nothing here, and a limit that produces
+      only a dead end wastes the one thing that would answer the doubt: a hire
+      that already happened, with the transaction that registered it. So the
+      most recent completed grant is named and linked, and a reader can check it
+      without pressing anything.
+    */
+    const done = Object.entries(readPublicIndex())
+      .map(([id, v]) => ({ id: Number(id), ...v }))
+      .filter((v) => v.registered && v.registrationTx)
+      .sort((a, b) => b.id - a.id)[0];
+
     return NextResponse.json({
       ok: true,
       executed: false,
       limited: true,
+      ...(done
+        ? {
+            already: {
+              id: done.id,
+              tokenId: done.tokenId ?? null,
+              category: done.category,
+              registrationTx: done.registrationTx,
+              revoked: Boolean(done.revokedAt),
+            },
+          }
+        : {}),
       plan: {
         capBnb,
         ttlDays,

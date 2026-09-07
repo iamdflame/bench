@@ -34,6 +34,14 @@ export interface GrantResult {
   executed?: boolean;
   refused?: boolean;
   limited?: boolean;
+  /** A hire that did complete, so a refusal still hands over evidence. */
+  already?: {
+    id: number;
+    tokenId: string | null;
+    category: string;
+    registrationTx: string;
+    revoked: boolean;
+  };
   reason?: string;
   remedy?: string;
   fallback?: { name: string; href: string } | null;
@@ -277,8 +285,25 @@ function Outcome({
         <p className="sub" style={{ marginTop: "0.5rem", fontSize: "var(--text-sm)" }}>{res.reason}</p>
         <p className="meta" style={{ marginTop: "0.7rem", lineHeight: 1.5 }}>
           The scope above was still derived against the chain, so nothing here is hypothetical
-          except the signature. Sessions already granted are on the desk and can be revoked.
+          except the signature.
         </p>
+        {res.already ? (
+          <div style={{ marginTop: "0.9rem", padding: "0.85rem 1rem", background: "#1b2027", borderRadius: "var(--radius-ui)" }}>
+            <span className="meta">One that did go through</span>
+            <p className="sub" style={{ fontSize: "var(--text-sm)", marginTop: "0.3rem", lineHeight: 1.55 }}>
+              Session {res.already.id}
+              {res.already.tokenId ? <> on agent {res.already.tokenId}</> : null}, granted here and
+              registered in the Altana KeyStore
+              {res.already.revoked ? ", and since revoked on chain" : ", live now"}. This is the
+              same code path, on the same day, with a transaction you can open.
+            </p>
+            <p className="meta" style={{ marginTop: "0.4rem" }}>
+              <a className="link-accent num" href={`https://bscscan.com/tx/${res.already.registrationTx}`} target="_blank" rel="noopener noreferrer" style={{ fontSize: "var(--text-2xs)" }}>
+                {res.already.registrationTx.slice(0, 26)}… ↗
+              </a>
+            </p>
+          </div>
+        ) : null}
         <div style={{ marginTop: "1.25rem", display: "flex", gap: "0.5rem", flexWrap: "wrap" }}>
           <a href="/desk" className="btn btn--primary">See the desk →</a>
           <button className="btn" onClick={onRetry}>Back to the ticket</button>
