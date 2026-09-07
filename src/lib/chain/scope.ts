@@ -36,6 +36,15 @@ import type { AssayReport } from "@/lib/assay/types";
 import { findProtocolTouches } from "@/lib/sources/bsc";
 import { CATEGORY_CALLS } from "./session";
 
+/**
+ * How far back a grant looks for evidence of capability.
+ *
+ * Roughly three to seven days of BNB Smart Chain depending on block time, and
+ * about twenty seconds of scanning. Both halves of that were measured; see the
+ * note at the call site for what the shorter window was hiding.
+ */
+export const GRANT_LOOKBACK_BLOCKS = 400_000n;
+
 /** Unexported, so a ProvenScope cannot be built anywhere but here. */
 declare const witness: unique symbol;
 
@@ -105,11 +114,30 @@ export async function scopeFromChain(
     agent,
     CATEGORY_EVIDENCE[category],
     {
-      // Wider than the assay's window: this decides what an agent is allowed
-      // to do with someone's capital, and a narrower search would refuse
-      // authority for want of looking rather than for want of evidence.
+      /*
+        Wider than the assay's window, and deliberately measured rather than
+        picked.
+
+        This decides what an agent may do with someone's capital, so a search
+        that is too short refuses authority for want of looking rather than for
+        want of evidence, which is the failure this module exists to avoid and
+        was quietly committing. At 120,000 blocks the window is roughly a day
+        of BNB Smart Chain, and a competent agent that worked on Tuesday looked
+        identical to one that has never traded.
+
+        Measured on 7 September 2026, against the three wallets that matter
+        here: at 120,000 blocks every one of them, ours included, came back with
+        no evidence at all. At 400,000 the PancakeSwap Positions touch on the
+        rebalancer we most wanted to hire appears. Nothing changed on chain
+        between those two readings except how far back we were willing to look.
+
+        The cost is the other half of the measurement: about six seconds at
+        120,000 blocks and about twenty at 400,000, which is affordable for a
+        request that grants authority and would not be for a page view. So the
+        assay keeps its shorter window and the grant pays for a longer one.
+      */
       eventProbes: CATEGORY_EVENT_PROBES[category],
-      lookbackBlocks: 120_000n,
+      lookbackBlocks: GRANT_LOOKBACK_BLOCKS,
     },
   );
   return deriveScope(agent, category, {
@@ -151,13 +179,24 @@ function deriveScope(
     }));
 
   if (calls.length === 0) {
+    /*
+      Named with its window, because "has not been shown" and "was not shown in
+      the blocks we read" are different claims and only the second one is true.
+      A refusal that implies the chain was searched exhaustively is the same
+      overstatement this register objects to when other people make it.
+    */
+    const blocks = Number(capability.proven.scannedBlocks);
     return {
       refused: true,
-      reason: `this agent has not been shown using any ${CATEGORY_LABEL[category]} contract, so there is no authority to derive`,
-      remedy: `it must transact with one of: ${canonical
-        .map((c) => PROTOCOL_LABEL[c.to.toLowerCase()] ?? c.to)
-        .filter((v, i, a) => a.indexOf(v) === i)
-        .join(", ")}`,
+      reason:
+        `this agent was not shown using any ${CATEGORY_LABEL[category]} contract in the ` +
+        `${blocks.toLocaleString()} blocks read, so there is no authority to derive from that evidence`,
+      remedy:
+        `it must transact with one of: ${canonical
+          .map((c) => PROTOCOL_LABEL[c.to.toLowerCase()] ?? c.to)
+          .filter((v, i, a) => a.indexOf(v) === i)
+          .join(", ")}. If it did so before that window, set ARCHIVE_RPC_URL and the search widens ` +
+        `to two million blocks rather than the agent being denied for want of looking.`,
     };
   }
 

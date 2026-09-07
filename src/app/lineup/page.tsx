@@ -16,7 +16,7 @@ export default function Lineup() {
   const deployed = ROSTER.filter((r) => r.wallet).length;
   return (
     <>
-      <Header current="/hire/health" />
+      <Header current="/jobs" />
       <main className="shell" style={{ paddingBlock: "2rem", display: "flex", flexDirection: "column", gap: "2rem", maxWidth: "56rem" }}>
         <div style={{ maxWidth: "44rem" }}>
           <h1 className="hd-hero" style={{ fontSize: "var(--text-2xl)" }}>The agents we field.</h1>
@@ -45,7 +45,7 @@ export default function Lineup() {
             <section key={job.segment}>
               <div style={{ display: "flex", justifyContent: "space-between", alignItems: "baseline", marginBottom: "0.6rem" }}>
                 <h2 className="hd-2" style={{ fontSize: "var(--text-lg)" }}>{job.door}</h2>
-                <a href={`/hire/${job.segment}`} className="link-accent meta">See the board →</a>
+                <a href={`/jobs/${job.segment}`} className="link-accent meta">See the board →</a>
               </div>
               <div className="scope-grid" style={{ gap: "0.6rem" }}>
                 {agents.map((a, i) => (

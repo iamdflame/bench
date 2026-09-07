@@ -134,6 +134,16 @@ export const CATEGORY_CALLS: Record<Category, StrictAgentCallPermission[]> = {
 export interface GrantOptions {
   mandateId: number;
   /**
+   * The ERC-8004 token the session was granted for.
+   *
+   * A mandate id identifies a row in the market; it does not identify the agent
+   * a person thought they were hiring. Without this the desk could only label a
+   * session with its category, so a hire of somebody else's Ranger and a hire of
+   * our own appeared as two rows both reading "Rebalancing". Recorded at the
+   * grant, because it cannot be recovered afterwards.
+   */
+  tokenId?: string;
+  /**
    * What the agent has been *shown* able to do.
    *
    * Not a category. A `ProvenScope` can only be produced by `scopeFromAssay`,
@@ -170,6 +180,8 @@ export interface GrantedSession {
    */
   market: string;
   mandateId: number;
+  /** The ERC-8004 token this session was granted for, where a hire named one. */
+  tokenId?: string;
   category: Category;
   /** The session key's public address — this is what signs the agent's trades. */
   sessionKey: string;
@@ -213,6 +225,13 @@ export interface GrantedSession {
    */
   revokedBecause?: string;
   dismissalTx?: string;
+  /**
+   * This office's own hold, off chain and reversible.
+   *
+   * Distinct from `revokedAt`, which is on chain and final. A paused session
+   * still exists and still has its term running; it simply cannot get a signer.
+   */
+  pausedAt?: string;
 }
 
 /**
@@ -282,7 +301,9 @@ export function adminProvider(privateKey = process.env.PRIVATE_KEY) {
  * Returns the granted session and writes it to disk so the agent process, the
  * indexer and the interface can all see what authority currently exists.
  */
-export async function grantMandateSession(opts: GrantOptions): Promise<GrantedSession> {
+export async function grantMandateSession(
+  opts: GrantOptions,
+): Promise<GrantedSession & { persisted: boolean }> {
   const admin = adminProvider();
   const expiry = Math.floor(Date.now() / 1000) + opts.ttlSeconds;
 
@@ -313,6 +334,7 @@ export async function grantMandateSession(opts: GrantOptions): Promise<GrantedSe
   const granted: GrantedSession = {
     market: MARKET_ADDRESS,
     mandateId: opts.mandateId,
+    ...(opts.tokenId ? { tokenId: opts.tokenId } : {}),
     category: opts.scope.category,
     // publicKey is the on-chain identifier, and what revocation is keyed on.
     sessionKey: session.publicKey,
@@ -335,8 +357,8 @@ export async function grantMandateSession(opts: GrantOptions): Promise<GrantedSe
     grantedAt: new Date().toISOString(),
   };
 
-  persist(opts.mandateId, session, granted);
-  return granted;
+  const persisted = persist(opts.mandateId, session, granted);
+  return { ...granted, persisted };
 }
 
 /**
@@ -363,8 +385,15 @@ export async function revokeMandateSession(
       revokedAt: new Date().toISOString(),
       ...(cause ? { revokedBecause: cause.because, dismissalTx: cause.dismissalTx } : {}),
     };
-    writeFileSync(metaPath(mandateId), JSON.stringify(revoked, null, 2));
-    writePublic(mandateId, revoked);
+    try {
+      writeFileSync(metaPath(mandateId), JSON.stringify(revoked, null, 2));
+      writePublic(mandateId, revoked);
+    } catch {
+      // The key is already dead on chain, which is the part that matters. Only
+      // our note of it failed, so the note is kept in memory rather than the
+      // revocation being reported as a failure that did not happen.
+      runtimeSessions.set(String(mandateId), { ...revoked, committed: false });
+    }
   }
 }
 
@@ -375,12 +404,48 @@ export async function revokeMandateSession(
 const rawPath = (id: number) => `${SESSION_DIR}/mandate-${id}.session`;
 const metaPath = (id: number) => `${SESSION_DIR}/mandate-${id}.json`;
 
-function persist(id: number, session: unknown, meta: GrantedSession) {
-  mkdirSync(dirname(rawPath(id)), { recursive: true });
-  // The signer. Never committed, never deployed.
-  writeFileSync(rawPath(id), serializeSession(session as never), { mode: 0o600 });
-  writeFileSync(metaPath(id), JSON.stringify(meta, null, 2));
-  writePublic(id, meta);
+/**
+ * Sessions granted by a running server that could not write them down.
+ *
+ * A serverless filesystem is read only. A grant made from the deployed site is
+ * therefore real on chain and unrecordable on disk, and the two failure modes
+ * available were both wrong: throw, and a working on-chain grant is reported to
+ * the user as an error; write nothing and say nothing, and the desk claims no
+ * session exists while the key is live.
+ *
+ * So it is held in memory for the life of the instance and merged into the
+ * public index, marked `committed: false`. The desk shows it and says plainly
+ * that the transaction is the fact and this row is only our copy of it, not yet
+ * committed to the repository. The chain is the record; this is a cache that
+ * admits what it is.
+ */
+const runtimeSessions = new Map<string, GrantedSession & { revokedAt?: string; committed?: boolean }>();
+
+function persist(id: number, session: unknown, meta: GrantedSession): boolean {
+  try {
+    mkdirSync(dirname(rawPath(id)), { recursive: true });
+    // The signer. Never committed, never deployed.
+    writeFileSync(rawPath(id), serializeSession(session as never), { mode: 0o600 });
+    writeFileSync(metaPath(id), JSON.stringify(meta, null, 2));
+    writePublic(id, meta);
+    return true;
+  } catch {
+    runtimeSessions.set(String(id), { ...meta, committed: false });
+    return false;
+  }
+}
+
+/**
+ * The next free session id.
+ *
+ * Ids are dense and small because they are also mandate ids where a mandate
+ * exists. A grant made from the web without one still needs a key to be filed
+ * under, and taking the next free integer keeps the two namespaces from
+ * colliding rather than reusing an id that means something else.
+ */
+export function nextSessionId(): number {
+  const used = Object.keys(readPublicIndex()).map(Number).filter(Number.isFinite);
+  return used.length === 0 ? 0 : Math.max(...used) + 1;
 }
 
 /** Public metadata, safe to commit: everything here is already on chain. */
@@ -391,17 +456,25 @@ function writePublic(id: number, meta: GrantedSession & { revokedAt?: string }) 
   writeFileSync(PUBLIC_INDEX, JSON.stringify(all, null, 2));
 }
 
-export function readPublicIndex(): Record<string, GrantedSession & { revokedAt?: string }> {
-  if (!existsSync(PUBLIC_INDEX)) return {};
-  try {
-    return JSON.parse(readFileSync(PUBLIC_INDEX, "utf8")) as Record<
-      string,
-      GrantedSession & { revokedAt?: string }
-    >;
-  } catch {
-    return {};
+export function readPublicIndex(): Record<
+  string,
+  GrantedSession & { revokedAt?: string; committed?: boolean }
+> {
+  let onDisk: Record<string, GrantedSession & { revokedAt?: string }> = {};
+  if (existsSync(PUBLIC_INDEX)) {
+    try {
+      onDisk = JSON.parse(readFileSync(PUBLIC_INDEX, "utf8")) as typeof onDisk;
+    } catch {
+      onDisk = {};
+    }
   }
+  // Committed rows first, then anything this instance granted and could not
+  // write. A row that exists in both is the committed one.
+  return { ...Object.fromEntries(runtimeSessions), ...onDisk };
 }
+
+/** True when the row came from the repository rather than this instance's memory. */
+export const isCommitted = (id: number): boolean => !runtimeSessions.has(String(id));
 
 export function loadRaw(id: number): string | null {
   const p = rawPath(id);
@@ -423,8 +496,55 @@ export function loadMeta(id: number): (GrantedSession & { revokedAt?: string }) 
   return readPublicIndex()[String(id)] ?? null;
 }
 
-/** Session-mode provider for an agent process: execute only, never grant. */
+/**
+ * Pauses or resumes an agent, without killing its key.
+ *
+ * Pause and revoke are different acts and the interface must not blur them.
+ * Revoke is on chain and final: the key stops signing and getting it back means
+ * granting a new one. Pause is this office's own hold, off chain, reversible,
+ * and it stops the agent acting without spending a transaction or ending the
+ * session's term.
+ *
+ * It is enforced in `agentProvider`, which is the only door an agent process
+ * has to its own signer. A paused session cannot produce one, so the pause is a
+ * property of the mechanism rather than a flag some runner is trusted to read.
+ * That distinction is the whole reason this function exists instead of a button
+ * that sets a boolean nobody checks.
+ */
+export function pauseMandateSession(mandateId: number, paused: boolean): boolean {
+  const meta = loadMeta(mandateId);
+  if (!meta) throw new Error(`no session on file for mandate ${mandateId}`);
+  const next = { ...meta };
+  if (paused) next.pausedAt = new Date().toISOString();
+  else delete next.pausedAt;
+
+  try {
+    writeFileSync(metaPath(mandateId), JSON.stringify(next, null, 2));
+    writePublic(mandateId, next);
+    return true;
+  } catch {
+    runtimeSessions.set(String(mandateId), { ...next, committed: false });
+    return false;
+  }
+}
+
+/**
+ * Session-mode provider for an agent process: execute only, never grant.
+ *
+ * Refuses a paused or revoked session here rather than leaving it to whatever
+ * calls this. A pause that only stops a loop somewhere is a pause the next
+ * script forgets about.
+ */
 export async function agentProvider(mandateId: number) {
+  const meta = loadMeta(mandateId);
+  if (meta?.pausedAt) {
+    throw new Error(
+      `mandate ${mandateId} is paused (since ${meta.pausedAt}); resume it from the desk before acting`,
+    );
+  }
+  if (meta?.revokedAt) {
+    throw new Error(`mandate ${mandateId} was revoked at ${meta.revokedAt}; its key no longer signs`);
+  }
   const raw = loadRaw(mandateId);
   if (!raw) throw new Error(`no session for mandate ${mandateId}; grant one first`);
   process.env.ALTANA_SESSION = raw;

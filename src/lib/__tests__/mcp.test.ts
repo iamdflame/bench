@@ -21,6 +21,8 @@ const READ_TOOLS = [
   "read_ladder",
   "search_register",
   "check_duplication",
+  "read_allowlist",
+  "list_shops",
 ] as const;
 
 describe("the tool table", () => {
@@ -121,5 +123,48 @@ describe("argument validation", () => {
     await expect(callTool("hire_over_x402", { tokenId: "nope" })).rejects.toThrow(
       /decimal integer/,
     );
+  });
+});
+
+
+/**
+ * The machine door has to make the same two promises the page does.
+ *
+ * An agent choosing whether to hire another agent reads these, not the ticket.
+ * If the leash it can read differs from the leash the ticket renders, or if a
+ * competitor's row arrives over MCP without the sentence saying it has posted
+ * no bond, then the honesty is a property of one template rather than of the
+ * product.
+ */
+describe("the marketplace, as a machine reaches it", () => {
+  it("serves the leash, both halves, over MCP", async () => {
+    const one = (await callTool("read_allowlist", { category: "rebalancing" })) as {
+      allowlists: { may: unknown[]; mayNot: unknown[]; binding: string }[];
+    };
+    expect(one.allowlists).toHaveLength(1);
+    expect(one.allowlists[0].may.length).toBeGreaterThan(0);
+    expect(one.allowlists[0].mayNot.length).toBeGreaterThan(0);
+    expect(one.allowlists[0].binding.length).toBeGreaterThan(20);
+
+    const all = (await callTool("read_allowlist", {})) as { allowlists: unknown[] };
+    expect(all.allowlists).toHaveLength(CATEGORIES.length);
+  });
+
+  it("refuses a job it does not run rather than answering for it", async () => {
+    await expect(callTool("read_allowlist", { category: "arbitrage" })).rejects.toThrow();
+  });
+
+  it("says on every shop row that no bond has been posted here", async () => {
+    const out = (await callTool("list_shops", {})) as {
+      operators: { name: string; agents: { bondPostedHere: boolean; hire: string | null; reachable: boolean }[] }[];
+    };
+    expect(out.operators.length).toBeGreaterThan(0);
+    for (const op of out.operators) {
+      for (const a of op.agents) {
+        expect(a.bondPostedHere).toBe(false);
+        // A silent agent gets no hire link. A reachable one does.
+        expect(a.hire === null).toBe(!a.reachable);
+      }
+    }
   });
 });

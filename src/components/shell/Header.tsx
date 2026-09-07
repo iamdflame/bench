@@ -12,11 +12,12 @@ import Mark from "@/components/instrument/Mark";
  * rather than pushing the page sideways. The body never scrolls horizontally.
  */
 const NAV = [
-  { href: "/hire/health", label: "Hire" },
-  { href: "/dashboard", label: "Dashboard" },
-  { href: "/registry", label: "Registry" },
-  { href: "/method", label: "Method" },
-  { href: "/api", label: "API" },
+  { href: "/jobs/rebalancing", label: "Hire", match: "/jobs" },
+  { href: "/desk", label: "Desk", match: "/desk" },
+  { href: "/agents", label: "Register", match: "/agents" },
+  { href: "/proof", label: "Proof", match: "/proof" },
+  { href: "/method", label: "Method", match: "/method" },
+  { href: "/api", label: "API", match: "/api" },
 ];
 
 export default function Header({ current }: { current?: string }) {
@@ -29,7 +30,7 @@ export default function Header({ current }: { current?: string }) {
         </a>
         <nav aria-label="Primary" className="site-nav">
           {NAV.map((n) => {
-            const active = current === n.href || (current && current.startsWith(n.href) && n.href !== "/");
+            const active = current === n.match || Boolean(current && current.startsWith(n.match));
             return (
               <a
                 key={n.href}

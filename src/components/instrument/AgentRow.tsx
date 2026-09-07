@@ -50,9 +50,9 @@ export default function AgentRow({ agent, segment, index = 0 }: { agent: BoardAg
           <div style={{ display: "flex", gap: "0.5rem" }}>
             <a href={agent.href} className="btn btn--sm">View</a>
             {canHire && agent.tokenId ? (
-              <a href={`/activate/${agent.tokenId}?job=${segment}`} className="btn btn--sm btn--primary">Hire</a>
+              <a href={`/hire/${agent.tokenId}?job=${segment}`} className="btn btn--sm btn--primary">Hire</a>
             ) : agent.kind === "registry" && agent.tokenId ? (
-              <a href={`/agent/56/${agent.tokenId}`} className="btn btn--sm">Assay it →</a>
+              <a href={`/agents/${agent.tokenId}`} className="btn btn--sm">Assay it →</a>
             ) : null}
           </div>
         </div>

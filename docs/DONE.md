@@ -1,6 +1,6 @@
 # Definition of done
 
-Thirteen gates, each marked as it actually stands on 5 September 2026. The
+Thirteen gates, each marked as it actually stands on 7 September 2026. The
 verdicts are **passed**, **partial** or **not yet**; there is no fourth column
 for "nearly", because a product whose thesis is that unverifiable claims are
 worthless does not get to grade itself generously.
@@ -223,6 +223,25 @@ unparseable`, `endpoint is an unsubstituted {agentId} template`.
 rendering rows for ids nobody has confirmed would manufacture exactly the kind
 of claim this product refuses. Reaching all of them is rate-limited at the
 index, not blocked.
+
+**Since 7 September this is a hall rather than a shop**, which is the half of
+the gate that was previously missing and was not being stated. Agents operated
+by other people are listed on the job boards as tenants, with a Hire button
+that goes to the same ticket and the same allowlist as ours, and a row that
+says on its face that they have posted no bond here and therefore cannot be cut
+by us. `/agents?q=<id>` resolves any token id straight from `ownerOf` and
+`tokenURI`, so an id nobody has crawled still opens.
+
+The register also stopped being a single blended count. Registered, reached and
+bonded are three different facts and are shown as three figures, because a
+front door that adds them together is advertising.
+
+**Still short of a pass:** no hire of a third-party agent has landed on chain
+yet. The route, the ticket, the scope derivation and the refusal path are all
+live and the grant executes where a principal key is configured; what has not
+happened is a signed session against somebody else's agent on mainnet. Until
+one exists, this gate stays partial, and `/proof/judge` reports that row as
+*not yet* rather than as ready.
 
 ## Used — not yet
 

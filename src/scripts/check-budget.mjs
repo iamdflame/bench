@@ -43,12 +43,16 @@ function gzipKB(rel) {
 const FLOOR = 101; // ~React 19 + Next 15 shared runtime, gzip
 const BUDGETS = [
   { route: "/page", label: "/", cap: FLOOR + 6 },
-  { route: "/hire/[category]/page", label: "/hire/[category]", cap: FLOOR + 6 },
-  { route: "/agent/[chainId]/[id]/page", label: "/agent/[chain]/[id]", cap: FLOOR + 8 },
+  { route: "/jobs/[slug]/page", label: "/jobs/[slug]", cap: FLOOR + 6 },
+  { route: "/agents/page", label: "/agents", cap: FLOOR + 6 },
+  { route: "/agents/[id]/page", label: "/agents/[id]", cap: FLOOR + 8 },
+  { route: "/compare/page", label: "/compare", cap: FLOOR + 6 },
+  { route: "/proof/page", label: "/proof", cap: FLOOR + 8 },
+  { route: "/proof/judge/page", label: "/proof/judge", cap: FLOOR + 6 },
   { route: "/registry/page", label: "/registry", cap: FLOOR + 6 },
   { route: "/method/page", label: "/method", cap: FLOOR + 8 },
-  { route: "/dashboard/page", label: "/dashboard", cap: FLOOR + 10 },
-  { route: "/activate/[id]/page", label: "/activate/[id]", cap: FLOOR + 18 },
+  { route: "/desk/page", label: "/desk", cap: FLOOR + 10 },
+  { route: "/hire/[id]/page", label: "/hire/[id]", cap: FLOOR + 18 },
   { route: "/lineup/page", label: "/lineup", cap: FLOOR + 10 },
 ];
 

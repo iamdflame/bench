@@ -8,6 +8,7 @@ import { JOBS, jobByCategory } from "@/lib/categories";
 import { readProvenCounts, readHeadline } from "@/lib/board";
 import { readAgentIndex } from "@/lib/data/agents";
 import { getProbes } from "@/lib/data/probes";
+import { shopCounts, operatorCount } from "@/lib/shops";
 import { MARKET_ADDRESS } from "@/lib/chain/market";
 
 /*
@@ -40,6 +41,8 @@ export default async function Home() {
   ]);
   const probes = getProbes();
   const answered = probes.answered > 0 ? probes.answered : index.registry.withEndpoint;
+  const shops = shopCounts();
+  const operators = operatorCount() + 1;
   const job = headline ? jobByCategory(headline.category) : null;
 
   return (
@@ -51,9 +54,9 @@ export default async function Home() {
           <div style={{ maxWidth: "46rem" }}>
             <h1 className="hd-hero">Hire an agent to run your money on BNB Chain.</h1>
             <p className="lede" style={{ marginTop: "0.9rem" }}>
-              Every agent is assayed before you can hire it: tested against the chain, scored, and
-              struck. The unmarked ones you can see too; we just won&rsquo;t pretend they&rsquo;re
-              proven.
+              Ours and other people&rsquo;s, from the same desk, on the same ticket. Every agent is
+              tested against the chain before you can hire it, and a hire is one signature for a key
+              that can do exactly one job, up to a cap, until it expires.
             </p>
           </div>
 
@@ -67,7 +70,7 @@ export default async function Home() {
             </div>
             <div className="doors-grid">
               {JOBS.map((j, i) => (
-                <JobDoor key={j.segment} job={j} proven={counts[j.category] ?? 0} index={i} />
+                <JobDoor key={j.segment} job={j} proven={counts[j.category] ?? 0} shops={shops[j.category] ?? 0} index={i} />
               ))}
             </div>
           </div>
@@ -128,13 +131,15 @@ export default async function Home() {
               {index.registry.registered.toLocaleString()}
             </span>{" "}
             agents are registered on BNB Smart Chain. <span className="num" style={{ color: "var(--color-touchstone)" }}>{answered}</span> answered
-            when we called them. That gap is why we assay.{" "}
-            <a href="/registry" className="link-accent">See the registry →</a>
+            when we called them. That gap is why we test before we let you hire.{" "}
+            <a href="/agents" className="link-accent">Search the register →</a>
           </p>
 
           <p className="sub" style={{ marginTop: "0.6rem", fontSize: "var(--text-sm)" }}>
-            The best-scoring agents on the board are our own, running real capital on mainnet.{" "}
-            <a href="/lineup" className="link-accent">See the eight we field →</a>
+            <span className="num" style={{ color: "var(--color-touchstone)" }}>{operators}</span>{" "}
+            operators have an agent on these boards, not one. Ours post a bond and can be slashed;
+            theirs do not and their rows say so.{" "}
+            <a href="/compare?job=rebalancing" className="link-accent">Compare them, same job →</a>
           </p>
         </section>
 
@@ -143,10 +148,10 @@ export default async function Home() {
           <hr className="rule" style={{ marginBottom: "1.5rem" }} />
           <div className="steps-grid">
             {[
-              ["Pick a job", "Four things an agent can do with a position. Pick one and see who is proven."],
+              ["Pick a job", "Four things an agent can do with a position. Pick one and see who is bonded and who is only listed."],
               ["Read the verdict", "Plain language on top: passed or not, why, and the transaction that shows it."],
-              ["Hire in one signature", "A passkey, no seed phrase. Set a cap and an expiry it can never exceed."],
-              ["Watch, and revoke", "Every action on your dashboard. Revoke is one on-chain transaction, instant."],
+              ["Hire in one signature", "One Grant on the ticket. A cap and an expiry it can never exceed, and it can only pay you."],
+              ["Watch, and revoke", "Every action on the desk. Revoke is one on-chain transaction, and the key dies with it."],
             ].map(([t, d], i) => (
               <div key={t} className="reveal-scroll" style={{ ["--i" as string]: i, display: "flex", flexDirection: "column", gap: "0.35rem" }}>
                 <span className="num" style={{ color: "var(--color-ink-3)", fontSize: "var(--text-sm)" }}>

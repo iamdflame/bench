@@ -82,7 +82,7 @@ export default async function SettlementPage({ params }: { params: Promise<{ id:
 
   return (
     <>
-      <Header current="/dashboard" />
+      <Header current="/desk" />
       <main className="shell" style={{ paddingBlock: "2rem", display: "flex", flexDirection: "column", gap: "1.25rem", maxWidth: "56rem" }}>
         <div>
           <span className="meta">Mandate {n}</span>

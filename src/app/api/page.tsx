@@ -33,6 +33,20 @@ const ENDPOINTS = [
     what: "The register, filterable. Carries coverage, so a small answer can always be told apart from a small registry.",
     example: `curl "${HOST}/api/v1/agents?rung=2&limit=5"`,
   },
+  {
+    method: "GET",
+    path: "/api/v1/allowlist/{job}",
+    limit: "60 / minute",
+    what: "The exact authority a hire grants: the calls it may make, the calls it may not and why each is withheld, where the money can go and what enforces that. The same document the ticket renders, so the page and the signature cannot drift apart. Use `all` for every job.",
+    example: `curl ${HOST}/api/v1/allowlist/rebalancing`,
+  },
+  {
+    method: "POST",
+    path: "/api/activate",
+    limit: "authority-bearing",
+    what: "The hire itself. Derives the scope from what the chain has shown the agent doing, then grants a scoped, capped, expiring ERC-8183 session key registered in the Altana KeyStore. Returns the transaction when it executes, the exact refusal when the scope cannot be derived, and the command when this deployment holds no principal key. It never returns a success it did not perform.",
+    example: `curl -X POST ${HOST}/api/activate -H 'content-type: application/json' \\\n  -d '{"tokenId":"269706","job":"rebalancing","capBnb":0.02,"ttlDays":7}'`,
+  },
 ];
 
 const GUARANTEES: [string, string, string][] = [

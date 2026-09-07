@@ -16,19 +16,28 @@ import type { JobSpec } from "@/lib/categories";
 export default function JobDoor({
   job,
   proven,
+  shops = 0,
   index = 0,
   compact = false,
 }: {
   job: JobSpec;
   /** Agents with own capital at risk in this category, from the book. */
   proven: number | null;
+  /**
+   * Agents other operators field for this job, hireable from the same ticket.
+   *
+   * Shown next to the bonded count rather than added to it. They are two
+   * different kinds of thing, and a single blended number would be the exact
+   * flattery this register exists to refuse.
+   */
+  shops?: number;
   /** Position in the row, used to stagger the entrance. */
   index?: number;
   compact?: boolean;
 }) {
   return (
     <a
-      href={`/hire/${job.segment}`}
+      href={`/jobs/${job.segment}`}
       className="card jobdoor reveal"
       style={{
         ["--i" as string]: index,
@@ -53,7 +62,14 @@ export default function JobDoor({
             <span className="num" style={{ fontSize: "var(--text-lg)", color: "var(--color-struck)" }}>
               {proven}
             </span>
-            <span className="meta">proven</span>
+            <span className="meta">bonded{shops > 0 ? ` · ${shops} from other shops` : ""}</span>
+          </>
+        ) : shops > 0 ? (
+          <>
+            <span className="num" style={{ fontSize: "var(--text-lg)", color: "var(--color-touchstone)" }}>
+              {shops}
+            </span>
+            <span className="meta">from other shops, none bonded here</span>
           </>
         ) : (
           <span className="meta">Open, no capital at risk here yet</span>

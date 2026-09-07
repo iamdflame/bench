@@ -118,11 +118,30 @@ h1, h2, h3, h4, p, figure, blockquote, dl, dd, ol, ul {
 
 ol, ul { list-style: none; }
 img, svg { display: block; max-width: 100%; }
-button, input, select, textarea { font: inherit; color: inherit; }
-button { background: none; border: none; cursor: pointer; }
 a { color: inherit; text-decoration: none; }
 table { border-collapse: collapse; border-spacing: 0; }
 [hidden] { display: none !important; }
+
+/*
+  The control reset belongs in a layer, and the reason is not tidiness.
+
+  An unlayered rule beats every layered one, whatever the specificity: that is
+  the cascade, not a quirk. So `button { background: none; border: none }`
+  written out here silently overrode `.btn--primary` inside `@layer components`,
+  and every <button> in the product rendered as bare text while every <a> with
+  the identical class rendered correctly. It survived a screenshot review
+  because most of the buttons that mattered were links.
+
+  What it cost: the Grant control on the hire ticket, which is the one
+  irreversible action in the whole product, had no fill at all.
+
+  In `base` it does what a reset should, and loses to the components that come
+  after it.
+*/
+@layer base {
+  button, input, select, textarea { font: inherit; color: inherit; }
+  button { background: none; border: none; cursor: pointer; }
+}
 
 /* Tabular numerals everywhere a figure appears; digits must not jitter. */
 .num, .mono {
@@ -200,8 +219,19 @@ table { border-collapse: collapse; border-spacing: 0; }
     padding: 0.6rem 1rem;
     border-radius: var(--radius-ui);
     border: 1px solid var(--color-line-2);
-    background: var(--color-panel);
+    background-color: var(--color-panel);
     color: var(--color-ink);
+    /*
+      Buttons and links must render identically.
+
+      Tailwind's preflight resets `background-color` on form controls, and a
+      `background` shorthand carrying a var() lost to it on <button> while
+      winning on <a>. The primary action of the whole product is a <button>, so
+      it rendered as bare text on the one screen where a signature happens.
+      Longhands settle it, and `appearance: none` stops a UA control style
+      creeping back in.
+    */
+    appearance: none;
     font-size: var(--text-sm);
     font-weight: 500;
     line-height: 1;
@@ -211,11 +241,11 @@ table { border-collapse: collapse; border-spacing: 0; }
                 transform var(--d-micro) var(--ease-out);
   }
   .btn--primary {
-    background: var(--color-assay);
+    background-color: var(--color-assay);
     border-color: var(--color-assay);
     color: #fff;
   }
-  .btn--ghost { background: transparent; border-color: transparent; color: var(--color-assay-ink); }
+  .btn--ghost { background-color: transparent; border-color: transparent; color: var(--color-assay-ink); }
   .btn--sm { padding: 0.4rem 0.7rem; font-size: var(--text-2xs); }
   .btn[disabled] { opacity: 0.5; cursor: not-allowed; }
 
@@ -230,6 +260,100 @@ table { border-collapse: collapse; border-spacing: 0; }
     background: var(--color-panel);
     border: 1px solid var(--color-line);
     border-radius: var(--radius-ui);
+  }
+
+  /* --- the ticket ------------------------------------------------------- */
+  /*
+    One dark surface in a light instrument, and it is the page where authority
+    is granted.
+
+    Everywhere else this product reads: pale paper, quiet ink, nothing shouting.
+    The ticket is the one screen where a signature happens and money starts
+    moving, so it stops looking like a document and starts looking like an
+    instrument panel. The inversion is the warning. It is used on exactly one
+    route, and a second dark surface anywhere else would spend the signal.
+  */
+  .ticket {
+    background: var(--color-touchstone);
+    color: #eef1f5;
+    border: 1px solid #2a2f38;
+    border-radius: var(--radius-panel);
+  }
+  .ticket .hd-2,
+  .ticket .hd-3,
+  .ticket .hd-hero { color: #f7f8fa; }
+  .ticket .sub { color: #b6bdc7; }
+  .ticket .meta { color: #8d95a1; }
+  .ticket .num { color: #eef1f5; }
+  .ticket hr,
+  .ticket .rule { border-color: #2a2f38; }
+  /* A clause of the leash: what may happen, or what may not. */
+  .clause {
+    display: flex;
+    gap: 0.6rem;
+    align-items: baseline;
+    padding: 0.4rem 0;
+    border-bottom: 1px solid #232830;
+    font-size: var(--text-sm);
+  }
+  .clause:last-child { border-bottom: 0; }
+  .clause__mark {
+    flex: none;
+    width: 1.15rem;
+    font-variant-numeric: tabular-nums;
+  }
+  .clause--may .clause__mark { color: #6fbf95; }
+  .clause--not .clause__mark { color: #e08585; }
+  .ticket .chip {
+    background: #1b2027;
+    border-color: #2f3540;
+    color: #b6bdc7;
+  }
+  .ticket .btn {
+    background-color: #1b2027;
+    border-color: #333a45;
+    color: #eef1f5;
+  }
+  .ticket .btn--primary {
+    background-color: var(--color-assay);
+    border-color: var(--color-assay);
+    color: #fff;
+  }
+  .ticket .link-accent { color: #7ea8ff; }
+  /* The one figure on the ticket a reader must not misread: the cap. */
+  .ticket-figure {
+    font-size: var(--text-xl);
+    font-variant-numeric: tabular-nums;
+    color: #f7f8fa;
+  }
+
+  /* --- the comparison --------------------------------------------------- */
+  /*
+    Three columns on a desk, one column on a phone.
+
+    A comparison collapses badly: two values under one label become four
+    unlabelled values in a stack. So on a narrow viewport the row keeps its
+    label and the two cells sit under it, indented, rather than the grid
+    reflowing into a column of orphans.
+  */
+  .compare-head,
+  .compare-row {
+    display: grid;
+    grid-template-columns: 11rem 1fr 1fr;
+    gap: 0.75rem 1rem;
+    align-items: start;
+  }
+  .compare-head { padding: 0 1.25rem 0.5rem; }
+  .compare-row {
+    padding: 0.7rem 0;
+    border-bottom: 1px solid var(--color-line);
+  }
+  .compare-row:last-child { border-bottom: 0; }
+  .compare-row__label { padding-top: 0.1rem; }
+  @media (max-width: 40rem) {
+    .compare-head,
+    .compare-row { grid-template-columns: 1fr; gap: 0.3rem; }
+    .compare-row > *:not(.compare-row__label) { padding-left: 0.9rem; }
   }
 
   /* --- data chip -------------------------------------------------------- */
@@ -512,7 +636,7 @@ table { border-collapse: collapse; border-spacing: 0; }
     box-shadow: var(--shadow-lift);
   }
   .jobdoor:hover .jobdoor__go { opacity: 1; transform: none; }
-  .btn:hover { border-color: var(--color-ink-3); background: var(--color-paper); }
+  .btn:hover { border-color: var(--color-ink-3); background-color: var(--color-paper); }
 }
 
 /* Press is universal: every pointer and every finger gets the same feedback. */

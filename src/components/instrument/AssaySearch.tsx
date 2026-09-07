@@ -16,7 +16,7 @@ export default function AssaySearch() {
   function go(e: React.FormEvent) {
     e.preventDefault();
     const m = q.trim().match(/(\d{2,})/);
-    if (m) window.location.href = `/agent/56/${m[1]}`;
+    if (m) window.location.href = `/agents/${m[1]}`;
   }
 
   return (
