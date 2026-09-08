@@ -21,7 +21,7 @@ Live: **https://bench-six-sigma.vercel.app**
 | **P3** Rail 2 — Hire | `hire.ts`, full ERC-8183 lifecycle, `prove-hire.ts` | `rail-2-escrow-funded` — **7/0/1** on testnet, job 1139 FUNDED | **testnet done, mainnet owed** |
 | **P4** Counterfactual | Engine, worker run on `/data`, per-position replay on `/a/…?position=` | 18,911 swaps published; a real position replayed live | **engine done, board column owed** |
 | **P5** Depth | Four job routes, `/data`, `/register`, `/list`, `/api/v1`, `/api/mcp`, agent card | 9 findings recorded, all block-stamped | **partial** |
-| **P6** `OutcomePolicy` | — nothing | — | **not started** |
+| **P6** `OutcomePolicy` | `OutcomePolicy.sol` + 15 tests, incl. a 512-run fuzz | Cannot be bound: the router whitelists policies (`PolicyNotWhitelisted`), measured on a fresh job | **written; blocked upstream** |
 | **P7** Supply and usage | — no Studio on-ramp, no seller dashboard | — | **not started** |
 | **P8** Polish | Motion layer, footer, mobile to 360px, 8 gates | Smoke green against production | **ongoing** |
 
@@ -85,8 +85,45 @@ ERC-8183 seller side has done nothing wrong, it simply cannot be hired that way.
 
 ## §6 / P6 — `OutcomePolicy`
 
-`contracts/src/` holds `RecipientBound.sol` only. The contract, its oracles and its tests are not
-started.
+**Written, tested, and not bindable — for a reason that changes what §6 is.**
+
+`contracts/src/OutcomePolicy.sol`, 15 tests including a 512-run fuzz on the verdict invariant.
+Assertions are bound once and never edited; the verdict is `view`; an oracle is called with a
+bounded stipend and its revert is caught.
+
+The line that matters is the one that does nothing: an oracle that reverts, has no code, returns
+something undecodable, tries to burn the caller's gas, or simply answers "I could not see" yields
+**`Unmeasurable`**, and the job falls back to the optimistic path instead of settling either way.
+A policy that guesses when it cannot see converts an honest *we do not know* into a transfer of
+somebody's money, silently. Four of the fifteen tests exist only to prove it refuses.
+
+### The finding that relocates the whole discontinuity
+
+§6.1 rests on one sentence — *"The policy is a pluggable contract bound per job via `registerJob`.
+That pluggability is the opening."*
+
+**It is not open.** The router keeps an allowlist and rejects everything else with
+`PolicyNotWhitelisted()` (`0xc94463e3`), a custom error recovered by brute-forcing candidate
+signatures against keccak.
+
+Measured on a fresh job (1148) so state could not be a confound, varying only the policy address:
+
+| policy | result |
+|---|---|
+| the live `0xd6a42175…1cEA` | **OK** |
+| the SDK's `0x4F4678D4…78A6` — a deployed policy of identical size that answers `disputeWindow()` | reverted |
+| an unrelated deployed contract | reverted |
+
+So settlement policy on ERC-8183 is pluggable **by Altana**, not by a marketplace. This does not
+kill the idea; it relocates it. §6.4's fourth step — *propose it upstream as a reference
+implementation* — stops being the last step and becomes **the only route to the second**. The
+contract is written to be read and argued with by the people who control that list.
+
+One thing it does not claim: the router-facing hook set is **unverified**. The published interface
+is `disputeWindow()` and `dispute(uint256)`; the live policy's dispatcher carries forty-nine
+further selectors whose names are not published, and the allowlist makes them impossible to
+exercise. The contract implements the documented surface and says so rather than claiming to be
+drop-in.
 
 ## §16 Seller economics
 

@@ -57,6 +57,13 @@ export const REPUTATION_REGISTRY: Record<SupportedChain, Address | null> = {
  * This also vindicates the plan's own figure. An earlier reading here reported
  * testnet's window as 24 hours and marked the plan's 900s as wrong; the plan
  * was right, and the 24 hours belonged to a contract nobody uses.
+ *
+ * And the reason a wrong policy cannot simply be swapped for a better one: the
+ * router keeps an allowlist. `registerJob` with anything but an approved policy
+ * reverts `PolicyNotWhitelisted()` (0xc94463e3) — measured on a fresh job with
+ * only the policy address varying, against the SDK's own stale policy contract
+ * and against an unrelated contract. Settlement policy is pluggable by Altana,
+ * not by a marketplace, which is the whole shape of §6's opening.
  */
 const POLICY_OVERRIDE: Partial<Record<SupportedChain, Address>> = {
   97: "0xd6a4217588F6B1F5657a92A3e94E6422aD771cEA",

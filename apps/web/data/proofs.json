@@ -330,6 +330,21 @@
         "mainnetJobsOnKernel": 56748
       },
       "reproduce": "npm run prove-hire, or read POLICY_OVERRIDE in packages/shared/src/addresses.ts"
+    },
+    {
+      "id": "policy-whitelist",
+      "title": "ERC-8183's settlement policy is not pluggable by anyone. The router whitelists it, and says so by name.",
+      "method": "policy-whitelist",
+      "measuredAt": "2026-09-08T20:05:00Z",
+      "detail": "A fresh job (1148) was created on chain 97 so that job state could not be a confound, then registerJob was simulated three times against the same job with only the policy address changed. The live policy 0xd6a42175…1cEA succeeded. The Altana SDK's own 0x4F4678D4…78A6 — a deployed policy contract of identical size that answers disputeWindow() correctly — reverted. An arbitrary deployed contract reverted identically. The revert is a custom error, 0xc94463e3, recovered by brute-forcing candidate signatures against keccak: **PolicyNotWhitelisted()**.",
+      "whyItMatters": "The plan's second discontinuity rests on one sentence: 'The policy is a pluggable contract bound per job via registerJob. That pluggability is the opening.' It is not open. The router accepts an allowlist that Altana controls, so an OutcomePolicy written here cannot be bound to a live job by us, today, at any price. This does not kill the idea — it relocates it. §6.4's fourth step, 'propose it upstream to Altana and BNB Chain as a reference implementation', stops being the last step and becomes the only path to step 2. The contract is still worth writing, as the artifact that makes the proposal concrete, and it must be described as a proposal rather than as a live settlement route. The general lesson is the one this repository keeps relearning: a capability described in documentation is a hypothesis until something calls it. Three of today's findings have this shape — a stale policy address, absent B402 usage fields, and now an allowlist nobody mentioned.",
+      "breakdown": {
+        "policiesAccepted": 1,
+        "policiesRejected": 2,
+        "jobUsed": 1148,
+        "errorSelector": "0xc94463e3"
+      },
+      "reproduce": "simulate registerJob(jobId, <any address>) on the router; only the whitelisted policy returns OK"
     }
   ]
 }
