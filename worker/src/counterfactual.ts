@@ -103,7 +103,22 @@ function symbolFor(chainId: SupportedChain, token: Address, fallback: string): s
  */
 export async function runCounterfactual(
   chainId: SupportedChain,
-  opts: { poolIndex?: number; days?: number; capital?: bigint; halfWidth?: number } = {},
+  opts: {
+    poolIndex?: number;
+    days?: number;
+    capital?: bigint;
+    halfWidth?: number;
+    /**
+     * End the window this many blocks before the head.
+     *
+     * A published window that runs to the head cannot be graded until enough
+     * new chain accumulates, which for a one-day window is hours of waiting.
+     * Ending it earlier leaves a real, disjoint successor window to grade
+     * against immediately — and the successor is still something the replay
+     * never saw, which is the only property the test actually needs.
+     */
+    endBlocksAgo?: bigint;
+  } = {},
 ): Promise<CounterfactualRecord | null> {
   const pool = LIQUID_POOLS[opts.poolIndex ?? 3]!;
   const days = opts.days ?? 1;
@@ -113,7 +128,8 @@ export async function runCounterfactual(
   const client = chainClient(chainId);
   const head = await client.getBlockNumber();
   const span = blocksForDays(chainId, days);
-  const history = await readHistory(chainId, pool.pool, head - span, head);
+  const endsAt = head - (opts.endBlocksAgo ?? 0n);
+  const history = await readHistory(chainId, pool.pool, endsAt - span, endsAt);
   if (history.ticks.length < 2) return null;
 
   const first = history.ticks[0]!;
@@ -197,7 +213,7 @@ export async function runCounterfactual(
     bandHalfWidthTicks: halfWidth,
     rows,
     observedAt: new Date().toISOString(),
-    reproduce: `npm run counterfactual -- --days ${days} --half ${halfWidth}`,
+    reproduce: `npm run counterfactual -- --days ${days} --half ${halfWidth}${opts.endBlocksAgo ? ` --ago ${opts.endBlocksAgo}` : ""}`,
     dilution: results.find(({ r }) => r.dilution)?.r.dilution ?? null,
   };
 }

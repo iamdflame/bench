@@ -98,6 +98,7 @@ export default async function DataPage() {
   const s = view.snapshot;
   const proofs = readProofs();
   const cf = getBoard().counterfactual ?? null;
+  const grade = getBoard().grade ?? null;
 
   return (
     <>
@@ -377,6 +378,125 @@ export default async function DataPage() {
               <br />
               reproduce: <span className="num">{cf.reproduce}</span>
             </p>
+          </section>
+        ) : null}
+
+        {/* -------------------------------------------- how wrong we were */}
+        {grade ? (
+          <section style={{ marginTop: 34 }} aria-labelledby="grade-h">
+            <h2 id="grade-h" className="h3">
+              How wrong that table was
+            </h2>
+            <p className="prose" style={{ marginTop: 10, maxWidth: "76ch" }}>
+              The window above is a replay of trades that had already happened, which proves the arithmetic
+              and says nothing about tomorrow. So the same strategies, the same pool and the same position
+              were replayed again over the window that came <em>after</em> it — blocks{" "}
+              {Number(grade.actualWindow.fromBlock).toLocaleString("en-US")} onward, which nothing in the
+              published table had seen. The difference is our forecast error, and it is published whichever
+              way it points.
+            </p>
+
+            {grade.refusedBecause ? (
+              <p className="unmeasured" style={{ marginTop: 12 }}>
+                not gradeable yet
+                <span className="unmeasured__why">{grade.refusedBecause}</span>
+              </p>
+            ) : (
+              <>
+                <div style={{ overflowX: "auto", marginTop: 16 }}>
+                  <table className="board">
+                    <thead>
+                      <tr>
+                        <th scope="col">Strategy</th>
+                        <th scope="col">We said</th>
+                        <th scope="col">It did</th>
+                        <th scope="col">We were wrong by</th>
+                        <th scope="col">Same direction</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {grade.rows.map((r) => {
+                        const err = Number(r.error);
+                        return (
+                          <tr key={r.strategy}>
+                            <td>
+                              <span className="row__name">{r.name}</span>
+                              <span className="provenance clamp1" style={{ display: "block" }}>
+                                {r.projectedRecentres} recentre{r.projectedRecentres === 1 ? "" : "s"} then,{" "}
+                                {r.actualRecentres} after
+                              </span>
+                            </td>
+                            <td className="num">{Number(r.projected).toFixed(2)}</td>
+                            <td className="num">{Number(r.actual).toFixed(2)}</td>
+                            <td
+                              className="num"
+                              style={{
+                                color: err === 0 ? "var(--color-dim)" : "var(--color-rail-mandate)",
+                              }}
+                            >
+                              {err > 0 ? "+" : ""}
+                              {err.toFixed(2)}
+                            </td>
+                            <td style={{ color: r.directionHeld ? "var(--color-rail-call)" : "var(--color-dim)" }}>
+                              {r.directionHeld ? "held" : "flipped"}
+                            </td>
+                          </tr>
+                        );
+                      })}
+                    </tbody>
+                  </table>
+                </div>
+
+                {/*
+                  When every error points the same way it is not noise, it is
+                  bias, and naming it is the whole point of publishing this. A
+                  reader can correct for a bias they have been told about; they
+                  cannot correct for one buried in an average.
+                */}
+                {(() => {
+                  const errs = grade.rows.map((r) => Number(r.error));
+                  const allPositive = errs.length > 1 && errs.every((e) => e > 0);
+                  const allNegative = errs.length > 1 && errs.every((e) => e < 0);
+                  const mean = errs.reduce((a, b) => a + b, 0) / Math.max(errs.length, 1);
+                  return (
+                    <p className="prose" style={{ marginTop: 14, maxWidth: "76ch" }}>
+                      <strong>
+                        {grade.directionsHeld} of {grade.rows.length} kept the sign they were projected
+                        with.
+                      </strong>{" "}
+                      {grade.directionsHeld === grade.rows.length
+                        ? "Every strategy that was ahead stayed ahead and every one behind stayed behind, so the ranking held. "
+                        : grade.directionsHeld === 0
+                          ? "Not one of them did — a single window told us nothing durable about this pool, and saying so is more useful than the table above pretending otherwise. "
+                          : "The rest changed sign, which is the clearest possible demonstration that one window is not a track record. "}
+                      {allPositive || allNegative ? (
+                        <>
+                          Every error points the same way, which makes it bias rather than noise: the replay{" "}
+                          <strong>{allPositive ? "overstates losses" : "overstates gains"}</strong> by{" "}
+                          {Math.abs(mean).toFixed(2)} {grade.token0Symbol} on average here, and the
+                          overstatement grows with how often a strategy acts. That is the cost model doing
+                          what it was built to do — the slippage bound is deliberately pessimistic, because a
+                          cost reported too low is a marketplace that told somebody to hire the wrong agent.
+                          Now it is measured rather than asserted, and a reader can correct for it.
+                        </>
+                      ) : (
+                        "The magnitudes moved in both directions, which is what a single window cannot tell you in advance."
+                      )}
+                    </p>
+                  );
+                })()}
+
+                <p className="provenance" style={{ marginTop: 12, lineHeight: 1.6 }}>
+                  projected over {grade.projectedWindow.hours}h and{" "}
+                  {grade.projectedWindow.swaps.toLocaleString("en-US")} swaps · graded over{" "}
+                  {grade.actualWindow.hours}h and {grade.actualWindow.swaps.toLocaleString("en-US")} swaps ·{" "}
+                  {grade.actualWindow.complete ? "every range served" : "some ranges refused"} · figures in{" "}
+                  {grade.token0Symbol}
+                  <br />
+                  reproduce: <span className="num">{grade.reproduce}</span>
+                </p>
+              </>
+            )}
           </section>
         ) : null}
 

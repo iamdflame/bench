@@ -55,7 +55,7 @@ Live: **https://bench-six-sigma.vercel.app**
 | 12.2 `▸ Every check we ran against the chain` — the §15 ladder | **done** — nine rungs, each with its proof |
 | **12.2 `▸ Reputation` — raw vs sybil-filtered, flagged cohort** | **to verify** |
 | 12.3 may / may-not, custody, signatures declared before the button | present |
-| **12.4 `/desk` projected vs actual side by side** | **missing** |
+| 12.4 `/desk` projected vs actual side by side | **done** — forecast error published on `/desk` and `/data` |
 
 ## §13 Design system
 
@@ -224,3 +224,50 @@ states: **settled**, **outstanding** (signed, verified, served, not submitted �
 the seller is owed and can still submit the authorisation itself), and
 **unpaid** (the endpoint asked for nothing). §14.1 requires an absence to carry
 a reason, and two nulls are not a reason.
+
+
+## §9 and §12.4 — the product grades itself
+
+`npm run grade` replays the published strategies over the window that came
+**after** the published one, and publishes the difference.
+
+**Why it is a real forecast test.** Replaying a window and then "measuring" the
+same window proves nothing — the replay already saw every trade in it. The two
+windows are disjoint: the published one is blocks A→B, the graded one B→head,
+and nothing about the second was visible when the first was written. To make
+that testable today rather than in three hours, `counterfactual --ago N` ends
+the published window N blocks before the head, leaving a real successor to grade
+against immediately.
+
+It **refuses** rather than guesses when fewer than 20,000 blocks have passed: a
+window graded against a much shorter one measures the clock, not the strategy.
+
+### The first grade, and it found something
+
+Two disjoint 24-hour windows on WBNB/USDT, 22,651 swaps then 19,350, both
+complete:
+
+| | we said | it did | wrong by | direction |
+|---|---|---|---|---|
+| Range Keeper I | −11.48 | −5.29 | **+6.19** | held |
+| Range Keeper II | −21.54 | −11.30 | **+10.24** | held |
+| Tight Band Keeper | −29.25 | −11.53 | **+17.72** | held |
+
+**3 of 3 kept their sign** — every strategy projected to lose did lose, so the
+ranking held out of sample. But **every error points the same way**, which makes
+it bias rather than noise: the replay **overstates losses**, by 11.38 on
+average, and the overstatement grows with how often a strategy acts.
+
+That is the cost model doing exactly what it was built to do. `cost.ts` bounds
+slippage pessimistically on purpose — *"a cost reported too low is a marketplace
+that told somebody to hire the wrong agent"* — and this is the first measurement
+of how pessimistic. It is now a published number a reader can correct for rather
+than an assertion in a comment.
+
+### What per-engagement grading still needs
+
+`Engagement` now carries `projection` and `outcome`. None of the six existing
+engagements has either, and **nothing backfills them**: a projection written
+afterwards, by code that can already see how the window turned out, is a
+postdiction wearing a forecast's clothes. The desk says exactly that rather than
+showing a number it cannot stand behind.

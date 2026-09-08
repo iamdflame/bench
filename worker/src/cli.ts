@@ -25,6 +25,7 @@ import { probeAgents, probeServices, probeMandates } from "./probe-run";
 import { buildSnapshot } from "./snapshot";
 import { findExamples } from "./examples";
 import { runCounterfactual } from "./counterfactual";
+import { gradeCounterfactual } from "./grade";
 import {
   HISTORY_DEPTH,
   mergeAgents,
@@ -348,10 +349,10 @@ export async function cmdExamples(chainId: SupportedChain) {
  * measurements in one table, which is exactly the kind of number this product
  * refuses to publish.
  */
-export async function cmdCounterfactual(chainId: SupportedChain, days: number, half: number) {
+export async function cmdCounterfactual(chainId: SupportedChain, days: number, half: number, ago = 0n) {
   const board = await load(chainId);
   log(`replaying the reference strategies over ${days} day${days === 1 ? "" : "s"} of chain ${chainId}`);
-  const record = await runCounterfactual(chainId, { days, halfWidth: half }).catch((e) => {
+  const record = await runCounterfactual(chainId, { days, halfWidth: half, endBlocksAgo: ago }).catch((e) => {
     log(`counterfactual failed: ${String(e).slice(0, 160)}`);
     return null;
   });
@@ -378,6 +379,41 @@ export async function cmdCounterfactual(chainId: SupportedChain, days: number, h
   );
 }
 
+/**
+ * Grade the published counterfactual against everything since.
+ *
+ * Refuses rather than guesses when there is nothing to publish yet: no stored
+ * projection, or not enough elapsed chain. Both are facts about timing and are
+ * recorded as such.
+ */
+export async function cmdGrade(chainId: SupportedChain) {
+  const board = await load(chainId);
+  const published = board.counterfactual;
+  if (!published) {
+    log("no counterfactual has been published, so there is nothing to grade");
+    return;
+  }
+  log(`grading the published window (blocks ${published.fromBlock}-${published.toBlock}) against everything since`);
+  const grade = await gradeCounterfactual(chainId, published).catch((e) => {
+    log(`grade failed: ${String(e).slice(0, 160)}`);
+    return null;
+  });
+  if (!grade) {
+    log("the following window was too quiet to grade against; the stored grade is left alone");
+    return;
+  }
+  board.grade = grade;
+  await save(board);
+  if (grade.refusedBecause) {
+    log(`not yet: ${grade.refusedBecause.slice(0, 120)}`);
+    return;
+  }
+  log(
+    `graded ${grade.rows.length} strategies over ${grade.actualWindow.hours}h · ` +
+      `${grade.directionsHeld}/${grade.rows.length} kept the sign they were projected with`,
+  );
+}
+
 export async function cmdSnapshot(chainId: SupportedChain) {
   const board = await load(chainId);
   board.agents = applyHouse(board.agents);
@@ -395,8 +431,9 @@ const HELP = `bench worker
   mandate  [--limit N]     scan the chain for capability
   metrics  [--limit N]     compute per-job track records
   examples                 find one real mainnet transaction per job
-  counterfactual [--days N] [--half T]
+  counterfactual [--days N] [--half T] [--ago BLOCKS]
                            replay the reference strategies over real pool history
+  grade                    grade the published replay against the window that followed
   snapshot                 rebuild and print the funnel
 
   --chain 56|97            default 56
@@ -424,8 +461,10 @@ async function main() {
       return cmdMetrics(chainId, flag("limit", 40));
     case "examples":
       return cmdExamples(chainId);
+    case "grade":
+      return cmdGrade(chainId);
     case "counterfactual":
-      return cmdCounterfactual(chainId, flag("days", 1), flag("half", 60));
+      return cmdCounterfactual(chainId, flag("days", 1), flag("half", 60), BigInt(flag("ago", 0)));
     case "snapshot":
       return cmdSnapshot(chainId);
     default:

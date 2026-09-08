@@ -5,6 +5,7 @@ import { join } from "node:path";
 import { KEYSTORE, addressUrl, txUrl } from "@bench/shared";
 import Nav from "@/components/board/Nav";
 import Footer from "@/components/board/Footer";
+import { getBoard } from "@/lib/board";
 
 /**
  * Your engagements.
@@ -87,6 +88,7 @@ function readEngagements(): Engagement[] {
 
 export default async function DeskPage() {
   const engagements = readEngagements();
+  const grade = getBoard().grade ?? null;
 
   return (
     <>
@@ -193,6 +195,57 @@ export default async function DeskPage() {
             </ul>
           </section>
         )}
+
+        {/* ------------------------------------------- §12.4: grading itself */}
+        <section style={{ marginTop: 30, maxWidth: "76ch" }} aria-labelledby="grade-h">
+          <h2 id="grade-h" className="h3">
+            How wrong we have been
+          </h2>
+          {grade && !grade.refusedBecause && grade.rows.length > 0 ? (
+            <>
+              <p className="prose" style={{ marginTop: 10 }}>
+                The replay published on <a className="nav__link" style={{ textDecoration: "underline" }} href="/data">/data</a>{" "}
+                covers trades that had already happened, which proves the arithmetic and says nothing about
+                tomorrow. So the same strategies were replayed again over the window that came after it —{" "}
+                {grade.actualWindow.hours}h and {grade.actualWindow.swaps.toLocaleString("en-US")} swaps that
+                nothing in the published table had seen.{" "}
+                <strong>
+                  {grade.directionsHeld} of {grade.rows.length} kept the sign they were projected with.
+                </strong>
+              </p>
+              <dl className="terms" style={{ marginTop: 12 }}>
+                {grade.rows.map((r) => (
+                  <div key={r.strategy} style={{ display: "contents" }}>
+                    <dt className="num">
+                      {Number(r.error) > 0 ? "+" : ""}
+                      {Number(r.error).toFixed(2)}
+                    </dt>
+                    <dd>
+                      {r.name} — we said {Number(r.projected).toFixed(2)}, it did{" "}
+                      {Number(r.actual).toFixed(2)}
+                      {r.directionHeld ? "" : ", and the sign flipped"}
+                    </dd>
+                  </div>
+                ))}
+              </dl>
+            </>
+          ) : (
+            <p className="unmeasured" style={{ marginTop: 10 }}>
+              no forecast error to publish yet
+              <span className="unmeasured__why">
+                {grade?.refusedBecause ??
+                  "A projection has to be graded against a window it never saw, and not enough chain has passed since the last one was published."}
+              </span>
+            </p>
+          )}
+          <p className="prose" style={{ marginTop: 12 }}>
+            Per-engagement grading needs a projection recorded <em>at hire time</em>, and none of the
+            engagements above carries one — they predate the record. Nothing backfills them, and nothing
+            should: a projection written afterwards, by code that can already see how the window turned out,
+            is a postdiction wearing a forecast&rsquo;s clothes. The field exists now, so the next hire made
+            against a position will carry one.
+          </p>
+        </section>
 
         <section style={{ marginTop: 30, maxWidth: "74ch" }}>
           <h2 className="h3">What the desk cannot show you yet</h2>

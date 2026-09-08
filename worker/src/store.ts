@@ -1,4 +1,5 @@
 import type { CounterfactualRecord } from "./counterfactual";
+import type { GradeRecord } from "./grade";
 /**
  * Where the board's data lives between the worker and the page.
  *
@@ -76,6 +77,8 @@ export interface StoredBoard {
   examples?: WorkedExample[];
   /** The last counterfactual replay. One record, so every row is comparable. */
   counterfactual?: CounterfactualRecord;
+  /** §9: the published projection, graded against the window that followed. */
+  grade?: GradeRecord;
 }
 
 export interface SweepCursor {

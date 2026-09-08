@@ -48,7 +48,8 @@
     "shots": "node tools/shot.mjs",
     "examples": "tsx --env-file-if-exists=.env --env-file-if-exists=.env.local worker/src/cli.ts examples",
     "check:no-lookahead": "tsx tools/checks/no-lookahead.ts",
-    "counterfactual": "tsx --env-file-if-exists=.env --env-file-if-exists=.env.local worker/src/cli.ts counterfactual"
+    "counterfactual": "tsx --env-file-if-exists=.env --env-file-if-exists=.env.local worker/src/cli.ts counterfactual",
+    "grade": "tsx --env-file-if-exists=.env --env-file-if-exists=.env.local worker/src/cli.ts grade"
   },
   "dependencies": {
     "@altananetwork/sdk": "^0.7.1",

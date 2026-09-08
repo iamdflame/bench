@@ -81,6 +81,34 @@ export interface StoredBoard {
    * measured differently to sit in one column.
    */
   counterfactual?: CounterfactualRecord;
+  /** §9: the published projection, graded against the window that followed. */
+  grade?: GradeRecord;
+}
+
+/** One strategy's forecast error. Mirrors `worker/src/grade.ts`. */
+export interface GradeRow {
+  strategy: string;
+  name: string;
+  projected: string;
+  actual: string;
+  error: string;
+  directionHeld: boolean;
+  projectedRecentres: number;
+  actualRecentres: number;
+}
+
+export interface GradeRecord {
+  chainId: number;
+  pool: string;
+  pair: string;
+  token0Symbol: string;
+  projectedWindow: { fromBlock: string; toBlock: string; hours: number; swaps: number };
+  actualWindow: { fromBlock: string; toBlock: string; hours: number; swaps: number; complete: boolean };
+  rows: GradeRow[];
+  directionsHeld: number;
+  observedAt: string;
+  reproduce: string;
+  refusedBecause: string | null;
 }
 
 /** One strategy's outcome in a replay. Mirrors `worker/src/counterfactual.ts`. */

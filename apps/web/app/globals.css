@@ -1147,3 +1147,33 @@ td.num,
   .ladder__rung { grid-template-columns: 16px 1fr; }
   .ladder__n { display: none; }
 }
+
+/* ---------------------------------------------------- projected vs actual */
+/*
+  §12.4's three columns. The error column is never green: being right is the
+  expectation and being wrong is the information, so the colour is reserved for
+  the magnitude of the miss rather than used to congratulate a hit.
+*/
+.grade {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 14px;
+  margin-top: 14px;
+  padding-top: 14px;
+  border-top: 1px solid var(--color-rule);
+}
+.grade__col { display: flex; flex-direction: column; gap: 4px; min-width: 0; }
+.grade__label {
+  font-size: var(--text-2xs);
+  color: var(--color-dim);
+  text-transform: none;
+}
+.grade__col .num { font-size: var(--text-md); line-height: 1.15; }
+.grade__note {
+  font-size: var(--text-2xs);
+  color: var(--color-muted);
+  line-height: 1.5;
+}
+@media (max-width: 620px) {
+  .grade { grid-template-columns: 1fr; gap: 10px; }
+}

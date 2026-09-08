@@ -143,6 +143,47 @@ export interface Engagement {
    */
   orphanedAt?: string;
   orphanedReason?: string;
+
+  /**
+   * §9's ledger, first half: what the counterfactual said before the hire.
+   *
+   * Captured at grant time and never afterwards. A projection reconstructed
+   * later is not a projection — it is a postdiction written by somebody who
+   * already knows the answer, and the whole value of publishing forecast error
+   * is that the forecast was fixed before the outcome existed. So an engagement
+   * granted before this field existed has no projection and says so; nothing
+   * backfills one.
+   */
+  projection?: {
+    /** When the replay was taken, and against what. */
+    at: string;
+    strategy: string;
+    pool: string;
+    positionTokenId: string;
+    /** The figure: what this strategy would have done, against doing nothing. */
+    vsHold: string;
+    unit: string;
+    window: { hours: number; swaps: number; fromBlock: string; toBlock: string };
+  };
+
+  /**
+   * §9's ledger, second half: what actually happened, read from chain.
+   *
+   * Written once the engagement ends and the position can be read at both
+   * ends. `error` is the number this product exists to publish — a marketplace
+   * that reports how wrong its own projections were is the only kind whose
+   * right ones are worth anything.
+   */
+  outcome?: {
+    at: string;
+    measuredFromBlock: string;
+    measuredToBlock: string;
+    /** The real change over the engagement, in the same unit as the projection. */
+    actual: string;
+    /** actual − projected. Signed, and published whichever way it points. */
+    error: string | null;
+    method: string;
+  };
   /** Ours, off chain, reversible. A paused session exists and cannot get a signer. */
   pausedAt?: string;
   /**
