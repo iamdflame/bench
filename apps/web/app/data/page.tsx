@@ -5,7 +5,7 @@ import { join } from "node:path";
 import { JOBS, txUrl } from "@bench/shared";
 import Nav from "@/components/board/Nav";
 import Footer from "@/components/board/Footer";
-import { readBoardView } from "@/lib/board";
+import { readBoardView, getBoard } from "@/lib/board";
 
 /**
  * Where every number on this site comes from.
@@ -97,6 +97,7 @@ export default async function DataPage() {
   const view = readBoardView({ limit: 1 });
   const s = view.snapshot;
   const proofs = readProofs();
+  const cf = getBoard().counterfactual ?? null;
 
   return (
     <>
@@ -249,6 +250,133 @@ export default async function DataPage() {
                 </p>
               </div>
             ))}
+          </section>
+        ) : null}
+
+        {/* ----------------------------------------------- the counterfactual */}
+        {cf ? (
+          <section style={{ marginTop: 34 }} aria-labelledby="cf-h">
+            <h2 id="cf-h" className="h3">
+              What each strategy would have done, replayed against real trades
+            </h2>
+            <p className="prose" style={{ marginTop: 10, maxWidth: "76ch" }}>
+              Every row below was replayed over the same {cf.swaps.toLocaleString("en-US")} swaps of the
+              PancakeSwap V3 {cf.pair} pool, {cf.hours} hours of it, from the pool&rsquo;s own events. Fees are
+              computed from the trades that actually happened rather than from an assumed rate: a position
+              earns the pool&rsquo;s fee on each swap, in proportion to its share of the liquidity that was in
+              range at that moment. Gas is charged at the price the chain quoted, and the swap a recentre
+              needs pays the pool&rsquo;s fee and a price impact bounded by the depth at that block.
+            </p>
+            <p className="prose" style={{ marginTop: 10, maxWidth: "76ch" }}>
+              {cf.positionNote}
+            </p>
+
+            <div style={{ overflowX: "auto", marginTop: 16 }}>
+              <table className="board">
+                <thead>
+                  <tr>
+                    <th scope="col">Strategy</th>
+                    <th scope="col">In range</th>
+                    <th scope="col">Recentres</th>
+                    <th scope="col">Gas</th>
+                    <th scope="col">Net</th>
+                    <th scope="col">Against doing nothing</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {cf.rows.map((r) => {
+                    const vs = Number(r.vsHold);
+                    return (
+                      <tr key={r.strategy}>
+                        <td>
+                          <span className="row__name">{r.name}</span>
+                          <span className="provenance clamp1" style={{ display: "block" }}>
+                            {r.describes}
+                          </span>
+                        </td>
+                        <td className="num">{r.timeInRangePercent.toFixed(1)}%</td>
+                        <td className="num">{r.recentres}</td>
+                        <td className="num">{Number(r.gasCost).toFixed(3)}</td>
+                        <td className="num">{Number(r.net).toFixed(2)}</td>
+                        <td
+                          className="num"
+                          style={{
+                            color:
+                              r.strategy === "hold"
+                                ? "var(--color-dim)"
+                                : vs > 0
+                                  ? "var(--color-rail-call)"
+                                  : "var(--color-rail-mandate)",
+                          }}
+                        >
+                          {r.strategy === "hold" ? "—" : `${vs > 0 ? "+" : ""}${vs.toFixed(2)}`}
+                        </td>
+                      </tr>
+                    );
+                  })}
+                </tbody>
+              </table>
+            </div>
+
+            {/*
+              The result, said out loud rather than left for a reader to infer
+              from a column of negative numbers. An engine that could only
+              report wins would be a brochure, and the row that loses is the
+              one that makes the rest of the page worth believing.
+            */}
+            {/*
+              The reading, said out loud rather than left for someone to infer
+              from a column of signed numbers — and the caveat that matters more
+              than the reading. An engine that only reported wins would be a
+              brochure; one that reported a single window as a track record
+              would be worse, because it would be a brochure wearing arithmetic.
+            */}
+            <p className="prose" style={{ marginTop: 14, maxWidth: "76ch" }}>
+              {(() => {
+                const acting = cf.rows.filter((r) => r.strategy !== "hold");
+                const winners = acting.filter((r) => Number(r.vsHold) > 0);
+                const losers = acting.filter((r) => Number(r.vsHold) <= 0);
+                const busiest = [...acting].sort((a, b) => b.recentres - a.recentres)[0];
+                if (winners.length === 0) {
+                  return `On this window every strategy was worse than leaving the position alone, and each of them held the price in range far more of the time. The swap a recentre needs cost more than the extra fees were worth. An agent that keeps a position in range is not the same as an agent that makes money, and the difference is the whole reason to measure rather than to advertise.`;
+                }
+                if (losers.length > 0 && busiest && Number(busiest.vsHold) <= 0) {
+                  return `${busiest.name} held the price in range ${busiest.timeInRangePercent.toFixed(0)}% of the window — as much as anything above it — and still finished ${Math.abs(Number(busiest.vsHold)).toFixed(2)} ${cf.token0Symbol} behind doing nothing, across ${busiest.recentres} recentres. Time in range is not the same as money, and a row that loses is what makes the rows that win worth reading.`;
+                }
+                return `Figures in ${cf.token0Symbol}, against an identical position left alone over the same window.`;
+              })()}
+            </p>
+
+            <p className="prose" style={{ marginTop: 10, maxWidth: "76ch" }}>
+              <strong>This is one window, not a track record.</strong> The same replay run eight minutes
+              earlier — a window shifted by a few hundred blocks — moved every figure in this table, and
+              turned one of the winners above into a loss. Which side of a band the price happens to sit on
+              when the clock starts decides when a recentre fires and what it costs. Treat a single row as
+              evidence that the measurement is real, not as a forecast; a record is many of these, and
+              accumulating them is what settled hires are for.
+            </p>
+
+            {cf.shortenedBecause ? (
+              <p className="unmeasured" style={{ marginTop: 12 }}>
+                the window is shorter than it was asked to be
+                <span className="unmeasured__why">{cf.shortenedBecause}</span>
+              </p>
+            ) : null}
+            {cf.dilution ? (
+              <p className="unmeasured" style={{ marginTop: 12 }}>
+                this position is large relative to the pool
+                <span className="unmeasured__why">{cf.dilution}</span>
+              </p>
+            ) : null}
+
+            <p className="provenance" style={{ marginTop: 12, lineHeight: 1.6 }}>
+              pool {cf.pool} · fee {(cf.feePips / 10_000).toFixed(2)}% · blocks{" "}
+              {Number(cf.fromBlock).toLocaleString("en-US")}–{Number(cf.toBlock).toLocaleString("en-US")} ·{" "}
+              {cf.complete ? "every range served" : "some ranges refused"} · gas {cf.gasPriceWei} wei ·
+              read via {cf.via ?? "an unnamed host"}
+              <br />
+              reproduce: <span className="num">{cf.reproduce}</span>
+            </p>
           </section>
         ) : null}
 

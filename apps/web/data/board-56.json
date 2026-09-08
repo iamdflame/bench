@@ -1,7 +1,7 @@
 {
  "version": 1,
  "chainId": 56,
- "generatedAt": "2026-09-08T15:33:47.320Z",
+ "generatedAt": "2026-09-08T18:00:24.715Z",
  "agents": [
   {
    "chainId": 56,
@@ -42205,16 +42205,16 @@
   }
  ],
  "snapshot": {
-  "generatedAt": "2026-09-08T15:33:47.318Z",
+  "generatedAt": "2026-09-08T18:00:24.714Z",
   "chainId": 56,
   "cutoff": {
-   "block": "120711019",
-   "observedAt": "2026-09-08T15:33:47.318Z"
+   "block": "120730569",
+   "observedAt": "2026-09-08T18:00:24.714Z"
   },
   "registry": {
    "registered": {
     "known": true,
-    "value": 309923
+    "value": 310081
    },
    "declaringEndpoint": {
     "known": true,
@@ -42472,8 +42472,8 @@
    "The registry index answered 500.",
    "Reading registrations from the chain stops about 0.6 days back, where the free BSC providers stop serving eth_getLogs. This crawl therefore accumulates new registrations each cycle rather than walking history; older ones are unread rather than absent. Setting ARCHIVE_RPC_URL removes the limit.",
    "This crawl has walked back 0.6 days of BNB Smart Chain from block 120702783.",
-   "The sweep has read 157 of 309,919 registrations. Everything below is drawn from what has been read; the rest is neither listed nor counted as absent.",
-   "The sweep has read 157 of 309,923 registrations. Everything below is drawn from what has been read; the rest is neither listed nor counted as absent."
+   "The sweep has read 157 of 310,078 registrations. Everything below is drawn from what has been read; the rest is neither listed nor counted as absent.",
+   "The sweep has read 157 of 310,081 registrations. Everything below is drawn from what has been read; the rest is neither listed nor counted as absent."
   ]
  },
  "history": [
@@ -42659,5 +42659,67 @@
    "venue": "PancakeSwap V3 WBNB/USDT pool",
    "teaches": "A grid is a ladder of these. Note that the event comes from the pool and not from the router — the routers emit nothing at all, which is why a capability scan that watches a router finds nothing however much an agent trades."
   }
- ]
+ ],
+ "counterfactual": {
+  "chainId": 56,
+  "pool": "0x36696169C63e42cd08ce11f5deeBbCeBae652050",
+  "pair": "WBNB/USDT",
+  "feePips": 500,
+  "token0Symbol": "USDT",
+  "fromBlock": "120538348",
+  "toBlock": "120730348",
+  "hours": 24.01,
+  "swaps": 18911,
+  "complete": true,
+  "shortenedBecause": null,
+  "via": "https://bsc.rpc.blxrbdn.com",
+  "gasPriceWei": "50000000",
+  "positionNote": "A synthetic position: 1000 of USDT and the matching amount of the other side, opened in a ±60-tick band around the price at block 120538348. It is nobody's real position — connecting a wallet and replaying against one somebody actually holds is the next step.",
+  "bandHalfWidthTicks": 60,
+  "rows": [
+   {
+    "strategy": "hold",
+    "name": "Hold",
+    "describes": "Does nothing at all. The honest do-nothing arm every other row has to beat.",
+    "timeInRangePercent": 29.5,
+    "recentres": 0,
+    "gasCost": "0",
+    "net": "0.52231530931621174",
+    "vsHold": "0"
+   },
+   {
+    "strategy": "range-keeper-i",
+    "name": "Range Keeper I",
+    "describes": "Keeps a wide band around the price and only moves when the price has stayed outside it. Trades fee density for fewer, cheaper interventions.",
+    "timeInRangePercent": 100,
+    "recentres": 1,
+    "gasCost": "0.016935422015914689",
+    "net": "10.40477067813171792",
+    "vsHold": "9.88245536881550618"
+   },
+   {
+    "strategy": "range-keeper-ii",
+    "name": "Range Keeper II",
+    "describes": "A tighter band than Range Keeper I, moved when the price has been outside it for a while. More fee density, more recentres.",
+    "timeInRangePercent": 100,
+    "recentres": 1,
+    "gasCost": "0.016935422015914689",
+    "net": "14.531135934678435388",
+    "vsHold": "14.008820625362223648"
+   },
+   {
+    "strategy": "tight-band-keeper",
+    "name": "Tight Band Keeper",
+    "describes": "Holds a narrow band and recentres almost as soon as the price leaves it. Maximises time in range and pays gas for every move — often more than the extra fees are worth.",
+    "timeInRangePercent": 100,
+    "recentres": 9,
+    "gasCost": "0.152418798143232208",
+    "net": "-6.280356367575126505",
+    "vsHold": "-6.802671676891338245"
+   }
+  ],
+  "observedAt": "2026-09-08T18:00:23.332Z",
+  "reproduce": "npm run counterfactual -- --days 1 --half 60",
+  "dilution": null
+ }
 }

@@ -72,6 +72,49 @@ export interface StoredBoard {
   history?: Reading[];
   /** Absent for a job means no example was found, which the page states. */
   examples?: WorkedExample[];
+  /**
+   * The last counterfactual replay, or absent when none has run.
+   *
+   * One record, not one per agent: every strategy in it was replayed over the
+   * same window against the same opening position, which is the only way the
+   * rows are comparable. Splitting it per agent would invite two figures
+   * measured differently to sit in one column.
+   */
+  counterfactual?: CounterfactualRecord;
+}
+
+/** One strategy's outcome in a replay. Mirrors `worker/src/counterfactual.ts`. */
+export interface CounterfactualRow {
+  strategy: string;
+  name: string;
+  describes: string;
+  timeInRangePercent: number;
+  recentres: number;
+  gasCost: string;
+  net: string;
+  vsHold: string;
+}
+
+export interface CounterfactualRecord {
+  chainId: number;
+  pool: string;
+  pair: string;
+  feePips: number;
+  token0Symbol: string;
+  fromBlock: string;
+  toBlock: string;
+  hours: number;
+  swaps: number;
+  complete: boolean;
+  shortenedBecause: string | null;
+  via: string | null;
+  gasPriceWei: string;
+  positionNote: string;
+  bandHalfWidthTicks: number;
+  rows: CounterfactualRow[];
+  observedAt: string;
+  reproduce: string;
+  dilution: string | null;
 }
 
 /**

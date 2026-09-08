@@ -24,6 +24,7 @@ import { sweep } from "./sweep";
 import { probeAgents, probeServices, probeMandates } from "./probe-run";
 import { buildSnapshot } from "./snapshot";
 import { findExamples } from "./examples";
+import { runCounterfactual } from "./counterfactual";
 import {
   HISTORY_DEPTH,
   mergeAgents,
@@ -339,6 +340,44 @@ export async function cmdExamples(chainId: SupportedChain) {
   log(`examples: ${found.length} found this pass, ${board.examples?.length ?? 0} held`);
 }
 
+/**
+ * Replay the reference strategies and store the result for the site to render.
+ *
+ * Stored whole or not at all. A partial record — some strategies replayed
+ * against one window and some against another — would put two different
+ * measurements in one table, which is exactly the kind of number this product
+ * refuses to publish.
+ */
+export async function cmdCounterfactual(chainId: SupportedChain, days: number, half: number) {
+  const board = await load(chainId);
+  log(`replaying the reference strategies over ${days} day${days === 1 ? "" : "s"} of chain ${chainId}`);
+  const record = await runCounterfactual(chainId, { days, halfWidth: half }).catch((e) => {
+    log(`counterfactual failed: ${String(e).slice(0, 160)}`);
+    return null;
+  });
+
+  if (!record) {
+    /*
+      Kept rather than cleared. A window that returned too few swaps to replay
+      is a fact about this pass, not a reason to delete a real measurement taken
+      an hour ago — the page shows how old it is.
+    */
+    log("no replay this pass; the stored one is left alone");
+    await save(board, [
+      "The counterfactual could not be replayed in the last pass, so the figures on the agent pages are the ones from the pass before.",
+    ]);
+    return;
+  }
+
+  board.counterfactual = record;
+  await save(board);
+  const best = [...record.rows].sort((a, b) => Number(b.vsHold) - Number(a.vsHold))[0];
+  log(
+    `replayed ${record.swaps} swaps over ${record.hours}h of ${record.pair}` +
+      (best ? ` · best against doing nothing: ${best.name} at ${Number(best.vsHold).toFixed(2)} ${record.token0Symbol}` : ""),
+  );
+}
+
 export async function cmdSnapshot(chainId: SupportedChain) {
   const board = await load(chainId);
   board.agents = applyHouse(board.agents);
@@ -356,6 +395,8 @@ const HELP = `bench worker
   mandate  [--limit N]     scan the chain for capability
   metrics  [--limit N]     compute per-job track records
   examples                 find one real mainnet transaction per job
+  counterfactual [--days N] [--half T]
+                           replay the reference strategies over real pool history
   snapshot                 rebuild and print the funnel
 
   --chain 56|97            default 56
@@ -383,6 +424,8 @@ async function main() {
       return cmdMetrics(chainId, flag("limit", 40));
     case "examples":
       return cmdExamples(chainId);
+    case "counterfactual":
+      return cmdCounterfactual(chainId, flag("days", 1), flag("half", 60));
     case "snapshot":
       return cmdSnapshot(chainId);
     default:

@@ -114,19 +114,27 @@ events into a price series, then drives each strategy across it one observation
 at a time — fees computed from the trades that actually happened, gas at the
 chain's own price, slippage bounded by the pool's depth at that block.
 
-On a five-hour window of WBNB/USDT, 4,954 swaps, complete:
+The published run — 18,911 swaps over 24 hours of WBNB/USDT, every range served
+— is on [`/data`](/data) with its method and a command that reproduces it:
 
-| | in range | recentres | net vs open |
-|---|---|---|---|
-| Hold | 74.3% | 0 | **+7.08 USDT** |
-| Range Keeper I | 100% | 1 | −2.06 |
-| Range Keeper II | 100% | 1 | −1.68 |
-| Tight Band Keeper | 100% | 2 | −0.88 |
+| | in range | recentres | net | vs doing nothing |
+|---|---|---|---|---|
+| Hold | 29.5% | 0 | +0.52 | — |
+| Range Keeper I | 100% | 1 | +10.40 | **+9.88** |
+| Range Keeper II | 100% | 1 | +14.53 | **+14.01** |
+| Tight Band Keeper | 100% | 9 | −6.28 | **−6.80** |
 
-All three keepers hold the price in range where doing nothing does not, and all
-three are worse off: the swap a recentre needs costs more than the extra fees
-are worth over five hours. Losses are shown at the same weight as gains, because
-an engine that cannot produce that row is a brochure.
+Tight Band Keeper holds the price in range as well as anything above it and
+still finishes behind doing nothing, across nine recentres. Time in range is not
+money, and that row is what makes the other two worth reading.
+
+**It is one window, not a track record.** The same replay eight minutes earlier
+had every strategy losing. The page says so itself, because publishing a single
+replay as a forecast would be a brochure wearing arithmetic.
+
+```bash
+npm run counterfactual -- --days 1 --half 60
+```
 
 A strategy is handed one observation and never the series, so it cannot read
 ahead. `npm run check:no-lookahead` proves it: corrupt every tick after a cut,

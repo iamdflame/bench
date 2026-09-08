@@ -1,3 +1,4 @@
+import type { CounterfactualRecord } from "./counterfactual";
 /**
  * Where the board's data lives between the worker and the page.
  *
@@ -73,6 +74,8 @@ export interface StoredBoard {
    * the page states rather than substituting an invented one.
    */
   examples?: WorkedExample[];
+  /** The last counterfactual replay. One record, so every row is comparable. */
+  counterfactual?: CounterfactualRecord;
 }
 
 export interface SweepCursor {

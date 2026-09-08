@@ -29,7 +29,7 @@ JavaScript off, and nothing animating on arrival.
 | **P1** Rail 1 — Call | `packages/rails/src/call.ts`, house agents answer 402 | **`rail-1-third-party`** — 0.01 USD1 paid to an endpoint we do not operate, tx `0x2e39…83ca`, block 120,590,203, six assertions. **11 third-party endpoints callable** after the false-timeout fix | **done** |
 | **P2** Rail 3 — Mandate | `mandate.ts` + `session.ts`, `ProvenScope` enforced by an unexported symbol, `RecipientBound.sol` | **`rail-3-scope-holds` — 9 proven, 0 failed, 1 inconclusive** on mainnet. Wrapper [`0x5863eda…952e`](https://bscscan.com/address/0x5863edaede7394470db19395ca05b1439662952e) bytecode-matched; grant → in-scope permitted → out-of-scope refused by name → withheld selector refused → [revoked](https://bscscan.com/tx/0xbbeb10c6eb6d1d3d5d3de2cdc5da068007b1f5abf2608275f310df2ed325b087) → key unknown | **done** |
 | **P3** Rail 2 — Hire | `hire.ts`, full ERC-8183 lifecycle, `disputeWindow()` read from chain, `prove-hire.ts` written | **`rail-2-escrow-funded` — 7 proven, 0 failed, 1 inconclusive** on testnet. Job 1139 FUNDED against a provider we do not operate; terms verbatim on chain; 1 $U escrowed | **testnet done, mainnet pending** |
-| **P4** Counterfactual | `packages/counterfactual`: history, simulate, cost, replay, strategies. `no-lookahead` gate + 5 tests | Replays real PancakeSwap V3 swap history — 4,954 swaps over 5 hours, complete — and reports what each strategy would have done | **engine works, not on the page** |
+| **P4** Counterfactual | `packages/counterfactual` + `worker/src/counterfactual.ts` + the table on `/data`. `no-lookahead` gate, 5 tests | **18,911 swaps over 24h of WBNB/USDT, complete**, replayed and published with its method and reproduce command | **on the page; not yet per-viewer** |
 | **P5** Depth | Four job routes off one template, `/data`, `/register`, `/list`, `/api/v1/*`, `/api/mcp`, own agent card, origin cohorts | Four findings recorded, all measurements block-stamped | **partial** |
 | **P6** `OutcomePolicy` | — only `RecipientBound.sol` is in `contracts/src` | — | **not started** |
 | **P7** Supply and usage | — no Studio on-ramp, no seller dashboard | — | **not started** |
@@ -433,3 +433,54 @@ the replay) and asserts the detection catches it. Five tests, all passing.
   actually holds is the next step and the one that makes it a product.
 - **One window, one pool.** A thirty-day replay is ~1,152 requests and belongs on
   a schedule, cached by `(pool, blockRange)`, not in a request path.
+
+
+## P4 on the page
+
+`npm run counterfactual` replays the reference strategies in the worker and stores
+one record; `/data` renders it. One record rather than one per agent, because
+every row has to have been replayed over the same window against the same
+opening position or the column is not a column.
+
+The published run — 18,911 swaps, 24 hours, every range served:
+
+| | in range | recentres | net | vs doing nothing |
+|---|---|---|---|---|
+| Hold | 29.5% | 0 | +0.52 | — |
+| Range Keeper I | 100% | 1 | +10.40 | **+9.88** |
+| Range Keeper II | 100% | 1 | +14.53 | **+14.01** |
+| Tight Band Keeper | 100% | 9 | −6.28 | **−6.80** |
+
+This is the shape §5.1 of the plan drew by hand, arrived at from chain data:
+the patient keepers win, and the impatient one **holds the price in range as
+well as anything above it and still finishes 6.80 behind doing nothing**, across
+nine recentres. Time in range is not money. That row is what makes the other two
+worth reading.
+
+### The caveat that matters more than the result
+
+The same replay run eight minutes earlier — a window shifted by a few hundred
+blocks — had **every** strategy losing, Range Keeper II at −5.73 rather than
++14.01. Which side of a band the price sits on when the clock starts decides
+when a recentre fires and what it costs.
+
+So the page says, in its own copy, that this is one window and not a track
+record. Publishing a single replay as a forecast would be a brochure wearing
+arithmetic, which is worse than a brochure. A record is many of these, and
+accumulating them is what §9's outcome ledger is for.
+
+### One more thing the run corrected
+
+`token0Symbol` was derived by splitting the pool's label on "/" and taking a
+side. `LIQUID_POOLS` calls one pool "WBNB/USDT" while its `token0` is USDT, so
+that was right for this pool by coincidence and wrong for the next one. It now
+resolves the symbol from the token address. The label is for a reader; the
+address is the fact.
+
+### What P4 still owes
+
+**Nothing reads a viewer's own position.** The opening position is synthetic — a
+stated amount in a stated band — and the page says so in the copy rather than in
+a comment. Replaying against a position somebody actually holds needs a wallet
+connection, and that is the step that turns this from a measurement into the
+product the plan describes.
