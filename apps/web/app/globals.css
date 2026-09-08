@@ -1,0 +1,1092 @@
+@import "tailwindcss";
+
+/**
+ * BENCH — "The Board"
+ *
+ * The subject is a live operations board for hiring autonomous workers that
+ * handle money. The most characteristic object in that world is the board
+ * itself: a dense, sortable list of who is available and what they have done.
+ * So the board is the homepage, and there is no marketing in front of it.
+ *
+ * The memorable object is the rail badge, and it is the only place colour is
+ * spent. Three colours encoding escalating exposure — teal you give nothing,
+ * gold you commit money, ember you hand over authority — derived from the
+ * product's risk model rather than chosen to look expensive. Everything else
+ * is ground, rule and type.
+ *
+ * Deliberately rejected as generated-design defaults: warm cream with a
+ * high-contrast serif; near-black with one acid accent; broadsheet hairlines
+ * and letterpress; uniform rounded cards with one radius and one grey shadow;
+ * tracked all-caps eyebrows; middle-dot meta strings; gradient meshes; and
+ * slathering BNB's gold everywhere to signal chain-nativeness, which is the
+ * amateur tell. The gold appears once per row, at 12px, on the state that
+ * means money is committed.
+ */
+
+@theme {
+  /* --- ground ----------------------------------------------------------- */
+  /* A genuinely coloured dark. Deep petrol, cool, not a tinted near-black.   */
+  --color-ground: #0a1014;
+  --color-panel: #0f171c;
+  --color-panel-hi: #142027; /* row hover, about a 4% lift on panel */
+  --color-rule: #1b262c;     /* separators. never a 1px pure black hairline */
+  --color-text: #e8eff2;
+  --color-muted: #7e9099;    /* secondary, meta, units */
+  --color-dim: #4a5a63;      /* not measured, disabled, absent */
+
+  /* --- the rail ramp: the entire chromatic system ----------------------- */
+  --color-rail-call: #5fd4c4;    /* teal.  give nothing.   read-only, safe  */
+  --color-rail-hire: #f0b90b;    /* gold.  give an escrow. money committed  */
+  --color-rail-mandate: #ff7a45; /* ember. give authority. handle with care */
+
+  /* Faint washes, for a badge's own ground. Never for large fills. */
+  --color-call-wash: #122724;
+  --color-hire-wash: #2a2209;
+  --color-mandate-wash: #2b1811;
+
+  /* --- signals, used almost never --------------------------------------- */
+  --color-refused: #6b7a82; /* a refusal is absence of light, never red */
+  --color-error: #c2453c;   /* at most once per view */
+
+  /* --- type ------------------------------------------------------------- */
+  --font-sans: var(--font-geist-sans), ui-sans-serif, system-ui, -apple-system, "Segoe UI", sans-serif;
+  --font-mono: var(--font-geist-mono), ui-monospace, "SF Mono", Menlo, monospace;
+
+  /* One modular scale, ~1.25: 12 / 14 / 16 / 20 / 25 / 31 / 39 */
+  --text-2xs: 0.75rem;   /* 12 — chips, units, meta */
+  --text-xs: 0.875rem;   /* 14 — body small, table cells */
+  --text-sm: 1rem;       /* 16 — body */
+  --text-md: 1.25rem;    /* 20 */
+  --text-lg: 1.5625rem;  /* 25 */
+  --text-xl: 1.9375rem;  /* 31 */
+  --text-2xl: 2.4375rem; /* 39 — display, same family, not a serif */
+
+  /* --- geometry: radius by role, not one value everywhere ---------------- */
+  --radius-chip: 3px;
+  --radius-ui: 8px;
+  --radius-panel: 12px;
+
+  --row-h: 56px;
+  --nav-h: 52px;
+  --width-shell: 1440px;
+  --gutter: 24px;
+
+  /* --- motion ----------------------------------------------------------- */
+  /* One orchestrated moment, and it belongs to the rail badge lighting when
+     a probe result refreshes. Everything else is feedback you feel.          */
+  --ease-out: cubic-bezier(0.23, 1, 0.32, 1);
+  --ease-in-out: cubic-bezier(0.645, 0.045, 0.355, 1);
+
+  --d-hover: 120ms;
+  --d-roll: 160ms;
+  --d-bloom: 220ms;
+  --d-move: 240ms;
+  --d-revoke: 300ms;
+  --d-pulse: 900ms;
+}
+
+/* ------------------------------------------------------------------ reset */
+
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+}
+
+html {
+  -webkit-text-size-adjust: 100%;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  color-scheme: dark;
+}
+
+body {
+  margin: 0;
+  background: var(--color-ground);
+  color: var(--color-text);
+  font-family: var(--font-sans);
+  font-size: var(--text-xs);
+  line-height: 1.5;
+}
+
+h1, h2, h3, h4, p, figure, blockquote, dl, dd, ol, ul, fieldset {
+  margin: 0;
+  padding: 0;
+}
+ol, ul { list-style: none; }
+fieldset { border: 0; }
+img, svg { display: block; max-width: 100%; }
+a { color: inherit; text-decoration: none; }
+table { border-collapse: collapse; border-spacing: 0; width: 100%; }
+[hidden] { display: none !important; }
+
+/*
+  The control reset lives in a layer, and the reason is the cascade rather
+  than tidiness: an unlayered `button { background: none }` beats every
+  layered rule whatever the specificity, and would silently override the
+  button styles defined below.
+*/
+@layer base {
+  button, input, select, textarea {
+    font: inherit;
+    color: inherit;
+    background: none;
+    border: 0;
+    margin: 0;
+  }
+  button { cursor: pointer; }
+}
+
+/*
+  Focus is visible and it is gold, because gold is the colour of committing
+  money and the keyboard path leads to a commitment. Never removed, never
+  reduced to a faint outline.
+*/
+:focus-visible {
+  outline: 2px solid var(--color-rail-hire);
+  outline-offset: 2px;
+  border-radius: 2px;
+}
+
+/*
+  Visually hidden, still announced. Used for table headers a sighted reader
+  gets from position and a screen reader does not.
+*/
+/* Present on a wide screen, absent on a phone. Never the other way round. */
+@media (max-width: 760px) {
+  .hide-phone { display: none; }
+}
+
+.sr-only {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip-path: inset(50%);
+  white-space: nowrap;
+  border: 0;
+}
+
+/* ------------------------------------------------------------------- type */
+
+/*
+  Every number is monospaced and tabular. In a product about measurement,
+  digits that jitter on refresh destroy credibility faster than a wrong number
+  does, and column widths that reflow make a board feel like a toy.
+*/
+.num,
+td.num,
+.metric-value,
+.provenance {
+  font-family: var(--font-mono);
+  font-variant-numeric: tabular-nums;
+  font-feature-settings: "tnum" 1, "zero" 1;
+}
+
+.display {
+  font-size: var(--text-2xl);
+  line-height: 1.08;
+  letter-spacing: -0.02em;
+  font-weight: 500;
+}
+/*
+  Deliberately modest.
+
+  §10.1 puts a headline and one line above the doors and then the inventory.
+  The first attempt used the display size here, which pushed the board off the
+  first screen and made a live market read as an essay. The board is the
+  argument; the sentence is a caption on it.
+*/
+.h1 { font-size: var(--text-md); line-height: 1.25; letter-spacing: -0.012em; font-weight: 500; }
+.h2 { font-size: var(--text-lg); line-height: 1.2; letter-spacing: -0.015em; font-weight: 500; }
+.h3 { font-size: var(--text-md); line-height: 1.3; letter-spacing: -0.01em; font-weight: 500; }
+
+.lede { font-size: var(--text-sm); line-height: 1.55; color: var(--color-muted); max-width: 68ch; }
+.prose { font-size: var(--text-xs); line-height: 1.65; color: var(--color-muted); max-width: 72ch; }
+.meta { font-size: var(--text-2xs); color: var(--color-muted); }
+.dim { color: var(--color-dim); }
+
+/* The provenance line under every figure. The highest-leverage string here. */
+.provenance {
+  font-size: var(--text-2xs);
+  color: var(--color-dim);
+  letter-spacing: 0.01em;
+}
+
+/* ----------------------------------------------------------------- layout */
+
+.shell {
+  max-width: var(--width-shell);
+  margin-inline: auto;
+  padding-inline: var(--gutter);
+}
+
+.stack { display: flex; flex-direction: column; }
+.row { display: flex; align-items: center; }
+.between { display: flex; align-items: center; justify-content: space-between; gap: 1rem; }
+.wrap { flex-wrap: wrap; }
+
+.panel {
+  background: var(--color-panel);
+  border: 1px solid var(--color-rule);
+  border-radius: var(--radius-panel);
+}
+
+/* --------------------------------------------------------------- the nav */
+
+/*
+  Solid, not frosted.
+
+  §9.6 forbids glassmorphism, and a blurred translucent bar is the canonical
+  form of it. A sticky bar over a dense table also has a real cost beyond
+  taste: a backdrop filter forces the browser to re-composite everything
+  underneath on every scroll frame, which is the one place this interface
+  cannot afford it.
+*/
+.nav {
+  border-bottom: 1px solid var(--color-rule);
+  background: var(--color-ground);
+  position: sticky;
+  top: 0;
+  z-index: 20;
+}
+.nav__inner { display: flex; align-items: center; gap: 18px; height: var(--nav-h); }
+.wordmark {
+  font-weight: 600;
+  letter-spacing: 0.04em;
+  font-size: var(--text-sm);
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+.nav__links { display: flex; gap: 16px; align-items: center; }
+
+/*
+  Search lives in the bar, not on the page.
+
+  The board is the product, so the way to find a row is always one keystroke
+  away rather than a control you scroll to. `/` focuses it from anywhere.
+*/
+.nav__search {
+  margin-left: auto;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  min-width: 200px;
+  max-width: 320px;
+  flex: 1;
+  background: var(--color-panel);
+  border: 1px solid var(--color-rule);
+  border-radius: var(--radius-ui);
+  padding: 0 8px;
+  height: 30px;
+  transition: border-color var(--d-hover) var(--ease-out);
+}
+.nav__search:focus-within { border-color: var(--color-muted); }
+.nav__search input {
+  flex: 1;
+  min-width: 0;
+  height: 100%;
+  font-size: var(--text-2xs);
+  font-family: var(--font-mono);
+  color: var(--color-text);
+}
+.nav__search input::placeholder { color: var(--color-dim); }
+
+/* A key cap, for the two shortcuts that exist. Never decorative. */
+.kbd {
+  font-family: var(--font-mono);
+  font-size: 10px;
+  line-height: 1;
+  color: var(--color-dim);
+  border: 1px solid var(--color-rule);
+  border-radius: 3px;
+  padding: 3px 4px;
+  background: var(--color-ground);
+  white-space: nowrap;
+}
+
+/*
+  The create call to action. A marketplace with no supply side is a directory,
+  so listing is a button rather than the fifth link in a row of five.
+*/
+.nav__cta {
+  font-size: var(--text-2xs);
+  padding: 5px 10px;
+  border-radius: var(--radius-ui);
+  border: 1px solid color-mix(in srgb, var(--color-rail-hire) 40%, transparent);
+  color: var(--color-rail-hire);
+  background: var(--color-hire-wash);
+  white-space: nowrap;
+  transition: background var(--d-hover) var(--ease-out);
+}
+.nav__cta:hover { background: color-mix(in srgb, var(--color-rail-hire) 18%, var(--color-hire-wash)); }
+.nav__link { color: var(--color-muted); font-size: var(--text-xs); transition: color var(--d-hover) var(--ease-out); }
+.nav__link:hover { color: var(--color-text); }
+.nav__link[data-active] { color: var(--color-text); }
+
+/* ------------------------------------------------------------ job doors */
+
+/*
+  Four, at equal width, above the board. Agent Diversity is settled on the
+  front page before anyone scrolls, and the grid is 2×2 on a phone rather
+  than a stack, so no job is ever the one you have to scroll to find.
+*/
+.doors {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 12px;
+}
+.door {
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  gap: 10px;
+  min-height: 70px;
+  background: var(--color-panel);
+  border: 1px solid var(--color-rule);
+  border-radius: var(--radius-ui);
+  padding: 12px 14px;
+  transition: border-color var(--d-hover) var(--ease-out), background var(--d-hover) var(--ease-out);
+}
+.door:hover { border-color: var(--color-muted); background: var(--color-panel-hi); }
+.door[data-active] { border-color: var(--color-rail-hire); }
+.door__title { font-size: var(--text-sm); font-weight: 500; line-height: 1.25; }
+.door__count { display: flex; align-items: baseline; gap: 7px; font-size: var(--text-2xs); }
+.door__n { font-size: var(--text-lg); color: var(--color-text); line-height: 1; letter-spacing: -0.02em; }
+
+@media (max-width: 720px) {
+  .doors { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+}
+
+/* ------------------------------------------------------------- rail badge */
+
+/*
+  Three squares. Lit means the rail is open on this row; dim means it is not,
+  and the row says which condition failed. Eight pixels, because a badge that
+  needs a legend has failed and one that shouts is decoration.
+*/
+.rails { display: inline-flex; gap: 4px; align-items: center; }
+.rail {
+  width: 8px;
+  height: 8px;
+  border-radius: 2px;
+  background: var(--color-rule);
+  display: inline-block;
+}
+.rail[data-on="call"] { background: var(--color-rail-call); }
+.rail[data-on="hire"] { background: var(--color-rail-hire); }
+.rail[data-on="mandate"] { background: var(--color-rail-mandate); }
+
+/* The one orchestrated moment: a refreshed probe lights the badge. */
+.rail[data-fresh] { animation: bloom var(--d-bloom) var(--ease-out); }
+@keyframes bloom {
+  0% { opacity: 0.35; transform: scale(0.82); }
+  55% { opacity: 1; transform: scale(1.14); }
+  100% { opacity: 1; transform: scale(1); }
+}
+
+/*
+  Revoked authority desaturates, and stays that way.
+
+  Permanence is the point: a session that was ended does not come back, so the
+  badge does not return to colour on the next render. It is the one state in
+  this interface that is deliberately irreversible.
+*/
+.rail[data-revoked] {
+  background: var(--color-dim) !important;
+  transition: background var(--d-revoke) var(--ease-out);
+}
+
+/*
+  A hire that landed lifts eight pixels on its way to the desk.
+
+  It plays once, on the confirmation, and it is the only motion in the product
+  that follows a write. Everything else here follows a read.
+*/
+@keyframes lift {
+  0% { transform: translateY(0); opacity: 1; }
+  55% { transform: translateY(-8px); opacity: 1; }
+  100% { transform: translateY(-8px); opacity: 0.92; }
+}
+.lifted { animation: lift var(--d-move) var(--ease-out) both; }
+
+/* ------------------------------------------------------------- the ticker */
+
+/*
+  A strip of what actually changed since the last probe cycle.
+  
+  It is not a decorative marquee: every item is a diff between two stored
+  readings, and when there is only one reading it says so instead of inventing
+  movement. Nothing animates on load — the plan forbids counters that run
+  without a data event — so this scrolls only under a pointer, and on a narrow
+  screen it is an ordinary horizontal scroll a thumb can drive.
+*/
+.ticker {
+  display: flex;
+  align-items: center;
+  gap: 0;
+  border-top: 1px solid var(--color-rule);
+  border-bottom: 1px solid var(--color-rule);
+  height: 34px;
+  overflow-x: auto;
+  scrollbar-width: none;
+  white-space: nowrap;
+}
+.ticker::-webkit-scrollbar { display: none; }
+.ticker__item {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 0 14px;
+  height: 100%;
+  font-size: var(--text-2xs);
+  color: var(--color-muted);
+  border-right: 1px solid var(--color-rule);
+  flex: 0 0 auto;
+}
+.ticker__label { color: var(--color-dim); }
+.ticker__up { color: var(--color-rail-call); }
+.ticker__down { color: var(--color-refused); }
+
+/* ---------------------------------------------------------- identity mark */
+
+/*
+  A deterministic mark per row, derived from the address or URL that identifies
+  it. Monochrome on purpose: colour in this interface means rail availability,
+  and spending it on decoration would make the one thing that carries meaning
+  harder to see. It exists so the eye can find a row again after a sort.
+*/
+.thumb {
+  width: 26px;
+  height: 26px;
+  border-radius: 4px;
+  background: color-mix(in srgb, var(--color-panel-hi) 70%, var(--color-ground));
+  border: 1px solid var(--color-rule);
+  display: block;
+  flex: 0 0 auto;
+}
+/* A row under the pointer lifts its mark with the rest of the row. */
+.board tbody tr:hover .thumb { border-color: var(--color-muted); }
+
+/* -------------------------------------------------------------- the board */
+
+.board { width: 100%; }
+.board thead th {
+  text-align: left;
+  font-size: var(--text-2xs);
+  font-weight: 400;
+  color: var(--color-dim);
+  padding: 8px 12px;
+  border-bottom: 1px solid var(--color-rule);
+  white-space: nowrap;
+}
+.board thead th:first-child { padding-left: 0; }
+.board thead th:last-child { padding-right: 0; text-align: right; }
+
+/*
+  Sortable headers, the way a trading board does it: the header is the control.
+  A pill row above the table is a filter; a clickable column is a sort, and the
+  difference is legible without a label.
+*/
+.board thead th a {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  color: inherit;
+  transition: color var(--d-hover) var(--ease-out);
+}
+.board thead th a:hover { color: var(--color-text); }
+.board thead th a[data-sorted] { color: var(--color-text); }
+.board thead th .caret { font-size: 9px; line-height: 1; opacity: 0.9; }
+
+.board tbody tr {
+  border-bottom: 1px solid var(--color-rule);
+  transition: background var(--d-hover) var(--ease-out);
+}
+.board tbody tr:hover { background: var(--color-panel-hi); }
+.board tbody td {
+  height: var(--row-h);
+  padding: 6px 12px;
+  vertical-align: middle;
+  font-size: var(--text-xs);
+  overflow: hidden;
+}
+.board tbody td:first-child { padding-left: 0; }
+
+/*
+  Column widths are declared rather than left to the browser's content-based
+  guess. A table that re-apportions its columns when a value refreshes is the
+  jitter this whole design is built to avoid, and `table-layout: fixed` is what
+  makes the clamps above actually bite.
+*/
+.board { table-layout: fixed; }
+/*
+  Widths are keyed by name and applied to the header as well as the cell.
+
+  `table-layout: fixed` takes its column widths from the *first row*, which is
+  the header. Rules written against `tbody td` therefore set nothing at all,
+  and the browser falls back to distributing space by content — which is what
+  gave the rail column four hundred pixels and the track column a hundred.
+  Keying off `data-col` alone covers both, and adding a column can no longer
+  reassign every width the way an nth-child rule did.
+*/
+.board [data-col="pick"] { width: 30px; }
+.board [data-col="rails"] { width: 52px; }
+.board [data-col="agent"] { width: 27%; }
+.board [data-col="track"] { width: 29%; }
+.board [data-col="latency"] { width: 112px; }
+.board [data-col="price"] { width: 126px; }
+.board [data-col="action"] { width: 130px; }
+.board tbody td[data-col="price"] .dim { font-size: var(--text-2xs); }
+.board tbody td:last-child { padding-right: 0; text-align: right; white-space: nowrap; }
+
+.board__name { font-weight: 500; color: var(--color-text); }
+.board__sub { font-size: var(--text-2xs); color: var(--color-dim); margin-top: 1px; }
+.board__sub .num { font-size: var(--text-2xs); }
+
+/* Name and mark sit on one line, so the row stays 56px with two lines of text. */
+/*
+  One line, truncated, with the full text on the title.
+
+  This is what keeps a row 56px. Without it a single long refusal sentence sets
+  the height of the row it is in, the table stops being a grid, and the page
+  reads as prose in a box — which is exactly what the first version did.
+*/
+.clamp1 {
+  display: block;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  max-width: 100%;
+}
+
+.board__id { display: flex; align-items: center; gap: 10px; min-width: 0; }
+.board__idtext { min-width: 0; }
+/* Name and chips on one line, clipped rather than wrapped, so rows stay level. */
+.board__namerow {
+  display: flex;
+  align-items: baseline;
+  gap: 6px;
+  min-width: 0;
+  white-space: nowrap;
+  overflow: hidden;
+}
+.board__namerow .board__name { overflow: hidden; text-overflow: ellipsis; }
+.board__idtext { min-width: 0; flex: 1; }
+
+/*
+  A live delta. The value is monospaced and tabular so the column cannot
+  reflow, and the digit roll below only fires when a reading actually changed.
+*/
+.delta { display: inline-flex; align-items: baseline; gap: 5px; }
+.delta__v { font-family: var(--font-mono); font-variant-numeric: tabular-nums; }
+.delta__up { color: var(--color-rail-call); }
+.delta__down { color: var(--color-refused); }
+.delta__flat { color: var(--color-dim); }
+
+/* One digit rolling on a chain update. 160ms, and only on a data event. */
+@keyframes roll {
+  0% { transform: translateY(0.5em); opacity: 0; }
+  100% { transform: translateY(0); opacity: 1; }
+}
+.rolled { display: inline-block; animation: roll var(--d-roll) var(--ease-out); }
+
+/* A row that cannot be hired is listed, not hidden, and reads as quieter. */
+.board tbody tr[data-refused] .board__name { color: var(--color-muted); }
+
+/* ---------------------------------------------------------------- filters */
+
+.filters {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  flex-wrap: wrap;
+  padding: 10px 0;
+  border-bottom: 1px solid var(--color-rule);
+  position: sticky;
+  top: var(--nav-h);
+  background: var(--color-ground);
+  z-index: 10;
+}
+
+/* The rail toggle: three states in one control, not three cards. */
+.railtoggle { display: inline-flex; align-items: center; gap: 6px; }
+.railtoggle .filter { display: inline-flex; align-items: center; gap: 6px; }
+.railtoggle .dot { width: 7px; height: 7px; border-radius: 2px; background: var(--color-rule); }
+.railtoggle .filter[data-active] .dot,
+.railtoggle .filter:hover .dot { background: currentColor; }
+.railtoggle .filter[data-rail="call"][data-active] { color: var(--color-rail-call); border-color: color-mix(in srgb, var(--color-rail-call) 40%, transparent); }
+.railtoggle .filter[data-rail="hire"][data-active] { color: var(--color-rail-hire); border-color: color-mix(in srgb, var(--color-rail-hire) 40%, transparent); }
+.railtoggle .filter[data-rail="mandate"][data-active] { color: var(--color-rail-mandate); border-color: color-mix(in srgb, var(--color-rail-mandate) 40%, transparent); }
+.filter {
+  font-size: var(--text-2xs);
+  color: var(--color-muted);
+  padding: 5px 10px;
+  border: 1px solid var(--color-rule);
+  border-radius: var(--radius-chip);
+  transition: color var(--d-hover) var(--ease-out), border-color var(--d-hover) var(--ease-out);
+}
+.filter:hover { color: var(--color-text); border-color: var(--color-muted); }
+.filter[data-active] { color: var(--color-text); border-color: var(--color-muted); background: var(--color-panel); }
+
+/* ---------------------------------------------------------------- buttons */
+
+.btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  font-size: var(--text-xs);
+  padding: 8px 14px;
+  border-radius: var(--radius-ui);
+  border: 1px solid var(--color-rule);
+  color: var(--color-text);
+  transition: background var(--d-hover) var(--ease-out), border-color var(--d-hover) var(--ease-out);
+}
+.btn:hover { border-color: var(--color-muted); background: var(--color-panel-hi); }
+
+.btn--hire {
+  background: var(--color-rail-hire);
+  border-color: var(--color-rail-hire);
+  color: #1a1400;
+  font-weight: 500;
+}
+.btn--hire:hover { background: color-mix(in srgb, var(--color-rail-hire) 88%, #fff); border-color: transparent; }
+
+.btn--sm { padding: 5px 10px; font-size: var(--text-2xs); }
+.btn[aria-disabled="true"] { color: var(--color-dim); border-color: var(--color-rule); cursor: not-allowed; }
+
+/* ------------------------------------------------------------------ chips */
+
+.chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  font-size: var(--text-2xs);
+  padding: 2px 7px;
+  border-radius: var(--radius-chip);
+  border: 1px solid var(--color-rule);
+  color: var(--color-muted);
+  white-space: nowrap;
+}
+.chip--call { color: var(--color-rail-call); border-color: color-mix(in srgb, var(--color-rail-call) 32%, transparent); background: var(--color-call-wash); }
+.chip--hire { color: var(--color-rail-hire); border-color: color-mix(in srgb, var(--color-rail-hire) 32%, transparent); background: var(--color-hire-wash); }
+.chip--mandate { color: var(--color-rail-mandate); border-color: color-mix(in srgb, var(--color-rail-mandate) 32%, transparent); background: var(--color-mandate-wash); }
+.chip--ours { color: var(--color-text); border-color: var(--color-muted); }
+.chip--refused { color: var(--color-refused); }
+
+/* ------------------------------------------------------------ measurement */
+
+/*
+  A figure and the two lines that make it a measurement rather than a claim.
+  There is no variant without the provenance line: the component that renders
+  a Measurement always renders where it came from.
+*/
+.metric { display: flex; flex-direction: column; gap: 2px; }
+.metric-value { font-size: var(--text-md); line-height: 1.1; }
+.metric-basis { font-size: var(--text-2xs); color: var(--color-muted); }
+.metric-label { font-size: var(--text-2xs); color: var(--color-dim); }
+
+/* The one way an absence renders. Never a zero, never a blank, never a dash. */
+.unmeasured { color: var(--color-dim); font-size: var(--text-xs); }
+.unmeasured__why { display: block; font-size: var(--text-2xs); color: var(--color-dim); margin-top: 2px; max-width: 46ch; }
+
+/* ------------------------------------------------------------ compare mode */
+
+/*
+  Two or three agents on identical fields. Every row is rendered for every
+  column, always — a comparison that drops the fields one side lacks is an
+  advertisement for that side.
+*/
+.compare { width: 100%; font-size: var(--text-xs); }
+.compare caption {
+  caption-side: bottom;
+  text-align: left;
+  padding: 10px 16px 14px;
+  color: var(--color-muted);
+  font-size: var(--text-2xs);
+  line-height: 1.55;
+  max-width: 80ch;
+}
+.compare th,
+.compare td {
+  text-align: left;
+  padding: 10px 16px;
+  border-top: 1px solid var(--color-rule);
+  vertical-align: top;
+}
+.compare thead th { border-top: 0; font-weight: 400; }
+.compare tbody th {
+  font-weight: 400;
+  color: var(--color-dim);
+  width: 22%;
+  min-width: 150px;
+}
+.compare tbody tr:hover { background: var(--color-panel-hi); }
+
+/* The pick column: a checkbox, sized to the row rather than to the browser. */
+.board tbody td[data-col="pick"] { padding-left: 0; }
+.board input[type="checkbox"] {
+  width: 13px;
+  height: 13px;
+  accent-color: var(--color-rail-hire);
+  cursor: pointer;
+}
+
+/* --------------------------------------------------------------- refusals */
+
+.refusal {
+  border-left: 2px solid var(--color-refused);
+  padding-left: 12px;
+  color: var(--color-muted);
+  font-size: var(--text-xs);
+  line-height: 1.55;
+}
+
+.notice {
+  border: 1px solid var(--color-rule);
+  border-left: 2px solid var(--color-rail-hire);
+  border-radius: var(--radius-ui);
+  padding: 12px 14px;
+  background: var(--color-panel);
+}
+
+/* --------------------------------------------------------------- the hire */
+
+.rail-choice {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 10px;
+}
+.rail-card {
+  display: block;
+  text-align: left;
+  width: 100%;
+  border: 1px solid var(--color-rule);
+  border-radius: var(--radius-ui);
+  padding: 14px;
+  background: var(--color-panel);
+  transition: border-color var(--d-hover) var(--ease-out);
+}
+.rail-card:hover:not([aria-disabled="true"]) { border-color: var(--color-muted); }
+.rail-card[data-selected="call"] { border-color: var(--color-rail-call); }
+.rail-card[data-selected="hire"] { border-color: var(--color-rail-hire); }
+.rail-card[data-selected="mandate"] { border-color: var(--color-rail-mandate); }
+.rail-card[aria-disabled="true"] { opacity: 0.55; cursor: not-allowed; }
+
+.may-not { display: grid; grid-template-columns: 1fr 1fr; gap: 24px; }
+@media (max-width: 720px) { .may-not { grid-template-columns: 1fr; } .rail-choice { grid-template-columns: 1fr; } }
+
+/*
+  A definition list whose term can be a monospace path.
+
+  A fixed 160px was too narrow for `/api/v1/agents/56/:id`, which wrapped
+  mid-path and made the endpoint list look broken. `max-content` sizes to the
+  longest term and the description takes the rest, which is what a definition
+  list is for.
+*/
+.terms {
+  display: grid;
+  grid-template-columns: minmax(150px, max-content) 1fr;
+  gap: 9px 20px;
+  font-size: var(--text-xs);
+  align-items: baseline;
+}
+.terms dt { color: var(--color-dim); }
+.terms dd { color: var(--color-text); margin: 0; }
+
+/* --------------------------------------------------------- the palette */
+
+/*
+  ⌘K. It searches what the server already rendered rather than fetching, so it
+  is instant, has no loading state, and cannot disagree with the board it sits
+  on top of.
+*/
+.palette {
+  position: fixed;
+  inset: 0;
+  z-index: 60;
+  background: color-mix(in srgb, var(--color-ground) 72%, transparent);
+  display: flex;
+  align-items: flex-start;
+  justify-content: center;
+  padding: 12vh 16px 16px;
+}
+.palette__box {
+  width: min(560px, 100%);
+  background: var(--color-panel);
+  border: 1px solid var(--color-rule);
+  border-radius: var(--radius-panel);
+  box-shadow: 0 24px 64px rgba(0, 0, 0, 0.5);
+  overflow: hidden;
+}
+.palette__input {
+  width: 100%;
+  height: 46px;
+  padding: 0 14px;
+  font-size: var(--text-xs);
+  color: var(--color-text);
+  border-bottom: 1px solid var(--color-rule);
+}
+.palette__input::placeholder { color: var(--color-dim); }
+.palette__list { max-height: 46vh; overflow-y: auto; }
+.palette__row {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 16px;
+  padding: 9px 14px;
+  font-size: var(--text-xs);
+  border-left: 2px solid transparent;
+}
+.palette__row:hover,
+.palette__row[data-active] {
+  background: var(--color-panel-hi);
+  border-left-color: var(--color-rail-hire);
+}
+.palette__empty { padding: 14px; font-size: var(--text-2xs); color: var(--color-muted); line-height: 1.5; }
+.palette__foot {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 8px 14px;
+  border-top: 1px solid var(--color-rule);
+  font-size: var(--text-2xs);
+}
+
+/* ---------------------------------------------------------------- footer */
+
+/*
+  Built the way the board is: columns, links, and live figures in monospace.
+
+  What was here before was three stacked paragraphs — a caption, a five-line
+  monospace footnote, and a doctrine statement — which turned the end of a live
+  board into the end of an essay. The doctrine survives as one line; the long
+  version lives on /data, which is the room for it.
+*/
+.foot {
+  border-top: 1px solid var(--color-rule);
+  background: var(--color-panel);
+  margin-top: 24px;
+}
+.foot__grid {
+  display: grid;
+  grid-template-columns: 1.4fr 1fr 1fr 1.1fr;
+  gap: 32px;
+  padding: 24px 0 20px;
+}
+.foot__blurb {
+  font-size: var(--text-2xs);
+  color: var(--color-muted);
+  line-height: 1.6;
+  max-width: 34ch;
+  margin-top: 8px;
+}
+.foot__h {
+  font-size: var(--text-2xs);
+  color: var(--color-dim);
+  font-weight: 400;
+  margin-bottom: 10px;
+}
+.foot__links { display: flex; flex-direction: column; gap: 6px; }
+.foot__links a {
+  font-size: var(--text-2xs);
+  color: var(--color-muted);
+  transition: color var(--d-hover) var(--ease-out);
+}
+.foot__links a:hover { color: var(--color-text); }
+
+/* The same figures the board renders, from the same snapshot. */
+.foot__stats { display: flex; flex-direction: column; gap: 5px; }
+.foot__stat {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 12px;
+  border-bottom: 1px solid var(--color-rule);
+  padding-bottom: 4px;
+}
+.foot__statlabel { font-size: var(--text-2xs); color: var(--color-dim); }
+.foot__statvalue { font-size: var(--text-2xs); color: var(--color-text); }
+
+.foot__rule {
+  border-top: 1px solid var(--color-rule);
+  padding: 12px 0 20px;
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 24px;
+  flex-wrap: wrap;
+}
+.foot__doctrine {
+  font-size: var(--text-2xs);
+  color: var(--color-muted);
+  line-height: 1.6;
+  max-width: 96ch;
+}
+
+@media (max-width: 900px) {
+  .foot__grid { grid-template-columns: 1fr 1fr; gap: 24px; }
+}
+@media (max-width: 520px) {
+  .foot__grid { grid-template-columns: 1fr; gap: 20px; }
+}
+
+/* --------------------------------------------------------- the strip ---- */
+
+/*
+  The honesty line under a board, as figures rather than a paragraph.
+
+  It used to be five lines of monospace prose, which is the least readable
+  combination available: mono is for figures a reader compares, not for
+  sentences a reader follows.
+*/
+.strip {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0;
+  border-top: 1px solid var(--color-rule);
+  margin-top: 10px;
+}
+.strip__item {
+  display: inline-flex;
+  align-items: baseline;
+  gap: 6px;
+  padding: 9px 14px 9px 0;
+  margin-right: 14px;
+  border-right: 1px solid var(--color-rule);
+  font-size: var(--text-2xs);
+  color: var(--color-muted);
+}
+.strip__item:last-child { border-right: 0; margin-right: 0; }
+.strip__n { font-family: var(--font-mono); font-variant-numeric: tabular-nums; color: var(--color-text); }
+.strip__label { color: var(--color-dim); }
+
+/* --------------------------------------------------------------- loading */
+
+/* A hairline pulse on the row. No spinners, no skeletons. */
+.pulse { position: relative; overflow: hidden; }
+.pulse::after {
+  content: "";
+  position: absolute;
+  inset-inline: 0;
+  bottom: 0;
+  height: 1px;
+  background: var(--color-rail-call);
+  opacity: 0.5;
+  animation: sweep var(--d-pulse) var(--ease-in-out) infinite;
+}
+@keyframes sweep {
+  0% { transform: translateX(-100%); }
+  100% { transform: translateX(100%); }
+}
+
+/* ------------------------------------------------------------- responsive */
+
+/*
+  The board becomes stacked rows with the rail column still aligned, rather
+  than a horizontal scroll a thumb has to discover. The rail badge keeps its
+  leading position, because it is the column that tells you what you can do.
+*/
+/*
+  ---------------------------------------------------------------- phone
+  
+  The board becomes stacked rows with the rail column still leading and still
+  aligned down the list, rather than a horizontal scroll a thumb has to
+  discover. Three things have to be undone explicitly, and each was a real bug
+  the first time: the fixed column widths (which truncated a name to one
+  letter inside the stacked grid), the nowrap on the name row, and the search
+  field in the bar, which simply ran off the screen.
+*/
+@media (max-width: 900px) {
+  .board thead { position: absolute; width: 1px; height: 1px; overflow: hidden; clip-path: inset(50%); }
+  .board { table-layout: auto; }
+
+  .board tbody tr {
+    display: grid;
+    grid-template-columns: 20px minmax(0, 1fr) auto;
+    gap: 2px 10px;
+    padding: 10px 0;
+    align-items: start;
+  }
+  .board tbody td {
+    height: auto;
+    padding: 0;
+    width: auto !important;
+    overflow: visible;
+  }
+  /* The rail column keeps its leading position: it says what you can do. */
+  .board tbody td[data-col="rails"] { grid-row: 1 / span 3; padding-top: 5px; }
+  .board tbody td[data-col="agent"] { grid-column: 2; grid-row: 1; }
+  .board tbody td[data-col="track"] { grid-column: 2; grid-row: 2; }
+  .board tbody td[data-col="latency"] { grid-column: 2; grid-row: 3; text-align: left !important; }
+  .board tbody td[data-col="price"] { grid-column: 3; grid-row: 1; text-align: right !important; }
+  .board tbody td[data-col="action"] { grid-column: 3; grid-row: 2 / span 2; text-align: right !important; align-self: end; }
+
+  /* Names wrap here rather than truncating: there is no column to protect. */
+  .board__namerow { white-space: normal; flex-wrap: wrap; }
+  /* The mark stays level with the first line when the name wraps beneath it. */
+  .board__id { align-items: flex-start; }
+  .board__id .thumb { margin-top: 1px; }
+  .board__namerow .board__name { overflow: visible; }
+  .board tbody td[data-col="latency"] .board__sub { display: inline !important; margin-left: 6px; }
+
+  /* Latency and its age read as one line when they are on their own row. */
+  .board tbody td[data-col="latency"] .delta { display: inline-flex; }
+}
+
+@media (max-width: 760px) {
+  /*
+    The bar keeps the mark, the rooms and the one call to action. Search moves
+    to the register, which is the page built for it and which works without
+    JavaScript; the `/` shortcut still focuses it there.
+  */
+  .nav__search { display: none; }
+  .nav__inner { gap: 12px; }
+  .nav__links { gap: 12px; overflow-x: auto; scrollbar-width: none; }
+  .nav__links::-webkit-scrollbar { display: none; }
+  .nav__cta { margin-left: auto; }
+
+  /* The filter bar scrolls sideways rather than wrapping into three rows. */
+  .filters {
+    flex-wrap: nowrap;
+    overflow-x: auto;
+    scrollbar-width: none;
+    gap: 8px;
+  }
+  .filters::-webkit-scrollbar { display: none; }
+  .filters > * { flex: 0 0 auto; }
+  .filters .meta[style] { margin-left: 10px !important; }
+
+  .h1 { font-size: var(--text-sm); }
+  .door { min-height: 62px; padding: 10px 12px; gap: 6px; }
+  .door__title { font-size: var(--text-xs); }
+  .door__n { font-size: var(--text-md); }
+  .doors { gap: 8px; }
+}
+
+@media (max-width: 420px) {
+  :root { --gutter: 14px; }
+  .board tbody td[data-col="action"] .btn { padding: 4px 8px; }
+}
+
+/* ---------------------------------------------------------- reduced motion */
+
+/*
+  Non-negotiable. All durations zero, all states final. Nothing here is
+  load-bearing for meaning: the rail badge's colour says what the bloom says.
+*/
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.001ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.001ms !important;
+    scroll-behavior: auto !important;
+  }
+  .pulse::after { animation: none; opacity: 0.35; transform: none; }
+}

@@ -1,0 +1,146 @@
+{
+  "note": "Artifacts this marketplace has actually produced on BNB Smart Chain mainnet. Every entry is a transaction or a measurement anyone can re-derive; nothing here is illustrative. Written by the prove-* scripts, not by hand.",
+  "chainId": 56,
+  "proofs": [
+    {
+      "id": "rail-1-third-party",
+      "rail": "call",
+      "title": "A paid call to an agent we do not operate",
+      "what": "BENCH paid a third-party x402 endpoint 0.01 USD1 on BNB Smart Chain and received the answer. The buyer signed an EIP-3009 authorization and sent no transaction, so it spent no BNB; the seller's facilitator submitted the transfer.",
+      "why": "It is the cheapest possible real transaction between a stranger and an agent they have never met, and it is against supply we do not own. A marketplace whose first honest transaction is with its own agent is a portfolio.",
+      "target": "https://mpp.hyreagent.fun/bsc/defi/tvl",
+      "operator": "not us",
+      "buyer": "0xd6d11Aa5046dc5C7BE8d63B9223b60D7AD94cBe9",
+      "payTo": "0xb5998e11E666Fd1e7f3B8e8d9122A755eec1E9b7",
+      "asset": "0x8d0D000Ee44948FC98c9B98A4FA4921476f08B0d",
+      "assetSymbol": "USD1",
+      "amount": "10000000000000000",
+      "amountText": "0.01 USD1",
+      "txHash": "0x2e39837b6302da0330ad004db136ab27c90b55f4f35fc89557678df61aae83ca",
+      "block": 120590203,
+      "at": "2026-09-08T00:31:00Z",
+      "reproduce": "npm run prove-call -- https://mpp.hyreagent.fun/bsc/defi/tvl",
+      "assertions": [
+        {
+          "n": 1,
+          "claim": "an unpaid request is refused with a payment challenge",
+          "result": "proven",
+          "detail": "402"
+        },
+        {
+          "n": 2,
+          "claim": "the challenge parses",
+          "result": "proven",
+          "detail": "x402 v2, 1 route"
+        },
+        {
+          "n": 3,
+          "claim": "it is payable from BNB Smart Chain",
+          "result": "proven",
+          "detail": "0.01 USD1 on chain 56"
+        },
+        {
+          "n": 4,
+          "claim": "a signed payment settles and returns the goods",
+          "result": "proven",
+          "detail": "200, 18151 ms"
+        },
+        {
+          "n": 5,
+          "claim": "exactly the quoted amount left the buyer",
+          "result": "proven",
+          "detail": "0.01 USD1"
+        },
+        {
+          "n": 6,
+          "claim": "the buyer spent no BNB",
+          "result": "proven",
+          "detail": "it signed, it did not send"
+        }
+      ],
+      "passed": 6,
+      "failed": 0,
+      "inconclusive": 0
+    }
+  ],
+  "findings": [
+    {
+      "id": "b402-network-mismatch",
+      "title": "Binance's B402 Bazaar lists 979 paid endpoints for BNB Chain. Four of them can be paid on BNB Chain.",
+      "method": "b402-network-mismatch",
+      "measuredAt": "2026-09-08T00:24:38Z",
+      "population": 979,
+      "detail": "Every resource in the B402 Bazaar catalogue was called directly and its live 402 challenge parsed. 941 answered a well-formed challenge asking for payment on chain 8453 (Base), in Base USDC, while their Bazaar listing advertises chain 56. 4 answered a challenge payable on BNB Smart Chain in USD1. 15 answered 404, 14 timed out, and 5 answered without a payment challenge.",
+      "breakdown": {
+        "liveChallengeOnBase": 941,
+        "payableOnBsc": 4,
+        "notFound": 15,
+        "timedOut": 14,
+        "noChallenge": 5
+      },
+      "whyItMatters": "The listing is the merchant's claim; the challenge is the fact. A marketplace that renders the listing is selling something it never checked. This is why a B402 row on this board opens the Call rail only after our own call gets a challenge we could settle here, and why 96% of the catalogue shows a refusal instead of a button.",
+      "reproduce": "npm run bazaar && npm run probe -- --limit 999"
+    },
+    {
+      "id": "eip3009-on-bsc",
+      "title": "Neither BSC USDT nor BSC USDC implements EIP-3009, so neither can settle an x402 exact payment.",
+      "method": "eip3009-on-bsc",
+      "measuredAt": "2026-09-08T00:26:00Z",
+      "detail": "Read directly from each contract on BNB Smart Chain. USDT (0x55d3…7955) and USDC (0x8AC7…580d) revert on both authorizationState and DOMAIN_SEPARATOR. USD1 (0x8d0D…8B0d) and $U (0xcE24…6666) answer both. All four revert on version(), so a client that trusts a challenge's extra.version rather than reading the token will sign against the wrong EIP-712 domain.",
+      "whyItMatters": "Pricing a rail in the stablecoin most people hold would produce a challenge no client could ever satisfy. It is why every price on this marketplace is quoted in USD1 or $U, and why a challenge asking for USDT on BSC is reported as unpayable rather than as a broken agent.",
+      "reproduce": "See packages/probe/src/challenge.ts; the addresses are in packages/shared/src/addresses.ts."
+    },
+    {
+      "id": "log-retention",
+      "title": "The claim that BNB Chain has no free archive access was wrong — and it was wrong because we measured our own broken code.",
+      "method": "log-retention",
+      "measuredAt": "2026-09-08T15:47:00Z",
+      "detail": "Twenty-one public BNB Chain endpoints were called with the same filtered eth_getLogs at 1,000 / 100,000 / 1,000,000 and 5,000,000 blocks back. bsc.rpc.blxrbdn.com answered at every depth tried, out to 40,000,000 blocks — 208 days — in 200 to 900ms, capping a request at 5,000 blocks and saying so plainly. rpc-bsc.48.club served to 1M blocks. Everything else refused: archive-token walls and 403s (publicnode, nodies), \"limit exceeded\" (both bnbchain dataseeds, nodereal), 429s (blastapi, zan), eth_getLogs unsupported (1rpc), method-not-found (meowrpc), timeouts (drpc), and five hosts whose DNS no longer resolves. Separately, publicnode's own limits are three things rather than one: a 20,000-result cap whose error hands back the range that would have worked, viem's 10 MB response-body cap, and an archive wall at about 10,000 blocks.",
+      "whyItMatters": "The earlier reading of this — one host, head window only — was taken with a log walker that sent no topic filter and read a result-count cap as a range refusal. It was measuring its own defects and calling the chain the problem. The cost of believing it was large: the capability window was cut to 75 minutes, so Rail 3 could prove nothing about any agent, and the counterfactual engine, which needs 5.76M blocks for a 30-day replay, was recorded as blocked on a paid provider we do not have. With the archive host configured the capability scan completes a 400,000-block window in 61 seconds, and a 30-day pool history is about 1,152 requests. The general lesson is the one this marketplace exists to enforce: a measurement of a third party is only as good as the instrument, and an instrument nobody has tested measures the instrument.",
+      "reproduce": "read ARCHIVE_HOSTS and its comment in packages/shared/src/chains.ts"
+    },
+    {
+      "id": "8004scan-degraded",
+      "title": "The public ERC-8004 index answered DATABASE_ERROR on most page sizes during this build.",
+      "method": "8004scan-degraded",
+      "measuredAt": "2026-09-08T00:15:00Z",
+      "detail": "Requests to api.8004scan.io for chain 56 were made at limits of 1, 5, 10, 20, 25, 50 and 200. Limits of 1 and 10 returned 200 after about thirty seconds; 5, 20, 25, 50 and 200 returned HTTP 500 with {\"code\":\"DATABASE_ERROR\"}. No response carried a pagination total.",
+      "whyItMatters": "A marketplace whose inventory disappears when a third party's database is unhappy is not a front door. So the registry contract is the authority here and the index is enrichment: the board is built from mints read directly from the chain, and the index adds rows when it is healthy and is named in the limitations when it is not.",
+      "reproduce": "npm run sweep, then read the limitations in /api/v1/snapshot"
+    },
+    {
+      "id": "viem-drops-topic-filters",
+      "title": "viem's getLogs silently discards a bare topics array, so every filtered scan returned every event on the contract.",
+      "method": "viem-topic-filter",
+      "measuredAt": "2026-09-08T15:12:00Z",
+      "detail": "Venus vUSDT, 900 blocks at the head, three queries. viem's getLogs with no filter returned 570 logs. viem's getLogs with topics [null, walletTopic] returned the same 570. The identical filter sent as a raw eth_getLogs returned 0. viem builds its topic filter from the `event`/`events` arguments and drops a raw `topics` property; the call site had cast it `as never`, which suppressed the type error that would have named the problem.",
+      "whyItMatters": "This was the most dangerous defect in the codebase, because nothing failed. The capability scan matched every event on Venus, MasterChef and the PancakeSwap router rather than the events naming the wallet, so it 'proved' that our own principal had used all four job venues inside 68 minutes on the strength of two strangers' transactions — both verified: neither was sent by the wallet, and neither contains a single log naming it in any topic. Rail 3 derives standing authority over money from exactly that evidence, so `granted ⊆ proven` cannot hold while `proven` is fabricated. With the filter actually sent, the same scan returns zero evidence and the rail refuses to grant, which is the correct answer. `packages/shared/src/__tests__/client.test.ts` now asserts on the JSON-RPC body that leaves the process, because a filter that is dropped rather than rejected passes every downstream check.",
+      "reproduce": "npx vitest run packages/shared"
+    },
+    {
+      "id": "bsc-block-time",
+      "title": "BNB Smart Chain produces a block every 0.450s, not the 0.75s this codebase assumed.",
+      "method": "bsc-block-time",
+      "measuredAt": "2026-09-08T15:02:00Z",
+      "detail": "Block timestamps differenced over spans of 1,000, 100,000, 1,000,000 and 5,000,000 blocks. All four give 0.450 s/block to three decimals, so the figure is stable across 26 days rather than a local artefact.",
+      "whyItMatters": "The constant converts days into block spans and blocks into years. Being 67% high meant every observation window was two thirds of its stated length, and `blocksPerYear` — the denominator of the net APY each yield agent is ranked by — was wrong by the same factor. A number that is wrong by a constant is worse than a number that is missing, because it survives every sanity check.",
+      "reproduce": "read BLOCK_SECONDS in packages/shared/src/chains.ts, and the derivation in its comment"
+    },
+    {
+      "id": "false-timeouts",
+      "title": "Sweeping the whole catalogue at once made this marketplace report eleven live endpoints as dead — including the one it has a receipt for paying.",
+      "method": "false-timeouts",
+      "measuredAt": "2026-09-08T15:33:47Z",
+      "population": 979,
+      "detail": "A full probe of all 979 B402 listings recorded `endpoint-timeout` against 60 of them, among which was https://mpp.hyreagent.fun/bsc/defi/tvl — the endpoint this marketplace paid 0.01 USD1 on mainnet earlier the same day, with the transaction on chain. Called on its own moments later it answered a valid chain-56 USD1 challenge three times running, in 0.5s, 1.1s and 3.2s. The cause was our own scheduling: that host serves eleven of the catalogue's listings and each probe makes three further requests for the identity check, so a pool bounded at twelve still queued a dozen calls at one origin. A single serial retry at double the timeout, before a timeout becomes a verdict, took the callable count from 0 to 11.",
+      "whyItMatters": "A refusal has to be a fact about the agent, not about us. Publishing \"this endpoint did not answer\" when the truth is \"we asked too many things at once\" is the same class of error as a topic filter that proves capability from a stranger's transaction: quiet, plausible, and wrong in the direction that makes our own page look decisive. It is also the reason the board's callable count is now consistent with the one payment this marketplace can prove it made.",
+      "breakdown": {
+        "callableBefore": 0,
+        "callableAfter": 11,
+        "timeoutsBefore": 60,
+        "timeoutsAfter": 0
+      },
+      "reproduce": "npm run probe -- --limit 1000"
+    }
+  ]
+}

@@ -1,0 +1,95 @@
+import Link from "next/link";
+import Shortcuts from "./Shortcuts";
+import Live from "./Live";
+
+/**
+ * One bar: the mark, four rooms, a search field, and the create call to action.
+ *
+ * Three decisions in it are the plan's rather than mine.
+ *
+ * **No wallet.** Browsing never requires one, and a bar that mounts a wallet
+ * hook opens a connect dialog at strangers who came to read. The wallet is
+ * asked for once, on the hire screen, by somebody who has decided to act.
+ *
+ * **Search is in the bar.** The board is the product, so finding a row is one
+ * keystroke away from anywhere rather than a control you scroll to. It is a
+ * plain form, so it works with JavaScript off; the `/` shortcut that focuses
+ * it is the only thing that needs script.
+ *
+ * **Listing is a button.** A marketplace with no supply side is a directory,
+ * and making the seller's path the fifth link in a row of five says the
+ * opposite of what the product means.
+ */
+
+const LINKS = [
+  { href: "/", label: "Board", match: (p: string) => p === "/" || p.startsWith("/j/") },
+  { href: "/register", label: "Register", match: (p: string) => p.startsWith("/register") },
+  { href: "/desk", label: "Desk", match: (p: string) => p.startsWith("/desk") },
+  { href: "/data", label: "Data", match: (p: string) => p.startsWith("/data") },
+];
+
+export default function Nav({ path = "/", q }: { path?: string; q?: string }) {
+  return (
+    <header className="nav">
+      <div className="shell nav__inner">
+        <Link href="/" className="wordmark" aria-label="BENCH, home">
+          <Mark />
+          BENCH
+        </Link>
+
+        <nav className="nav__links" aria-label="Primary">
+          {LINKS.map((l) => (
+            <Link
+              key={l.href}
+              href={l.href}
+              className="nav__link"
+              {...(l.match(path) ? { "data-active": "", "aria-current": "page" as const } : {})}
+            >
+              {l.label}
+            </Link>
+          ))}
+        </nav>
+
+        <form className="nav__search" method="get" action="/register" role="search">
+          <label htmlFor="board-search" className="sr-only">
+            Search the board by name, token id or address
+          </label>
+          <input
+            id="board-search"
+            name="q"
+            type="search"
+            defaultValue={q ?? ""}
+            placeholder="Search token id, address, name"
+            autoComplete="off"
+          />
+          <kbd className="kbd" aria-hidden>
+            /
+          </kbd>
+        </form>
+
+        <Link href="/list" className="nav__cta">
+          List yours
+        </Link>
+      </div>
+      <Shortcuts />
+      <Live />
+    </header>
+  );
+}
+
+/**
+ * The mark: three bars at the three rail colours, ascending.
+ *
+ * It is the product's one idea drawn small — the further right, the more you
+ * hand over. It is not a monogram, and it repeats the only visual system the
+ * interface has rather than introducing a second one.
+ */
+function Mark() {
+  return (
+    <svg width="18" height="14" viewBox="0 0 18 14" aria-hidden="true" role="presentation">
+      <rect x="0" y="8" width="4" height="6" rx="1" fill="var(--color-rail-call)" />
+      <rect x="7" y="4" width="4" height="10" rx="1" fill="var(--color-rail-hire)" />
+      <rect x="14" y="0" width="4" height="14" rx="1" fill="var(--color-rail-mandate)" />
+    </svg>
+  );
+}

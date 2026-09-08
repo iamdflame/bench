@@ -1,5 +1,0 @@
-contracts/
-drizzle/
-*.md
-!README.md
-.env*

@@ -1,0 +1,33 @@
+[
+ {
+  "chainId": 56,
+  "address": "0x5863edaede7394470db19395ca05b1439662952e",
+  "principal": "0x54c06cC2623aAA2Dcc38B17fA07aD2e99b363C90",
+  "agent": "0x54c06cC2623aAA2Dcc38B17fA07aD2e99b363C90",
+  "positionManager": "0x46a15b0b27311cedf172ab29e4f4766fbe7f4364",
+  "token0": "0x55d398326f99059fF775485246999027B3197955",
+  "token1": "0xbb4CdB9CBd36B01bD1cBaEBF2De08d9173bc095c",
+  "pair": "WBNB/USDT",
+  "cap0": "50000000000000000",
+  "cap1": "50000000000000000",
+  "expiry": 1823423782,
+  "deployTx": "0xc55d9fabad82de09ea8014f7ca3bd40d2241690da116d9327e33acb9c3a6b7cf",
+  "block": 120671384,
+  "deployedAt": "2026-09-08T10:36:26.356Z",
+  "verify": {
+   "compiler": "0.8.28",
+   "optimizer": true,
+   "runs": 200,
+   "constructorArgs": [
+    "0x54c06cC2623aAA2Dcc38B17fA07aD2e99b363C90",
+    "0x54c06cC2623aAA2Dcc38B17fA07aD2e99b363C90",
+    "0x46a15b0b27311cedf172ab29e4f4766fbe7f4364",
+    "0x55d398326f99059fF775485246999027B3197955",
+    "0xbb4CdB9CBd36B01bD1cBaEBF2De08d9173bc095c",
+    "50000000000000000",
+    "50000000000000000",
+    "1823423782"
+   ]
+  }
+ }
+]

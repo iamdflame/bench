@@ -1,17 +1,12 @@
 {
-  "services": {
-    "web": {
-      "root": ".",
-      "framework": "nextjs"
-    }
-  },
-  "rewrites": [
-    {
-      "source": "/(.*)",
-      "destination": {
-        "type": "service",
-        "service": "web"
-      }
-    }
-  ]
+  "$schema": "https://openapi.vercel.sh/vercel.json",
+  "buildCommand": "npm run build",
+  "installCommand": "npm install",
+  "outputDirectory": "apps/web/.next",
+  "framework": "nextjs",
+  "functions": {
+    "apps/web/app/api/rails/mandate/route.ts": { "maxDuration": 60 },
+    "apps/web/app/api/v1/check/route.ts": { "maxDuration": 60 },
+    "apps/web/app/api/rails/call/route.ts": { "maxDuration": 60 }
+  }
 }

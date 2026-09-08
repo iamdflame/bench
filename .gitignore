@@ -1,41 +1,31 @@
 node_modules/
 .next/
+dist/
 out/
-build/
-.env
-.env*.local
 *.tsbuildinfo
-next-env.d.ts
-.vercel
-.DS_Store
-/drizzle/meta
+
+# Secrets. `.env.example` documents what belongs here.
+.env
+.env.local
+.env.*.local
 
 # Foundry
-contracts/out/
 contracts/cache/
-contracts/lib/
+contracts/out/
 contracts/broadcast/
-.env.local
+contracts/lib/
 
-# never commit any env variant, including backups
-.env*
-!.env.example
+# Local scratch
+.DS_Store
+*.log
+.vercel/
+.shots/
 
-# granted session keys — key material
+# Session signing keys.
+#
+# `grantEngagement` generates a signer per engagement and persists its key here,
+# because a session whose key exists only in memory becomes, after a restart,
+# live authority on chain with no off switch. That makes this directory the most
+# dangerous thing in the working tree: 0600 on disk, and never in a commit.
 .sessions/
-
-# agent strategy state
-.agent-state/
-
-# per-mandate benchmark marks
-
-# built verifier package
-packages/mandate-verify/dist/
-
-# Narrow-viewport captures from `npm run shots:mobile`. Checked by eye, not committed.
-.shots-390/
-
-# The prompt this rebuild was worked from, kept out of the repo.
-new_prompt.md
-_shot.mjs
-_overflow.mjs
+*.key
