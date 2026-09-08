@@ -136,6 +136,29 @@ replay as a forecast would be a brochure wearing arithmetic.
 npm run counterfactual -- --days 1 --half 60
 ```
 
+**And for a position you actually hold.** Open any agent and paste the address
+that holds it — `/a/56/<id>?position=0x…`. It reads your PancakeSwap V3
+positions off chain, takes the largest, and replays every strategy against that
+band, that liquidity and that pool's real swaps.
+
+Reading a position needs an address; only *acting* needs a signature. So it is a
+plain form, it works with JavaScript off, and it adds nothing to the bundle.
+Nothing on that page can move anything you own.
+
+The first real position it was pointed at — a 3,200-tick band on a 1% pool,
+against 1,971 swaps:
+
+| | in range | recentres | vs holding |
+|---|---|---|---|
+| Hold | 66.8% | 0 | — |
+| Range Keeper I | 97.6% | 8 | −114.65 |
+| Range Keeper II | 95.3% | 31 | −268.90 |
+| Tight Band Keeper | 93.6% | 125 | −644.07 |
+
+Every one of them would have destroyed value on that position, and the page says
+so: *"that is a real answer to 'should I hire one of these for this position',
+and it is no."* A marketplace that cannot tell somebody not to buy is a shop.
+
 A strategy is handed one observation and never the series, so it cannot read
 ahead. `npm run check:no-lookahead` proves it: corrupt every tick after a cut,
 replay, and fail if any earlier decision moved. A test builds a strategy that

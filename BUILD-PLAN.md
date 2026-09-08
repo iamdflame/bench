@@ -29,7 +29,7 @@ JavaScript off, and nothing animating on arrival.
 | **P1** Rail 1 — Call | `packages/rails/src/call.ts`, house agents answer 402 | **`rail-1-third-party`** — 0.01 USD1 paid to an endpoint we do not operate, tx `0x2e39…83ca`, block 120,590,203, six assertions. **11 third-party endpoints callable** after the false-timeout fix | **done** |
 | **P2** Rail 3 — Mandate | `mandate.ts` + `session.ts`, `ProvenScope` enforced by an unexported symbol, `RecipientBound.sol` | **`rail-3-scope-holds` — 9 proven, 0 failed, 1 inconclusive** on mainnet. Wrapper [`0x5863eda…952e`](https://bscscan.com/address/0x5863edaede7394470db19395ca05b1439662952e) bytecode-matched; grant → in-scope permitted → out-of-scope refused by name → withheld selector refused → [revoked](https://bscscan.com/tx/0xbbeb10c6eb6d1d3d5d3de2cdc5da068007b1f5abf2608275f310df2ed325b087) → key unknown | **done** |
 | **P3** Rail 2 — Hire | `hire.ts`, full ERC-8183 lifecycle, `disputeWindow()` read from chain, `prove-hire.ts` written | **`rail-2-escrow-funded` — 7 proven, 0 failed, 1 inconclusive** on testnet. Job 1139 FUNDED against a provider we do not operate; terms verbatim on chain; 1 $U escrowed | **testnet done, mainnet pending** |
-| **P4** Counterfactual | `packages/counterfactual` + `worker/src/counterfactual.ts` + the table on `/data`. `no-lookahead` gate, 5 tests | **18,911 swaps over 24h of WBNB/USDT, complete**, replayed and published with its method and reproduce command | **on the page; not yet per-viewer** |
+| **P4** Counterfactual | Engine, worker run on `/data`, **and per-position replay on `/a/[chain]/[id]?position=0x…`**. `no-lookahead` gate, 5 tests | 18,911 swaps published; and a real position (#7380336) replayed live against 1,971 swaps of its own pool | **done for reading; acting is Rails 2 and 3** |
 | **P5** Depth | Four job routes off one template, `/data`, `/register`, `/list`, `/api/v1/*`, `/api/mcp`, own agent card, origin cohorts | Four findings recorded, all measurements block-stamped | **partial** |
 | **P6** `OutcomePolicy` | — only `RecipientBound.sol` is in `contracts/src` | — | **not started** |
 | **P7** Supply and usage | — no Studio on-ramp, no seller dashboard | — | **not started** |
@@ -484,3 +484,57 @@ stated amount in a stated band — and the page says so in the copy rather than 
 a comment. Replaying against a position somebody actually holds needs a wallet
 connection, and that is the step that turns this from a measurement into the
 product the plan describes.
+
+
+## The counterfactual answers for a position somebody actually holds
+
+`/a/[chain]/[id]?position=0x…` reads the address's PancakeSwap V3 positions off
+chain, picks the largest, and replays every reference strategy against **that**
+band, that liquidity and that pool's real swaps.
+
+### An address, not a wallet connection
+
+Reading a position needs an address; only *acting* needs a signature. So this is
+a plain GET form. It works with JavaScript off, adds nothing to the client
+bundle, and asks the reader for nothing they would be right to refuse. The plan
+says "connect a wallet"; a connector here would have bought a nicer paste and
+cost the read path, and it would not have made the answer truer.
+
+### Streamed, because it is slow and says so
+
+Walking a busy pool takes seconds, and a hire screen that blocks on a log walk
+is how one times out mid-scan and refuses for the wrong reason. The replay sits
+in a Suspense boundary: **first byte 39ms**, the page is complete and readable
+immediately, and the table arrives when the chain has been read. Repeat views
+are 1.5s from an in-process cache keyed by `(pool, block window, position)`.
+
+Two hours of a busy 1% pool took **32 seconds** cold, so the window is an hour —
+measured, not picked. That lands at **first byte 0.20s, complete in 6.2s**, and
+the copy on the page reports the window it actually got rather than the one it
+asked for.
+
+### What the first real position said
+
+Position #7380336, a 3,200-tick band on a 1% pool, against 1,971 real swaps:
+
+| | in range | recentres | vs holding |
+|---|---|---|---|
+| Hold | 66.8% | 0 | — |
+| Range Keeper I | 97.6% | 8 | −114.65 |
+| Range Keeper II | 95.3% | 31 | −268.90 |
+| Tight Band Keeper | 93.6% | 125 | −644.07 |
+
+**Every agent would have destroyed value on this position**, monotonically with
+how often it acted. The page says so in words: *"that is a real answer to
+'should I hire one of these for this position', and it is no."*
+
+A marketplace that cannot tell somebody not to buy is a shop. This is the first
+screen in the product that can.
+
+### What it still owes
+
+- **The board's per-row column.** §5.6 wants the figure on every row of `/` once
+  an address is known; today it is the agent page only.
+- **Rail 3's own agents.** The three keepers are reference strategies. A
+  third-party agent has no replayable strategy object, so its row cannot be
+  replayed — only measured after it is hired, which is §9's ledger.

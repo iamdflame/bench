@@ -18,9 +18,22 @@ export { accrue, inRange, valueAt, liquidityFor, dilutionWarning } from "./simul
 export { costModel, readCostModel, chargeRecentre, RECENTRE_GAS, COLLECT_GAS, type CostModel } from "./cost";
 export { replay, timeInRange, recentres, type ReplayResult, type Event } from "./replay";
 export {
+  readPositions,
+  POSITION_MANAGER,
+  V3_FACTORY,
+  type OwnedPosition,
+  type PositionsResult,
+  type PositionsRefused,
+} from "./positions";
+export {
   rangeKeeperI,
   rangeKeeperII,
   tightBandKeeper,
   holdPosition,
   REFERENCE_STRATEGIES,
 } from "./strategies";
+export {
+  replayForPosition,
+  type PositionReplay,
+  type PositionReplayRow,
+} from "./forPosition";

@@ -15,6 +15,8 @@ import {
 import Nav from "@/components/board/Nav";
 import Footer from "@/components/board/Footer";
 import { findRow } from "@/lib/board";
+import ForYourPosition, { PositionForm } from "@/components/board/ForYourPosition";
+import { Suspense } from "react";
 
 /*
   Every agent in the registry has a page, so this route is dynamic and the
@@ -38,8 +40,15 @@ export async function generateMetadata({
   };
 }
 
-export default async function AgentPage({ params }: { params: Promise<{ chain: string; id: string }> }) {
+export default async function AgentPage({
+  params,
+  searchParams,
+}: {
+  params: Promise<{ chain: string; id: string }>;
+  searchParams: Promise<{ position?: string }>;
+}) {
   const { chain, id: rawId } = await params;
+  const { position } = await searchParams;
   const { chainId } = resolveChain(chain);
   const id = decodeURIComponent(rawId);
   const hit = findRow(chainId, id);
@@ -124,6 +133,48 @@ export default async function AgentPage({ params }: { params: Promise<{ chain: s
               Not filed under a job: {row.jobReason}
             </p>
           ) : null}
+        </section>
+
+        {/* -------------------------------------------- what it would have done */}
+        {/*
+          The plan's first discontinuity, and the only question a person
+          actually has: not what this agent says about itself, but what it would
+          have done to their money. It sits directly under the name, above the
+          record and above the rails, because everything below it is context for
+          this.
+        */}
+        <section className="panel" style={{ marginTop: 22, padding: 18 }} aria-labelledby="cf-h">
+          <h2 id="cf-h" className="h3" style={{ fontSize: "var(--text-sm)" }}>
+            What this would have done to your position
+          </h2>
+          <p className="prose" style={{ marginTop: 8, maxWidth: "76ch" }}>
+            Replayed against the real trades in your own pool — every swap, the fees they actually paid,
+            gas at the price the chain quoted, and the cost of the swap a recentre needs. Losses are shown
+            the same way gains are.
+          </p>
+
+          <PositionForm action={`/a/${chainId}/${encodeURIComponent(id)}`} address={position} />
+
+          {position ? (
+            <Suspense
+              fallback={
+                <p className="provenance" style={{ marginTop: 14 }}>
+                  Walking the pool&rsquo;s swaps. This takes a few seconds — it is reading every trade in the
+                  window rather than an average of them.
+                </p>
+              }
+            >
+              <ForYourPosition chainId={chainId} address={position} />
+            </Suspense>
+          ) : (
+            <p className="provenance" style={{ marginTop: 12 }}>
+              No address given, so nothing is replayed. The scheduled run against a synthetic position is on{" "}
+              <Link href="/data" className="nav__link" style={{ textDecoration: "underline" }}>
+                /data
+              </Link>
+              .
+            </p>
+          )}
         </section>
 
         {/* ------------------------------------------- what it has done */}
