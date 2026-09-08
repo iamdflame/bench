@@ -1,7 +1,7 @@
 {
  "chainId": 56,
- "fromBlock": null,
- "headBlock": "120702783",
- "total": 309891,
- "updatedAt": "2026-09-08T14:32:18.186Z"
+ "fromBlock": "120728832",
+ "headBlock": "120748832",
+ "total": 310188,
+ "updatedAt": "2026-09-08T20:19:04.907Z"
 }

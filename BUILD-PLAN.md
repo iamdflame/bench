@@ -308,3 +308,42 @@ engagements has either, and **nothing backfills them**: a projection written
 afterwards, by code that can already see how the window turned out, is a
 postdiction wearing a forecast's clothes. The desk says exactly that rather than
 showing a number it cannot stand behind.
+
+
+## The production gap the screenshots found
+
+I had not looked at the deployed site in a long session of building it. Doing so
+showed a board of eleven rows reading `not measured`, `no price`, `Why not`,
+with every rail dot dark — while the ticker above it said **19 callable**.
+
+Nothing was broken. §12.1 requires that *a rail not re-checked inside the
+freshness window closes rather than staying green*, the window is 45 minutes,
+and the last probe was 70 minutes old. The board was telling the truth.
+
+**The truth was the problem.** The site reads a board committed at deploy time,
+so within an hour of every deploy the marketplace correctly reports that it can
+do nothing. `railway.json` already runs the worker always-on — but the worker
+writes to its own disk, and the site reads a file baked into a Vercel build.
+**The two never meet.**
+
+### Completing the path that was already intended
+
+- The worker **serves** its board when `PORT` is set — `/board-<chain>.json` and
+  `/health`, which is what Railway provides and what its healthcheck wants.
+- The site reads `BOARD_URL` in the background and swaps its cache. `getBoard`
+  stays synchronous, so no page waits on a third party to render: the first
+  request after a cold start serves the committed copy, which is a real board
+  and simply older, and every request after that serves the live one.
+- With `BOARD_URL` unset or the worker unreachable, the committed copy answers
+  and nothing degrades. That fallback is the point, and the README already
+  claimed it: *the front door of a marketplace must not go blank when a third
+  party's database is unhappy.*
+
+### Two things the screenshot showed that are worth fixing next
+
+- **The four job doors all read `2 callable`** where §12.1 specifies a count of
+  what is *hireable*. Four identical numbers read as broken even when true.
+- **Refusal chips render in ember.** §13.2 reserves that for the mandate rail
+  and says refusals render in `--dim`, *"absence of light, never in red"*. On a
+  board where most rows carry a refusal, the loudest colour on the page is
+  currently attached to the least important information.

@@ -12,8 +12,11 @@
  * and the worst outcome of decaying late is selling a hire on a dead endpoint.
  */
 
-import { resolveChain } from "@bench/shared";
+import { createServer } from "node:http";
+import { createReadStream, existsSync } from "node:fs";
+import { resolveChain, type SupportedChain } from "@bench/shared";
 import { cmdBazaar, cmdExamples, cmdMandate, cmdMetrics, cmdProbe, cmdSnapshot, cmdSweep } from "./cli";
+import { boardPath } from "./store";
 
 const CYCLE_MS = Number(process.env.CYCLE_MS ?? 15 * 60_000);
 const { chainId } = resolveChain(Number(process.env.CHAIN_ID ?? 56));
@@ -50,8 +53,59 @@ async function cycle() {
   }
 }
 
+/**
+ * Serve the board the worker has just written, when a port is available.
+ *
+ * The gap this closes: the worker keeps the board fresh on its own disk, the
+ * site reads a copy committed at deploy time, and the two never meet. Fifteen
+ * minutes after a deploy every rail on the site closes — correctly, because a
+ * rail not re-checked inside the freshness window is required to shut rather
+ * than stay green — and the marketplace shows an empty board while a worker
+ * elsewhere knows perfectly well what is callable.
+ *
+ * So the worker publishes. `railway.json` already runs this process always-on
+ * and Railway sets `PORT`; the site reads `BOARD_URL` and falls back to its
+ * committed copy when the worker is unreachable. That fallback is the point:
+ * the front door of a marketplace must not go blank because a process
+ * somewhere else is unhappy.
+ */
+function serveBoard() {
+  const port = Number(process.env.PORT ?? 0);
+  if (!port) return;
+  const server = createServer((req: import("node:http").IncomingMessage, res: import("node:http").ServerResponse) => {
+    const url = new URL(req.url ?? "/", "http://localhost");
+    if (url.pathname === "/health") {
+      res.writeHead(200, { "content-type": "application/json" });
+      res.end(JSON.stringify({ ok: true, chainId, cycleMs: CYCLE_MS }));
+      return;
+    }
+    const m = /^\/board-(\d+)\.json$/.exec(url.pathname);
+    if (!m) {
+      res.writeHead(404, { "content-type": "application/json" });
+      res.end(JSON.stringify({ error: "This worker serves /board-<chainId>.json and /health." }));
+      return;
+    }
+    const path = boardPath(Number(m[1]) as SupportedChain);
+    if (!existsSync(path)) {
+      res.writeHead(404, { "content-type": "application/json" });
+      res.end(JSON.stringify({ error: `No board has been written for chain ${m[1]} yet.` }));
+      return;
+    }
+    res.writeHead(200, {
+      "content-type": "application/json",
+      /* Short, because the whole point is freshness, and the site caches too. */
+      "cache-control": "public, max-age=30",
+      "access-control-allow-origin": "*",
+    });
+    createReadStream(path).pipe(res);
+  });
+  server.listen(port, () => log(`serving the board on :${port}`));
+  server.unref();
+}
+
 async function main() {
   log(`worker starting on chain ${chainId}${once ? ", single cycle" : `, every ${CYCLE_MS / 60000}m`}`);
+  if (!once) serveBoard();
   for (;;) {
     const started = Date.now();
     await cycle();

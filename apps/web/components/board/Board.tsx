@@ -228,8 +228,19 @@ export default function Board({
                           {job.title}
                         </Link>
                       ) : null}
+                      {/*
+                        A refusal, in the colour refusals use.
+
+                        This carried `chip--mandate`, which is the ember the rail
+                        ramp reserves for standing authority — the most serious
+                        state on the board. Most rows carry a mismatch, so the
+                        loudest colour on the page was attached to its least
+                        important information, and it read as a rail badge for a
+                        rail nobody had granted. §13.2 is explicit: a refusal is
+                        an absence of light, never a signal colour.
+                      */}
                       {row.mismatch ? (
-                        <span className="chip chip--mandate" title={row.mismatch}>
+                        <span className="chip chip--refused" title={row.mismatch}>
                           listing disagrees
                         </span>
                       ) : null}

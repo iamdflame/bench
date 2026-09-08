@@ -190,7 +190,57 @@ let cached: { at: number; board: StoredBoard } | null = null;
  * per request would work; caching it means a page with six components that
  * each need the board parses it once.
  */
+/**
+ * The live board, when a worker is publishing one.
+ *
+ * The gap this closes: the worker keeps the board fresh on its own disk and the
+ * site reads a copy committed at deploy time, so within the freshness window of
+ * a deploy every rail closes — correctly, since a rail not re-checked is
+ * required to shut rather than stay green — and the marketplace shows an empty
+ * board while a worker elsewhere knows exactly what is callable.
+ *
+ * Refreshed in the background rather than awaited, so `getBoard` stays
+ * synchronous and no page waits on a third party to render. The first request
+ * after a cold start serves the committed copy, which is a real board and
+ * simply older; every request after that serves the live one.
+ *
+ * If `BOARD_URL` is unset or the worker is unreachable, the committed copy is
+ * the answer and nothing degrades. That fallback is deliberate: the front door
+ * of a marketplace must not go blank because a process somewhere else is
+ * unhappy.
+ */
+let live: { at: number; board: StoredBoard } | null = null;
+let refreshing = false;
+const LIVE_MS = 60_000;
+
+function refreshLive(chainId: SupportedChain): void {
+  const base = process.env.BOARD_URL;
+  if (!base || refreshing) return;
+  if (live && Date.now() - live.at < LIVE_MS && live.board.chainId === chainId) return;
+  refreshing = true;
+  const url = `${base.replace(/\/+$/, "")}/board-${chainId}.json`;
+  void fetch(url, { signal: AbortSignal.timeout(8_000), cache: "no-store" })
+    .then(async (r) => {
+      if (!r.ok) return;
+      const board = JSON.parse(await r.text(), reviver) as StoredBoard;
+      if (board?.chainId === chainId && Array.isArray(board.agents)) {
+        live = { at: Date.now(), board };
+        if (process.env.BOARD_DEBUG) console.error("[board] live board adopted:", board.agents.length, "agents");
+      } else if (process.env.BOARD_DEBUG) {
+        console.error("[board] live board rejected: chainId", board?.chainId, "agents", Array.isArray(board?.agents));
+      }
+    })
+    .catch((e) => {
+      if (process.env.BOARD_DEBUG) console.error("[board] live fetch failed:", String(e).slice(0, 200));
+    })
+    .finally(() => {
+      refreshing = false;
+    });
+}
+
 export function getBoard(chainId: SupportedChain = DEFAULT_CHAIN): StoredBoard {
+  refreshLive(chainId);
+  if (live && live.board.chainId === chainId) return live.board;
   if (cached && Date.now() - cached.at < 30_000 && cached.board.chainId === chainId) return cached.board;
   const path = join(process.cwd(), "data", `board-${chainId}.json`);
   const alt = join(process.cwd(), "apps/web/data", `board-${chainId}.json`);
