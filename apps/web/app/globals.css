@@ -1099,3 +1099,51 @@ td.num,
   }
   .pulse::after { animation: none; opacity: 0.35; transform: none; }
 }
+
+/* --------------------------------------------------------------- the ladder */
+/*
+  §15 rendered as nine rows rather than a score.
+
+  A rung that is not lit uses `--dim` — the absence of light — and never red.
+  Red would read as an accusation, and most unlit rungs are not failures: an
+  agent that does not implement the ERC-8183 seller side has not done anything
+  wrong, it simply cannot be hired that way. The two rungs nobody can reach
+  today carry `?` rather than `·`, because "we could not look" and "we looked
+  and it is not there" are different facts.
+*/
+.ladder { list-style: none; margin: 0; padding: 0; border-top: 1px solid var(--color-rule); }
+.ladder__rung {
+  display: grid;
+  grid-template-columns: 18px 20px 1fr;
+  gap: 0 10px;
+  align-items: baseline;
+  padding: 10px 2px;
+  border-bottom: 1px solid var(--color-rule);
+}
+.ladder__mark { font-family: var(--font-mono); font-size: var(--text-xs); line-height: 1.4; }
+.ladder__n { font-size: var(--text-2xs); color: var(--color-dim); line-height: 1.6; }
+.ladder__body { display: flex; flex-direction: column; gap: 2px; min-width: 0; }
+.ladder__fact { font-size: var(--text-xs); color: var(--color-text); }
+.ladder__how {
+  font-family: var(--font-mono);
+  font-size: var(--text-2xs);
+  color: var(--color-dim);
+}
+.ladder__detail {
+  font-size: var(--text-2xs);
+  color: var(--color-muted);
+  line-height: 1.55;
+  max-width: 68ch;
+}
+
+.ladder__rung[data-verdict="lit"] .ladder__mark { color: var(--color-rail-call); }
+.ladder__rung[data-verdict="lit"] .ladder__fact { color: var(--color-text); }
+.ladder__rung[data-verdict="unlit"] .ladder__mark { color: var(--color-dim); }
+.ladder__rung[data-verdict="unlit"] .ladder__fact { color: var(--color-muted); }
+.ladder__rung[data-verdict="unknown"] .ladder__mark { color: var(--color-dim); }
+.ladder__rung[data-verdict="unknown"] .ladder__fact { color: var(--color-muted); }
+
+@media (max-width: 560px) {
+  .ladder__rung { grid-template-columns: 16px 1fr; }
+  .ladder__n { display: none; }
+}

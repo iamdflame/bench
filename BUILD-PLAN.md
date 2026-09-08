@@ -52,7 +52,7 @@ Live: **https://bench-six-sigma.vercel.app**
 | 12.1 honesty line at the bottom, muted, linking `/data` | done |
 | 12.1 `FOR YOU` column — the counterfactual, per row | **done** — one walk serves every row |
 | 12.2 counterfactual first, above the record and the rails | done |
-| **12.2 `▸ Every check we ran against the chain` — the §15 ladder** | **missing** |
+| 12.2 `▸ Every check we ran against the chain` — the §15 ladder | **done** — nine rungs, each with its proof |
 | **12.2 `▸ Reputation` — raw vs sybil-filtered, flagged cohort** | **to verify** |
 | 12.3 may / may-not, custody, signatures declared before the button | present |
 | **12.4 `/desk` projected vs actual side by side** | **missing** |
@@ -71,8 +71,17 @@ Live: **https://bench-six-sigma.vercel.app**
 
 ## §15 Trust architecture
 
-The ladder is computed but **not rendered anywhere**. Rungs 0–6 are derivable from data already
-held; rung 7 is unobtainable (see the B402 note below); rung 8 needs a settled BENCH job.
+**Rendered on every agent page**, as nine rows rather than a score: each rung a yes or a no, with
+what proved it printed beside it.
+
+Two rungs cannot light for anyone and stay on the ladder unlit, with the reason. Rung 7 needs
+B402's `l30DaysUniquePayers`, which Binance documents and the public API does not serve; rung 8
+needs a job settled through this marketplace, and none has. Deleting them would make the ladder
+look complete and the product look further along than it is — an unlit rung with a sentence
+attached is the honest shape and doubles as the roadmap.
+
+An unlit rung uses `--dim`, never red: most are not failures. An agent that does not implement the
+ERC-8183 seller side has done nothing wrong, it simply cannot be hired that way.
 
 ## §6 / P6 — `OutcomePolicy`
 

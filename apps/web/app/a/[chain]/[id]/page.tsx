@@ -16,6 +16,7 @@ import Nav from "@/components/board/Nav";
 import Footer from "@/components/board/Footer";
 import { findRow } from "@/lib/board";
 import ForYourPosition, { PositionForm } from "@/components/board/ForYourPosition";
+import Ladder from "@/components/board/Ladder";
 import { Suspense } from "react";
 
 /*
@@ -258,9 +259,17 @@ export default async function AgentPage({
         </section>
 
         {/* ------------------------------------------------ what we checked */}
+        {/* --------------------------------------------------- §15, the ladder */}
+        <section className="panel" style={{ marginTop: 22, padding: 18 }} aria-labelledby="ladder-h">
+          <h2 id="ladder-h" className="meta" style={{ marginBottom: 12 }}>
+            Where this stands, and what proved it
+          </h2>
+          <Ladder row={row} agent={agent} service={service} />
+        </section>
+
         <section className="panel" style={{ marginTop: 22, padding: 18 }} aria-labelledby="checks-h">
           <h2 id="checks-h" className="meta" style={{ marginBottom: 12 }}>
-            Every check we ran
+            Every check we ran, in full
           </h2>
           <dl className="terms">
             <dt>Endpoint</dt>
