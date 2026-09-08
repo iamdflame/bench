@@ -25,6 +25,7 @@ const PAGES = [
   ["job", "/j/yield"],
   ["register", "/register"],
   ["data", "/data"],
+  ["advantage", "/advantage"],
   ["list", "/list"],
   ["desk", "/desk"],
 ];

@@ -28,6 +28,11 @@ const LINKS = [
   { href: "/", label: "Board", match: (p: string) => p === "/" || p.startsWith("/j/") },
   { href: "/register", label: "Register", match: (p: string) => p.startsWith("/register") },
   { href: "/desk", label: "Desk", match: (p: string) => p.startsWith("/desk") },
+  /*
+    "Does hiring beat doing it yourself" is the question a buyer actually has,
+    so it is a room rather than a document. Named for the claim, not the format.
+  */
+  { href: "/advantage", label: "Advantage", match: (p: string) => p.startsWith("/advantage") },
   { href: "/data", label: "Data", match: (p: string) => p.startsWith("/data") },
 ];
 

@@ -1623,3 +1623,68 @@ td.num,
 .execute__hash { margin-left: 8px; font-size: var(--text-2xs); }
 .execute__done { margin-top: 14px; max-width: 68ch; color: var(--color-muted); }
 .execute__why { margin-top: 14px; max-width: 72ch; }
+
+/* ==========================================================================
+   The advantage report
+   ========================================================================== */
+/*
+  Two arms, side by side, at identical weight. The winning one takes a rail
+  colour on its edge and nothing else — no larger type, no shaded panel, no
+  badge. A comparison that styles the arm it wants you to pick has stopped
+  being a comparison, and this page's whole claim is that it did not.
+*/
+.task {
+  border-top: 1px solid var(--color-rule);
+  padding: 24px 0;
+}
+.task__head { display: flex; gap: 14px; align-items: flex-start; }
+.task__head > div { flex: 1 1 auto; min-width: 0; }
+.task__head .num.dim { font-size: var(--text-lg); line-height: 1.1; flex: none; }
+.task__q { font-size: var(--text-xs); color: var(--color-muted); margin-top: 5px; max-width: 74ch; line-height: 1.55; }
+
+.task__arms {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 14px;
+  margin-top: 18px;
+}
+.arm {
+  border: 1px solid var(--color-rule);
+  border-left-width: 2px;
+  border-radius: var(--radius-ui);
+  background: var(--color-panel);
+  padding: 14px 16px;
+  min-width: 0;
+}
+.arm[data-won] { border-left-color: var(--color-rail-hire); }
+.arm__label { font-size: var(--text-2xs); color: var(--color-dim); }
+.arm__how { font-size: var(--text-xs); line-height: 1.55; color: var(--color-muted); margin-top: 7px; }
+.arm__stats { margin-top: 12px; display: flex; flex-direction: column; gap: 8px; }
+.arm__stats > div { display: grid; grid-template-columns: 5.5rem minmax(0, 1fr); gap: 10px; align-items: baseline; }
+.arm__stats dt { font-size: var(--text-2xs); color: var(--color-dim); }
+.arm__stats dd { font-size: var(--text-xs); color: var(--color-text); line-height: 1.5; }
+/* The output, attached verbatim, and allowed to be ugly. It is evidence. */
+.arm__output {
+  margin-top: 12px;
+  padding: 10px 12px;
+  background: var(--color-ground);
+  border-radius: 6px;
+  font-family: var(--font-mono);
+  font-size: var(--text-2xs);
+  line-height: 1.55;
+  color: var(--color-muted);
+  white-space: pre-wrap;
+  word-break: break-word;
+  max-height: 190px;
+  overflow-y: auto;
+}
+
+.task__verdict { margin-top: 16px; font-size: var(--text-xs); line-height: 1.6; color: var(--color-muted); max-width: 84ch; }
+.task__delta { color: var(--color-text); }
+.task__delta[data-for="agent"] { color: var(--color-rail-hire); }
+.task__delta[data-for="doing-it-yourself"] { color: var(--color-rail-call); }
+.task__method { margin-top: 12px; max-width: 84ch; line-height: 1.6; }
+
+@media (max-width: 800px) {
+  .task__arms { grid-template-columns: 1fr; }
+}

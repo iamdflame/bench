@@ -31,7 +31,7 @@
     "prove-call": "tsx --env-file-if-exists=.env --env-file-if-exists=.env.local apps/agents/src/scripts/prove-call.ts",
     "prove-hire": "tsx --env-file-if-exists=.env --env-file-if-exists=.env.local apps/agents/src/scripts/prove-hire.ts",
     "agent": "tsx --env-file-if-exists=.env --env-file-if-exists=.env.local apps/agents/src/scripts/run.ts",
-    "advantage": "tsx --env-file-if-exists=.env --env-file-if-exists=.env.local apps/agents/src/scripts/advantage.ts",
+    "advantage": "tsx --env-file-if-exists=.env --env-file-if-exists=.env.local worker/src/advantage.ts",
     "contracts:build": "cd contracts && forge build",
     "contracts:test": "cd contracts && forge test",
     "deploy:wrapper": "tsx --env-file-if-exists=.env --env-file-if-exists=.env.local apps/agents/src/scripts/deploy-wrapper.ts",

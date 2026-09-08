@@ -145,6 +145,13 @@ console.log(`  route tree: ${ROUTES.sort().join("  ")}\n`);
     "/", "/j", "/j/[job]", "/a", "/a/[chain]", "/a/[chain]/[id]",
     "/hire", "/hire/[chain]", "/hire/[chain]/[id]",
     "/desk", "/register", "/data", "/list",
+    /*
+      The Agent Advantage Report. A ninth room, and the argument for it is that
+      "does hiring beat doing it yourself" is the question a buyer actually has.
+      A marketplace that can only answer it in a document attached to a
+      submission has not answered it.
+    */
+    "/advantage",
     // §11's machine surfaces. `/api/a2a` is named there alongside `/api/mcp`.
     "/api", "/api/mcp", "/api/a2a", "/api/rails", "/api/rails/call", "/api/rails/hire", "/api/rails/mandate",
     /*
