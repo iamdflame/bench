@@ -147,6 +147,14 @@ console.log(`  route tree: ${ROUTES.sort().join("  ")}\n`);
     "/desk", "/register", "/data", "/list",
     // §11's machine surfaces. `/api/a2a` is named there alongside `/api/mcp`.
     "/api", "/api/mcp", "/api/a2a", "/api/rails", "/api/rails/call", "/api/rails/hire", "/api/rails/mandate",
+    /*
+      The second half of a buyer-funded Rail 1 call. It is not a ninth room: the
+      signature is made in the browser and the seller's host carries no CORS
+      headers for us, so delivering it has to happen server-side. One route,
+      because the alternative is a page that cannot pay from the visitor's own
+      wallet at all.
+    */
+    "/api/rails/call/settle",
     "/api/agents", "/api/agents/[slug]",
     // The marketplace's own ERC-8004 card, at the conventional place.
     "/.well-known", "/.well-known/agent-card.json",

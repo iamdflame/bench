@@ -122,6 +122,180 @@ export async function tokenDomain(
  * they reject it with a message about our payload rather than about their
  * requirement, which costs an hour to diagnose the first time.
  */
+/**
+ * Everything up to the signature, and nothing after it.
+ *
+ * The split exists because the buyer is not always in this process. When a
+ * visitor pays from their own wallet, the typed data has to be built on the
+ * server — `tokenDomain` is an RPC read and the challenge parser lives here —
+ * carried to the browser, signed there, and carried back. Doing that with one
+ * monolithic `payAndCall` would mean either shipping the challenge parser to
+ * the client or trusting the client's idea of what it is paying for, and the
+ * second of those is how a marketplace signs its users into a transfer they
+ * did not agree to.
+ *
+ * So this returns the exact EIP-712 document and the exact authorization it
+ * commits to. What the user's wallet displays and what the facilitator settles
+ * are constructed once, here, from the same values.
+ */
+export interface PreparedPayment {
+  /** The EIP-712 document to sign. Handed to the wallet verbatim. */
+  typed: unknown;
+  /** The authorization the signature commits to, in wire form. */
+  authorization: {
+    from: Address;
+    to: Address;
+    value: string;
+    validAfter: "0";
+    validBefore: string;
+    nonce: Hex;
+  };
+  /** The envelope, complete except for `payload.signature`. */
+  envelope: Omit<X402PaymentPayload, "payload">;
+  /** What this will cost, for the confirmation the user reads before signing. */
+  cost: { amount: bigint; asset: Address; symbol: string | null };
+}
+
+export type Prepared = { ok: true; prepared: PreparedPayment } | { ok: false; refusedBecause: string };
+
+export async function preparePayment(input: {
+  chainId: SupportedChain;
+  url: string;
+  challenge: Challenge;
+  /** Who pays. An address is enough; no key is needed to build the document. */
+  from: Address;
+  maxAmount: bigint;
+}): Promise<Prepared> {
+  const no = (refusedBecause: string): Prepared => ({ ok: false, refusedBecause });
+
+  const route = input.challenge.best;
+  if (!route) return no(input.challenge.unpayableReason ?? "This challenge offers no route we can settle.");
+  if (route.amount === null || !route.asset || !route.payTo) return no("The challenge is missing an amount or a payee.");
+  if (route.amount > input.maxAmount) {
+    return no("It asks for more than the per-call ceiling this marketplace will spend without you raising it.");
+  }
+
+  const req = toRequirement(input.challenge, route, input.url);
+  if (!req) return no("The challenge could not be turned into a payable requirement.");
+
+  const domain = await tokenDomain(input.chainId, route.asset);
+  if (!domain) return no("The token's EIP-712 domain could not be read, so no valid authorization can be signed.");
+
+  const now = Math.floor(Date.now() / 1000);
+  const validBefore = BigInt(now + (route.maxTimeoutSeconds ?? 300));
+  const nonce = randomNonce();
+
+  const typed = buildEip3009TypedData({
+    chainId: input.chainId,
+    token: route.asset,
+    name: domain.name,
+    version: domain.version,
+    from: input.from,
+    to: route.payTo,
+    value: route.amount,
+    validAfter: 0n,
+    validBefore,
+    nonce,
+  });
+
+  /*
+    `accepted` must mirror the challenge's requirement verbatim, so our own
+    transport-only fields are stripped rather than echoed. A facilitator
+    matching this against its config will not recognise a requirement we
+    decorated.
+  */
+  const accepted: Record<string, unknown> = { ...(req as unknown as Record<string, unknown>) };
+  delete accepted.x402Version;
+  delete accepted.resource;
+  delete accepted.mimeType;
+  const resource = normalizeResource(req.resource, input.url);
+
+  return {
+    ok: true,
+    prepared: {
+      typed,
+      authorization: {
+        from: input.from,
+        to: route.payTo,
+        value: route.amount.toString(),
+        validAfter: "0",
+        validBefore: validBefore.toString(),
+        nonce,
+      },
+      envelope: {
+        x402Version: input.challenge.x402Version,
+        scheme: req.scheme,
+        network: req.network,
+        accepted: accepted as X402Requirement,
+        ...(resource ? { resource } : {}),
+      } as Omit<X402PaymentPayload, "payload">,
+      cost: { amount: route.amount, asset: route.asset, symbol: route.assetSymbol },
+    },
+  };
+}
+
+/**
+ * The second half: attach a signature and call the endpoint.
+ *
+ * Kept server-side even when the signature came from a browser. The endpoint is
+ * somebody else's host and will not carry CORS headers for us, so a fetch from
+ * the page would fail for a reason that has nothing to do with the payment.
+ */
+export async function deliverPayment(input: {
+  url: string;
+  prepared: PreparedPayment;
+  signature: Hex;
+  method?: string;
+  body?: string;
+  timeoutMs?: number;
+}): Promise<PaidCallResult> {
+  const started = Date.now();
+  const payload: X402PaymentPayload = {
+    ...input.prepared.envelope,
+    payload: { signature: input.signature, authorization: input.prepared.authorization },
+  } as X402PaymentPayload;
+
+  const res = await safeFetch(input.url, {
+    method: input.method ?? "GET",
+    headers: { "X-PAYMENT": encodeXPaymentHeader(payload), "content-type": "application/json" },
+    ...(input.body === undefined ? {} : { body: input.body }),
+    timeoutMs: input.timeoutMs ?? 30_000,
+    maxBytes: 512 * 1024,
+  });
+
+  const fail = (why: string): PaidCallResult => ({
+    ok: false,
+    body: null,
+    status: null,
+    paid: null,
+    settlement: null,
+    latencyMs: Date.now() - started,
+    refusedBecause: why,
+  });
+
+  if (!res.ok) return fail(res.detail);
+  if (res.status === 402) {
+    return {
+      ...fail("The payment was submitted and the endpoint asked for payment again, so it did not accept it."),
+      status: 402,
+      body: res.body.slice(0, 2_000),
+    };
+  }
+  if (res.status >= 400) {
+    return { ...fail(`The endpoint answered ${res.status} after payment.`), status: res.status, body: res.body.slice(0, 2_000) };
+  }
+
+  return {
+    ok: true,
+    body: res.body,
+    status: res.status,
+    paid: input.prepared.cost,
+    settlement: res.headers["x-payment-response"] ?? null,
+    latencyMs: Date.now() - started,
+    refusedBecause: null,
+  };
+}
+
 export async function payAndCall(input: {
   chainId: SupportedChain;
   url: string;
@@ -145,38 +319,15 @@ export async function payAndCall(input: {
     refusedBecause: why,
   });
 
-  const route = input.challenge.best;
-  if (!route) return fail(input.challenge.unpayableReason ?? "This challenge offers no route we can settle.");
-  if (route.amount === null || !route.asset || !route.payTo) return fail("The challenge is missing an amount or a payee.");
-  if (route.amount > input.maxAmount) {
-    return fail(
-      `It asks for more than the per-call ceiling this marketplace will spend without you raising it.`,
-    );
-  }
-
-  const req = toRequirement(input.challenge, route, input.url);
-  if (!req) return fail("The challenge could not be turned into a payable requirement.");
-
-  const domain = await tokenDomain(input.chainId, route.asset);
-  if (!domain) return fail("The token's EIP-712 domain could not be read, so no valid authorization can be signed.");
-
-  const now = Math.floor(Date.now() / 1000);
-  const validBefore = BigInt(now + (route.maxTimeoutSeconds ?? 300));
-  const nonce = randomNonce();
-  const from = input.account.address;
-
-  const typed = buildEip3009TypedData({
+  const prep = await preparePayment({
     chainId: input.chainId,
-    token: route.asset,
-    name: domain.name,
-    version: domain.version,
-    from,
-    to: route.payTo,
-    value: route.amount,
-    validAfter: 0n,
-    validBefore,
-    nonce,
+    url: input.url,
+    challenge: input.challenge,
+    from: input.account.address,
+    maxAmount: input.maxAmount,
   });
+  if (!prep.ok) return fail(prep.refusedBecause);
+  const { typed } = prep.prepared;
 
   let signature: Hex;
   try {
@@ -195,63 +346,12 @@ export async function payAndCall(input: {
     return fail(`The payment authorization could not be signed: ${String(e).slice(0, 120)}`);
   }
 
-  /*
-    `accepted` must mirror the challenge's requirement verbatim, so our own
-    transport-only fields are stripped rather than echoed. A facilitator
-    matching this against its config will not recognise a requirement we
-    decorated.
-  */
-  const accepted: Record<string, unknown> = { ...(req as unknown as Record<string, unknown>) };
-  delete accepted.x402Version;
-  delete accepted.resource;
-  delete accepted.mimeType;
-  const resource = normalizeResource(req.resource, input.url);
-  const payload: X402PaymentPayload = {
-    x402Version: input.challenge.x402Version,
-    scheme: req.scheme,
-    network: req.network,
-    accepted: accepted as X402Requirement,
-    ...(resource ? { resource } : {}),
-    payload: {
-      signature,
-      authorization: {
-        from,
-        to: route.payTo,
-        value: route.amount.toString(),
-        validAfter: "0",
-        validBefore: validBefore.toString(),
-        nonce,
-      },
-    },
-  };
-
-  const res = await safeFetch(input.url, {
-    method: input.method ?? "GET",
-    headers: { "X-PAYMENT": encodeXPaymentHeader(payload), "content-type": "application/json" },
-    ...(input.body === undefined ? {} : { body: input.body }),
-    timeoutMs: input.timeoutMs ?? 30_000,
-    maxBytes: 512 * 1024,
+  return deliverPayment({
+    url: input.url,
+    prepared: prep.prepared,
+    signature,
+    method: input.method,
+    body: input.body,
+    timeoutMs: input.timeoutMs,
   });
-
-  if (!res.ok) return fail(res.detail);
-  if (res.status === 402) {
-    return {
-      ...fail("The payment was submitted and the endpoint asked for payment again, so it did not accept it."),
-      status: 402,
-      body: res.body.slice(0, 2_000),
-    };
-  }
-  if (res.status >= 400) {
-    return { ...fail(`The endpoint answered ${res.status} after payment.`), status: res.status, body: res.body.slice(0, 2_000) };
-  }
-
-  return {
-    ok: true,
-    body: res.body,
-    status: res.status,
-    paid: { amount: route.amount, asset: route.asset, symbol: route.assetSymbol },
-    settlement: res.headers["x-payment-response"] ?? null,
-    latencyMs: Date.now() - started,
-    refusedBecause: null,
-  };
 }

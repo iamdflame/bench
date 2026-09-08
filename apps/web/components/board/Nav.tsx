@@ -1,7 +1,9 @@
 import Link from "next/link";
+import { Suspense } from "react";
 import Shortcuts from "./Shortcuts";
 import Live from "./Live";
 import Logotype from "./Logotype";
+import Connect from "./Connect";
 
 /**
  * One bar: the mark, four rooms, a search field, and the create call to action.
@@ -66,6 +68,16 @@ export default function Nav({ path = "/", q }: { path?: string; q?: string }) {
             /
           </kbd>
         </form>
+
+        {/*
+          Suspense because `Connect` reads the query string, and an unsuspended
+          `useSearchParams` opts every page that renders this bar out of static
+          rendering. The fallback is nothing: the bar is complete without it,
+          which is the same reason there is no connect gate on any screen.
+        */}
+        <Suspense fallback={null}>
+          <Connect />
+        </Suspense>
 
         <Link href="/list" className="nav__cta">
           List yours

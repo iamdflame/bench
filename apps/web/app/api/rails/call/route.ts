@@ -20,9 +20,24 @@
  *                it returns "the float is out", which is true, rather than
  *                letting a transfer fail and reporting that as a bug.
  *
- * The payment is made from this deployment's own wallet and the button says
- * so. That is a stated arrangement rather than a disguised one: a marketplace
- * whose cheapest path requires a visitor to fund a wallet first is a demo.
+ * ---------------------------------------------------------------------------
+ * Two payers, and which one is the real one
+ * ---------------------------------------------------------------------------
+ *
+ * POST a `payer` address and this endpoint signs nothing: it returns the EIP-712
+ * document that visitor's wallet should sign, and `/settle` delivers it. That is
+ * the real marketplace path — the buyer's own money, the buyer's own signature,
+ * and §8 held exactly.
+ *
+ * POST without one and this deployment pays the cent from its own float, and
+ * the button says so. That is a stated arrangement rather than a disguised one:
+ * a marketplace whose cheapest path requires a visitor to fund a wallet before
+ * it will show them anything working is a demo, and the whole point of a
+ * one-cent rail is that trying it should cost nothing to decide.
+ *
+ * The bounds below apply to the float path only. Nothing bounds what a person
+ * chooses to spend from their own wallet except the per-call ceiling, which is
+ * a property of the rail rather than of the payer.
  */
 
 import { NextResponse } from "next/server";
@@ -30,8 +45,9 @@ import { privateKeyToAccount } from "viem/accounts";
 import { formatEther } from "viem";
 import { ERC20_ABI, TOKENS, chainClient, resolveChain, safeFetch } from "@bench/shared";
 import { parseChallenge } from "@bench/probe";
-import { payAndCall } from "@bench/rails";
+import { payAndCall, preparePayment } from "@bench/rails";
 import { findRow } from "@/lib/board";
+import { MAX_PER_CALL as RAIL_CEILING, resolveAndChallenge } from "./shared";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
@@ -77,11 +93,52 @@ const callerOf = (req: Request) =>
   req.headers.get("x-forwarded-for")?.split(",")[0]?.trim() ?? req.headers.get("x-real-ip") ?? "unknown";
 
 export async function POST(request: Request) {
-  let body: { chainId?: number; id?: string; resource?: string | null };
+  let body: { chainId?: number; id?: string; resource?: string | null; payer?: string };
   try {
     body = (await request.json()) as typeof body;
   } catch {
     return NextResponse.json({ ok: false, refusedBecause: "The request body was not readable JSON." }, { status: 400 });
+  }
+
+  /* ------------------------------------------- the buyer pays for themselves */
+  /*
+    No key is touched on this path and no rate limit applies to it. The bounds
+    further down exist to stop strangers draining *our* float; a person spending
+    their own cent needs no permission from us, and asking for some would make
+    this a custodian with extra steps.
+  */
+  const payer = /^0x[0-9a-fA-F]{40}$/.test(body.payer ?? "") ? (body.payer as `0x${string}`) : null;
+  if (payer) {
+    const found = await resolveAndChallenge(body);
+    if (!found.ok) {
+      return NextResponse.json({ ok: false, refusedBecause: found.refusedBecause }, { status: found.status });
+    }
+    const prep = await preparePayment({
+      chainId: found.chainId,
+      url: found.target,
+      challenge: found.challenge,
+      from: payer,
+      maxAmount: RAIL_CEILING,
+    });
+    if (!prep.ok) {
+      return NextResponse.json({ ok: false, refusedBecause: prep.refusedBecause }, { status: 200 });
+    }
+    const { typed, authorization, envelope, cost } = prep.prepared;
+    return NextResponse.json({
+      ok: true,
+      executed: false,
+      /*
+        `executed: false` in the payload, not only in the prose. §8 — a client
+        that ignores descriptions still cannot read this as a receipt.
+      */
+      needsSignature: true,
+      chainId: found.chainId,
+      typed,
+      authorization,
+      envelope,
+      cost: { amount: cost.amount.toString(), asset: cost.asset, symbol: cost.symbol },
+      says: `Authorise ${formatEther(cost.amount)} ${cost.symbol ?? "tokens"} to ${found.name}. This is a signature, not a transaction — you pay no gas, and the seller submits the transfer.`,
+    });
   }
 
   const { chainId } = resolveChain(body.chainId);

@@ -1486,3 +1486,113 @@ td.num,
   .positionform--hero .positionform__input,
   .positionform--hero .btn { width: 100%; max-width: none; justify-content: center; }
 }
+
+/* ==========================================================================
+   The wallet control
+   ========================================================================== */
+/*
+  Deliberately quiet. Connecting is not the point of this site and the button
+  that does it should not outrank the four job doors underneath. It is the same
+  size and weight as the other bar controls; the only thing that changes when
+  you connect is that a dot lights and the label becomes your address.
+*/
+.connect { display: inline-flex; align-items: center; gap: 8px; position: relative; }
+.connect__btn { white-space: nowrap; }
+.connect__btn .num { font-size: var(--text-2xs); }
+.connect[data-connected] .connect__btn { border-color: color-mix(in srgb, var(--color-rail-call) 35%, transparent); }
+.connect__dot {
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  background: var(--color-refused);
+  flex: none;
+}
+.connect__dot[data-on] {
+  background: var(--color-rail-call);
+  box-shadow: 0 0 8px color-mix(in srgb, var(--color-rail-call) 55%, transparent);
+}
+/*
+  The reason sits under the bar rather than in it. A wallet refusal is a
+  sentence, and a sentence in a 52px bar either truncates or breaks the layout.
+*/
+.connect__why {
+  position: absolute;
+  top: calc(100% + 6px);
+  right: 0;
+  z-index: 40;
+  max-width: 34ch;
+  padding: 8px 10px;
+  font-size: var(--text-2xs);
+  line-height: 1.45;
+  color: var(--color-muted);
+  background: var(--color-panel);
+  border: 1px solid var(--color-rule);
+  border-radius: var(--radius-ui);
+}
+
+@media (max-width: 760px) {
+  /* The bar is already full at 360px; the address is the part worth keeping. */
+  .connect__why { display: none; }
+}
+
+/* ==========================================================================
+   The leash
+   ========================================================================== */
+/*
+  Rail 3's route spends up to sixty seconds scanning the chain to derive what a
+  session may and may not do, and until now the answer was thrown away
+  client-side and the panel rendered a chip over empty space. This is that
+  document.
+
+  Two columns, and the right one is not smaller than the left. A leash is
+  defined by what it withholds; a layout that treats the refusals as a footnote
+  is an advertisement for the grant.
+*/
+.leash { margin-top: 14px; border-top: 1px solid var(--color-rule); padding-top: 12px; }
+.leash__cols {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 20px;
+}
+.leash__h {
+  font-size: var(--text-2xs);
+  color: var(--color-dim);
+  margin-bottom: 7px;
+}
+.leash__list { display: flex; flex-direction: column; gap: 9px; font-size: var(--text-xs); }
+.leash__list li { display: flex; flex-direction: column; gap: 2px; }
+.leash__list--not li { color: var(--color-refused); }
+.leash__sig,
+.leash__bound {
+  font-size: var(--text-2xs);
+  color: var(--color-dim);
+  line-height: 1.45;
+}
+.leash__terms { margin-top: 14px; }
+.leash__enforced {
+  margin-top: 12px;
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+  font-size: var(--text-2xs);
+  color: var(--color-muted);
+  line-height: 1.5;
+}
+.leash__enforced li { padding-left: 14px; position: relative; }
+.leash__enforced li::before {
+  content: "";
+  position: absolute;
+  left: 0;
+  top: 6px;
+  width: 6px;
+  height: 6px;
+  border-radius: 2px;
+  background: var(--color-rail-mandate);
+}
+.leash__evidence { margin-top: 10px; display: flex; flex-wrap: wrap; gap: 12px; }
+.leash__tx { color: var(--color-muted); text-decoration: underline; text-underline-offset: 3px; }
+.leash__tx:hover { color: var(--color-text); }
+
+@media (max-width: 700px) {
+  .leash__cols { grid-template-columns: 1fr; gap: 16px; }
+}

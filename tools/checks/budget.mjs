@@ -95,10 +95,28 @@ for (const b of BUDGETS) {
 /*
   The client-component count is the leading indicator. Every "use client" is a
   component whose code ships to the browser, and this product is RSC-first: the
-  full read path works with JavaScript off, so only the two genuinely
-  interactive things should be client components.
+  full read path works with JavaScript off.
+
+  Raised from 4 to 8 when the write path landed, deliberately and once.
+
+  The cap was never "four" as a number worth defending — it was a proxy for
+  "the read path is server-rendered", and that is still true and still checked
+  above: every read route sits within about a kilobyte of the shared React
+  baseline, and `npm run smoke` still requires fifty board rows to render with
+  JavaScript switched off.
+
+  What changed is that a marketplace has to be able to *act*, and signing is the
+  one thing that cannot happen on a server. The islands this allows are the
+  wallet control, the rail button, the hire executor and the desk's reclaim and
+  revoke — five things, each of which asks a wallet for a signature and does
+  nothing else. Adding one that does not is what this number is now guarding
+  against, so the reason lives here rather than in a commit message.
+
+  The whole write path cost 2 KB on the homepage, because the wallet layer is
+  four raw EIP-1193 calls rather than a library. If this number needs raising
+  again, the question to ask first is why the new component cannot be a form.
 */
-const CLIENT_CAP = 4;
+const CLIENT_CAP = 8;
 let clients = 0;
 const walk = (dir) => {
   for (const e of readdirSync(dir)) {
