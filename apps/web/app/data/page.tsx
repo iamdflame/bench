@@ -117,7 +117,7 @@ export default async function DataPage() {
           <h2 id="funnel-h" className="h3">
             The funnel
           </h2>
-          <table className="board" style={{ marginTop: 12 }}>
+          <table className="board board--prose" style={{ marginTop: 12 }}>
             <thead>
               <tr>
                 <th scope="col">Stage</th>
@@ -273,7 +273,7 @@ export default async function DataPage() {
             </p>
 
             <div style={{ overflowX: "auto", marginTop: 16 }}>
-              <table className="board">
+              <table className="board board--prose">
                 <thead>
                   <tr>
                     <th scope="col">Strategy</th>
@@ -404,7 +404,7 @@ export default async function DataPage() {
             ) : (
               <>
                 <div style={{ overflowX: "auto", marginTop: 16 }}>
-                  <table className="board">
+                  <table className="board board--prose">
                     <thead>
                       <tr>
                         <th scope="col">Strategy</th>
@@ -549,7 +549,7 @@ export default async function DataPage() {
             one — but nothing is padded either.
           </p>
           {s.origins.length > 0 ? (
-            <table className="board" style={{ marginTop: 14 }}>
+            <table className="board board--prose" style={{ marginTop: 14 }}>
               <thead>
                 <tr>
                   <th scope="col">Host</th>

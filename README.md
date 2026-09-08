@@ -207,6 +207,39 @@ npm run smoke          # against a running deployment
 npm run contracts:test # 18 tests, incl. a 512-run fuzz on the cap invariant
 ```
 
+## How it looks, and why
+
+The design system is in `mainplan.md` §13 and lives entirely in
+[`apps/web/app/globals.css`](apps/web/app/globals.css). Three things carry it.
+
+**The ramp is the whole chromatic system.** Teal is *call it* — you give a
+payment. Gold is *hire it* — you give an escrow. Ember is *mandate it* — you
+give standing authority. Nothing else on the site is coloured, and the logotype
+is those three bars ascending, so a reader who learns the mark has learned the
+product. An open rail is lit, with a halo in its own colour; a closed one is
+left as the rule it was drawn from. A refusal is `--color-refused`, never red.
+
+**A figure is illuminated only when it is above zero.** A gold nought would be
+the loudest thing on the page saying nothing is available, so a rail with
+nothing open shows its real count in `--color-dim`. The figure is never hidden
+and never rounded away — `check:absence` fails the build on a dash, a blank or a
+defaulted zero, and it has caught this codebase doing exactly that.
+
+**The band above the board departs from §12.1 on purpose.** The plan says "no
+marketing hero — the inventory is the homepage". The hero
+([`components/board/Hero.tsx`](apps/web/components/board/Hero.tsx)) is a
+deliberate exception, and what makes it one is that every figure in it is read
+from the chain this minute and every claim in it is a transaction on
+[`/data`](https://bench-six-sigma.vercel.app/data). There is no slogan in it and
+nothing that would still be true if the product did not work. It adds no client
+JavaScript: the homepage first load is unchanged at 105.5 KB against a 117 KB
+cap.
+
+```bash
+npm run build && npm run start          # then
+node tools/shot.mjs http://127.0.0.1:3130 .shots   # every screen, 1440x900 and 360x780
+```
+
 ## The one contract
 
 [`contracts/src/RecipientBound.sol`](contracts/src/RecipientBound.sol)

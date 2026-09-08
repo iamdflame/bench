@@ -32,25 +32,46 @@ import { formatUnits } from "viem";
 import Board from "./Board";
 import type { Row, Sort } from "@/lib/board";
 
-/** The form. A plain GET, so it works with scripting off. */
-export function BoardPositionForm({ action, address }: { action: string; address?: string }) {
+/**
+ * The form. A plain GET, so it works with scripting off.
+ *
+ * `hero` is the same control at the size of a primary action. It is a variant
+ * rather than a second component on purpose: the homepage shows this in exactly
+ * one place, and two forms pointed at the same query parameter is two places
+ * for the placeholder, the label and the clear affordance to drift apart.
+ */
+export function BoardPositionForm({
+  action,
+  address,
+  variant = "bar",
+}: {
+  action: string;
+  address?: string;
+  variant?: "bar" | "hero";
+}) {
+  const hero = variant === "hero";
   return (
-    <form method="get" action={action} className="row" style={{ gap: 8, flexWrap: "wrap" }}>
+    <form
+      method="get"
+      action={action}
+      className={hero ? "row positionform positionform--hero" : "row positionform"}
+    >
       <input
         name="position"
         defaultValue={address ?? ""}
-        placeholder="Your address, to see what each would have done to your position"
-        className="search__input"
-        style={{ minWidth: 320, flex: "1 1 380px" }}
+        placeholder={
+          hero ? "Your address" : "Your address, to see what each would have done to your position"
+        }
+        className="search__input positionform__input"
         spellCheck={false}
         autoComplete="off"
         aria-label="An address holding a PancakeSwap V3 position"
       />
-      <button type="submit" className="filter">
-        Show me
+      <button type="submit" className={hero ? "btn btn--hire btn--lg" : "filter"}>
+        {hero ? "See it on your position \u2192" : "Show me"}
       </button>
       {address ? (
-        <a href={action} className="filter">
+        <a href={action} className={hero ? "btn btn--quiet btn--lg" : "filter"}>
           Clear
         </a>
       ) : null}

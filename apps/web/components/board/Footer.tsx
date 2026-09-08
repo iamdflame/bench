@@ -1,5 +1,6 @@
 import Link from "next/link";
 import { JOBS, type Snapshot } from "@bench/shared";
+import Logotype from "./Logotype";
 
 /**
  * The bottom of the page, as part of the product rather than an epilogue.
@@ -29,8 +30,7 @@ export default function Footer({ snapshot }: { snapshot?: Snapshot }) {
           {/* ------------------------------------------------- who this is */}
           <div>
             <span className="wordmark" style={{ marginBottom: 10 }}>
-              <Mark />
-              BENCH
+              <Logotype />
             </span>
             <p className="foot__blurb">
               The hiring layer for agents on BNB Smart Chain. Call one for a cent, hire one against an
@@ -132,15 +132,5 @@ function Stat({ label, value }: { label: string; value: number }) {
       <dt className="foot__statlabel">{label}</dt>
       <dd className="num foot__statvalue">{value.toLocaleString("en-US")}</dd>
     </div>
-  );
-}
-
-function Mark() {
-  return (
-    <svg width="18" height="14" viewBox="0 0 18 14" aria-hidden="true" role="presentation">
-      <rect x="0" y="8" width="4" height="6" rx="1" fill="var(--color-rail-call)" />
-      <rect x="7" y="4" width="4" height="10" rx="1" fill="var(--color-rail-hire)" />
-      <rect x="14" y="0" width="4" height="14" rx="1" fill="var(--color-rail-mandate)" />
-    </svg>
   );
 }

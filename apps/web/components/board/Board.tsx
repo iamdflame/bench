@@ -216,7 +216,18 @@ export default function Board({
 
               <td data-col="agent">
                 <span className="board__id">
-                  <Thumb seed={row.address ?? row.tokenId ?? row.key} />
+                  <Thumb
+                    seed={row.address ?? row.tokenId ?? row.key}
+                    rail={
+                      row.rails.mandate.open
+                        ? "mandate"
+                        : row.rails.hire.open
+                          ? "hire"
+                          : row.rails.call.open
+                            ? "call"
+                            : undefined
+                    }
+                  />
                   <span className="board__idtext">
                     <span className="board__namerow">
                       <Link href={row.href} className="board__name">

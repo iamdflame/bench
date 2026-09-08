@@ -7,7 +7,8 @@ import JobDoors from "@/components/board/JobDoors";
 import Board from "@/components/board/Board";
 import Ticker from "@/components/board/Ticker";
 import Strip from "@/components/board/Strip";
-import BoardForYou, { BoardPositionForm } from "@/components/board/BoardForYou";
+import BoardForYou from "@/components/board/BoardForYou";
+import Hero from "@/components/board/Hero";
 import { Suspense } from "react";
 import { readBoardView, type Sort } from "@/lib/board";
 
@@ -81,30 +82,14 @@ export default async function BoardPage({
       <Ticker history={view.history} probed={s.totals.probed} />
 
       <main className="shell" style={{ paddingBlock: 14 }}>
-        {/* --------------------------------------------------- the promise */}
-        <section className="between wrap" style={{ alignItems: "flex-end", gap: 20 }}>
-          <div>
-            <h1 className="h1">Hire an agent to run your money on BNB Chain.</h1>
-            <p className="meta" style={{ marginTop: 4 }}>
-              Choose how much it can do. Watch it work. Take it back anytime.
-              {/*
-                The second half is dropped on a phone. Three lines of preamble
-                above the inventory is the document shape this design exists to
-                avoid, and the claim is repeated in the footer on every page.
-              */}
-              <span className="hide-phone">
-                {" "}
-                Nothing is listed here until we have called it ourselves.
-              </span>
-            </p>
-          </div>
-          <p className="provenance">
-            block {Number(s.cutoff.block).toLocaleString("en-US")} · read {ago(view.generatedAt)}
-          </p>
-        </section>
+        {/* ---------------------------------------------- the claim, at weight */}
+        <Hero snapshot={s} position={position} />
 
         {/* -------------------------------------------------- the four jobs */}
         <section style={{ marginTop: 12 }} aria-label="The four jobs">
+          <p className="provenance" style={{ textAlign: "right", marginBottom: 6 }}>
+            block {Number(s.cutoff.block).toLocaleString("en-US")} · read {ago(view.generatedAt)}
+          </p>
           <JobDoors snapshot={s} />
         </section>
 
@@ -163,11 +148,11 @@ export default async function BoardPage({
             floor and what the smoke check holds. With one, the board streams,
             because a walk of somebody's pool takes seconds and the doors and
             filters above should not wait for it.
-          */}
-          <div style={{ margin: "0 0 12px" }}>
-            <BoardPositionForm action="/" address={position} />
-          </div>
 
+            The control that sets it is the hero's primary action rather than a
+            second copy here: one address field on the page, in the place a
+            reader looks first.
+          */}
           {position ? (
             <Suspense
               fallback={

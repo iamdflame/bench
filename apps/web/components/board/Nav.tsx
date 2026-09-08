@@ -1,6 +1,7 @@
 import Link from "next/link";
 import Shortcuts from "./Shortcuts";
 import Live from "./Live";
+import Logotype from "./Logotype";
 
 /**
  * One bar: the mark, four rooms, a search field, and the create call to action.
@@ -33,8 +34,7 @@ export default function Nav({ path = "/", q }: { path?: string; q?: string }) {
     <header className="nav">
       <div className="shell nav__inner">
         <Link href="/" className="wordmark" aria-label="BENCH, home">
-          <Mark />
-          BENCH
+          <Logotype />
         </Link>
 
         <nav className="nav__links" aria-label="Primary">
@@ -74,22 +74,5 @@ export default function Nav({ path = "/", q }: { path?: string; q?: string }) {
       <Shortcuts />
       <Live />
     </header>
-  );
-}
-
-/**
- * The mark: three bars at the three rail colours, ascending.
- *
- * It is the product's one idea drawn small — the further right, the more you
- * hand over. It is not a monogram, and it repeats the only visual system the
- * interface has rather than introducing a second one.
- */
-function Mark() {
-  return (
-    <svg width="18" height="14" viewBox="0 0 18 14" aria-hidden="true" role="presentation">
-      <rect x="0" y="8" width="4" height="6" rx="1" fill="var(--color-rail-call)" />
-      <rect x="7" y="4" width="4" height="10" rx="1" fill="var(--color-rail-hire)" />
-      <rect x="14" y="0" width="4" height="14" rx="1" fill="var(--color-rail-mandate)" />
-    </svg>
   );
 }

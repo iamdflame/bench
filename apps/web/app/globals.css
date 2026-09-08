@@ -192,14 +192,20 @@ td.num,
   font-weight: 500;
 }
 /*
-  Deliberately modest.
+  The ramp, restored.
 
-  §10.1 puts a headline and one line above the doors and then the inventory.
-  The first attempt used the display size here, which pushed the board off the
-  first screen and made a live market read as an essay. The board is the
-  argument; the sentence is a caption on it.
+  These were once 20 / 25 / 20 — an `.h1` *smaller than* the `.h2` under it. The
+  comment that stood here explained why: the display size above the board pushed
+  the inventory off the first screen and made a live market read as an essay.
+  That observation was correct and the fix was not; shrinking the top of the
+  scale to fix one page's layout flattened the type on every other page and
+  inverted the hierarchy on all of them.
+
+  The board's own headline is `.display` now, sized and budgeted deliberately in
+  the hero band. `.h1` is free to be an `.h1` again on the pages that use it,
+  none of which are the board.
 */
-.h1 { font-size: var(--text-md); line-height: 1.25; letter-spacing: -0.012em; font-weight: 500; }
+.h1 { font-size: var(--text-xl); line-height: 1.15; letter-spacing: -0.02em; font-weight: 500; }
 .h2 { font-size: var(--text-lg); line-height: 1.2; letter-spacing: -0.015em; font-weight: 500; }
 .h3 { font-size: var(--text-md); line-height: 1.3; letter-spacing: -0.01em; font-weight: 500; }
 
@@ -253,14 +259,8 @@ td.num,
   z-index: 20;
 }
 .nav__inner { display: flex; align-items: center; gap: 18px; height: var(--nav-h); }
-.wordmark {
-  font-weight: 600;
-  letter-spacing: 0.04em;
-  font-size: var(--text-sm);
-  display: flex;
-  align-items: center;
-  gap: 0.5rem;
-}
+/* The lockup owns its own type; this is only the box it sits in. */
+.wordmark { display: inline-flex; align-items: center; color: var(--color-text); }
 .nav__links { display: flex; gap: 16px; align-items: center; }
 
 /*
@@ -355,7 +355,23 @@ td.num,
 .door[data-active] { border-color: var(--color-rail-hire); }
 .door__title { font-size: var(--text-sm); font-weight: 500; line-height: 1.25; }
 .door__count { display: flex; align-items: baseline; gap: 7px; font-size: var(--text-2xs); }
-.door__n { font-size: var(--text-lg); color: var(--color-text); line-height: 1; letter-spacing: -0.02em; }
+.door__n { font-size: var(--text-xl); color: var(--color-text); line-height: 1; letter-spacing: -0.02em; }
+
+/*
+  A door wears the rail its figure came from: a 2px edge and the number itself.
+  A door with nothing reachable takes no colour, which is the correct thing for
+  it to look like — the absence is the finding.
+*/
+.door { border-left-width: 2px; }
+.door[data-rail="call"] { border-left-color: var(--color-rail-call); }
+.door[data-rail="hire"] { border-left-color: var(--color-rail-hire); }
+.door[data-rail="mandate"] { border-left-color: var(--color-rail-mandate); }
+.door[data-rail="call"] .door__n { color: var(--color-rail-call); }
+.door[data-rail="hire"] .door__n { color: var(--color-rail-hire); }
+.door[data-rail="mandate"] .door__n { color: var(--color-rail-mandate); }
+.door[data-rail="call"]:hover { background: color-mix(in srgb, var(--color-call-wash) 55%, var(--color-panel-hi)); }
+.door[data-rail="hire"]:hover { background: color-mix(in srgb, var(--color-hire-wash) 55%, var(--color-panel-hi)); }
+.door[data-rail="mandate"]:hover { background: color-mix(in srgb, var(--color-mandate-wash) 55%, var(--color-panel-hi)); }
 
 @media (max-width: 720px) {
   .doors { grid-template-columns: repeat(2, minmax(0, 1fr)); }
@@ -364,21 +380,41 @@ td.num,
 /* ------------------------------------------------------------- rail badge */
 
 /*
-  Three squares. Lit means the rail is open on this row; dim means it is not,
-  and the row says which condition failed. Eight pixels, because a badge that
-  needs a legend has failed and one that shouts is decoration.
+  Three squares, and the single most-read control on the board.
+
+  They were eight flat pixels, on the reasoning that a badge which shouts is
+  decoration. On a page of fifty rows the effect was the opposite of restraint:
+  three near-black squares per row, and no way to tell an actionable row from a
+  dead one without reading the cell beside it.
+
+  So an open rail is now *lit* — full chroma, plus a halo in its own colour —
+  and a closed one is left as the rule it always was. The halo is a static
+  `box-shadow`, not a glow that pulses: §13.4 allows motion only after a data
+  event, and being open is a state rather than an event.
 */
-.rails { display: inline-flex; gap: 4px; align-items: center; }
+.rails { display: inline-flex; gap: 5px; align-items: center; }
 .rail {
-  width: 8px;
-  height: 8px;
+  width: 10px;
+  height: 10px;
   border-radius: 2px;
   background: var(--color-rule);
   display: inline-block;
 }
-.rail[data-on="call"] { background: var(--color-rail-call); }
-.rail[data-on="hire"] { background: var(--color-rail-hire); }
-.rail[data-on="mandate"] { background: var(--color-rail-mandate); }
+.rail[data-on="call"] {
+  background: var(--color-rail-call);
+  box-shadow: 0 0 0 1px color-mix(in srgb, var(--color-rail-call) 30%, transparent),
+    0 0 10px color-mix(in srgb, var(--color-rail-call) 40%, transparent);
+}
+.rail[data-on="hire"] {
+  background: var(--color-rail-hire);
+  box-shadow: 0 0 0 1px color-mix(in srgb, var(--color-rail-hire) 30%, transparent),
+    0 0 10px color-mix(in srgb, var(--color-rail-hire) 40%, transparent);
+}
+.rail[data-on="mandate"] {
+  background: var(--color-rail-mandate);
+  box-shadow: 0 0 0 1px color-mix(in srgb, var(--color-rail-mandate) 30%, transparent),
+    0 0 10px color-mix(in srgb, var(--color-rail-mandate) 40%, transparent);
+}
 
 /* The one orchestrated moment: a refreshed probe lights the badge. */
 .rail[data-fresh] { animation: bloom var(--d-bloom) var(--ease-out); }
@@ -397,6 +433,7 @@ td.num,
 */
 .rail[data-revoked] {
   background: var(--color-dim) !important;
+  box-shadow: none !important;
   transition: background var(--d-revoke) var(--ease-out);
 }
 
@@ -455,14 +492,16 @@ td.num,
 
 /*
   A deterministic mark per row, derived from the address or URL that identifies
-  it. Monochrome on purpose: colour in this interface means rail availability,
-  and spending it on decoration would make the one thing that carries meaning
-  harder to see. It exists so the eye can find a row again after a sort.
+  it, and drawn in the colour of the highest rail that row has open. At 26px it
+  was four-pixel cells in two greys and read as a fragment of a QR code; the
+  grid was never the problem, the scale was. It exists so the eye can find a row
+  again after a sort — and now so that "can I act on this" is answered in the
+  first column.
 */
 .thumb {
-  width: 26px;
-  height: 26px;
-  border-radius: 4px;
+  width: 36px;
+  height: 36px;
+  border-radius: 5px;
   background: color-mix(in srgb, var(--color-panel-hi) 70%, var(--color-ground));
   border: 1px solid var(--color-rule);
   display: block;
@@ -485,6 +524,14 @@ td.num,
 }
 .board thead th:first-child { padding-left: 0; }
 .board thead th:last-child { padding-right: 0; text-align: right; }
+/*
+  The last column is right-aligned because on the board it holds the action
+  button, which belongs on the right edge. `/data` reuses this table for a
+  method column, and a paragraph of prose set flush right is unreadable — so a
+  table can opt its last column back to the left.
+*/
+.board--prose thead th:last-child,
+.board--prose tbody td:last-child { text-align: left; white-space: normal; }
 
 /*
   Sortable headers, the way a trading board does it: the header is the control.
@@ -622,9 +669,20 @@ td.num,
 /* The rail toggle: three states in one control, not three cards. */
 .railtoggle { display: inline-flex; align-items: center; gap: 6px; }
 .railtoggle .filter { display: inline-flex; align-items: center; gap: 6px; }
-.railtoggle .dot { width: 7px; height: 7px; border-radius: 2px; background: var(--color-rule); }
+/*
+  The legend, and it has to be readable as one. These were drawn in
+  `--color-rule` until active, so the three controls that teach the reader what
+  teal, gold and ember mean were themselves colourless until clicked.
+*/
+.railtoggle .dot { width: 8px; height: 8px; border-radius: 2px; background: var(--color-rule); }
+.railtoggle .filter[data-rail="call"] .dot { background: color-mix(in srgb, var(--color-rail-call) 70%, var(--color-panel)); }
+.railtoggle .filter[data-rail="hire"] .dot { background: color-mix(in srgb, var(--color-rail-hire) 70%, var(--color-panel)); }
+.railtoggle .filter[data-rail="mandate"] .dot { background: color-mix(in srgb, var(--color-rail-mandate) 70%, var(--color-panel)); }
 .railtoggle .filter[data-active] .dot,
-.railtoggle .filter:hover .dot { background: currentColor; }
+.railtoggle .filter:hover .dot {
+  background: currentColor;
+  box-shadow: 0 0 8px color-mix(in srgb, currentColor 45%, transparent);
+}
 .railtoggle .filter[data-rail="call"][data-active] { color: var(--color-rail-call); border-color: color-mix(in srgb, var(--color-rail-call) 40%, transparent); }
 .railtoggle .filter[data-rail="hire"][data-active] { color: var(--color-rail-hire); border-color: color-mix(in srgb, var(--color-rail-hire) 40%, transparent); }
 .railtoggle .filter[data-rail="mandate"][data-active] { color: var(--color-rail-mandate); border-color: color-mix(in srgb, var(--color-rail-mandate) 40%, transparent); }
@@ -654,13 +712,35 @@ td.num,
 }
 .btn:hover { border-color: var(--color-muted); background: var(--color-panel-hi); }
 
+/*
+  Three weights and no more.
+
+    solid gold   the one thing this screen wants you to do
+    outline      a real alternative, same screen
+    quiet        available, but not being argued for
+
+  `.btn` was a single outline style, so a page with four buttons made four
+  equal claims on the reader and none of them was the primary one.
+*/
+.btn--lg { font-size: var(--text-sm); padding: 13px 24px; font-weight: 500; }
+.btn--quiet { border-color: transparent; color: var(--color-muted); }
+.btn--quiet:hover { color: var(--color-text); border-color: var(--color-rule); background: transparent; }
+
 .btn--hire {
   background: var(--color-rail-hire);
   border-color: var(--color-rail-hire);
   color: #1a1400;
   font-weight: 500;
 }
-.btn--hire:hover { background: color-mix(in srgb, var(--color-rail-hire) 88%, #fff); border-color: transparent; }
+.btn--hire {
+  /* Gold on the ground colour, so the primary action is the brightest thing in view. */
+  box-shadow: 0 0 24px color-mix(in srgb, var(--color-rail-hire) 22%, transparent);
+}
+.btn--hire:hover {
+  background: color-mix(in srgb, var(--color-rail-hire) 88%, #fff);
+  border-color: color-mix(in srgb, var(--color-rail-hire) 88%, #fff);
+  box-shadow: 0 0 30px color-mix(in srgb, var(--color-rail-hire) 34%, transparent);
+}
 
 .btn--sm { padding: 5px 10px; font-size: var(--text-2xs); }
 .btn[aria-disabled="true"] { color: var(--color-dim); border-color: var(--color-rule); cursor: not-allowed; }
@@ -1176,4 +1256,233 @@ td.num,
 }
 @media (max-width: 620px) {
   .grade { grid-template-columns: 1fr; gap: 10px; }
+}
+
+/* ==========================================================================
+   The band above the board
+   ========================================================================== */
+/*
+  §12.1 says "no marketing hero". This is a deliberate departure, and what makes
+  it defensible is that every figure in it is live and every claim is a
+  transaction. The space is paid for in evidence rather than in slogans.
+*/
+
+.logotype { display: inline-flex; align-items: center; gap: 0.55rem; }
+.logotype__word {
+  font-weight: 650;
+  font-size: var(--text-md);
+  letter-spacing: -0.02em;
+  line-height: 1;
+}
+/*
+  The hero lockup is not simply the nav one scaled. At 20px the wordmark wants
+  a touch of air; at 64px the same tracking blows it apart into separate
+  letters, so the large size carries its own.
+*/
+.logotype--hero { gap: 1rem; }
+.logotype--hero .logotype__word {
+  font-size: 4rem;          /* 64 */
+  font-weight: 700;
+  letter-spacing: -0.045em;
+}
+
+.hero { padding: 22px 0 18px; }
+.hero__grid {
+  display: grid;
+  grid-template-columns: minmax(0, 1.35fr) minmax(280px, 0.65fr);
+  gap: 32px;
+  align-items: start;
+}
+.hero__say { min-width: 0; }
+.hero__headline {
+  margin-top: 14px;
+  max-width: 20ch;
+  color: var(--color-text);
+}
+.hero__promise {
+  margin-top: 12px;
+  font-size: var(--text-sm);
+  line-height: 1.55;
+  color: var(--color-muted);
+  max-width: 56ch;
+}
+.hero__cta { margin-top: 18px; }
+
+/* ------------------------------------------------ what has actually happened */
+.hero__proof {
+  border: 1px solid var(--color-rule);
+  border-radius: var(--radius-ui);
+  background: var(--color-panel);
+  padding: 16px 18px;
+}
+.hero__proof-title {
+  font-size: var(--text-2xs);
+  color: var(--color-dim);
+  margin-bottom: 12px;
+}
+.proofrow {
+  display: flex;
+  gap: 10px;
+  align-items: flex-start;
+  padding: 9px 0;
+  border-top: 1px solid var(--color-rule);
+}
+.proofrow:first-of-type { border-top: 0; }
+.proofrow__dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 2px;
+  margin-top: 5px;
+  flex: none;
+  background: var(--color-dim);
+}
+.proofrow[data-rail="call"] .proofrow__dot { background: var(--color-rail-call); }
+.proofrow[data-rail="hire"] .proofrow__dot { background: var(--color-rail-hire); }
+.proofrow[data-rail="mandate"] .proofrow__dot { background: var(--color-rail-mandate); }
+.proofrow__body { display: flex; flex-direction: column; gap: 2px; min-width: 0; }
+.proofrow__label { font-size: var(--text-xs); color: var(--color-text); }
+.proofrow__detail { font-size: var(--text-2xs); color: var(--color-muted); }
+.proofrow__more {
+  display: inline-block;
+  margin-top: 12px;
+  font-size: var(--text-2xs);
+  color: var(--color-muted);
+  text-decoration: underline;
+  text-underline-offset: 3px;
+}
+.proofrow__more:hover { color: var(--color-text); }
+
+/* ------------------------------------------------------ numbers that glow */
+/*
+  §13.1 asks for illuminated type and numbers that glow, and every figure on
+  this page used to render in the same muted grey as the prose beside it. These
+  are the funnel's real counts at display size, in the rail colours, with their
+  units small and quiet underneath.
+*/
+.hero__figures {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 22px 40px;
+  margin-top: 20px;
+  padding-top: 16px;
+  border-top: 1px solid var(--color-rule);
+}
+.figure { display: flex; flex-direction: column; gap: 2px; }
+.figure__n {
+  font-size: var(--text-xl);          /* 31 */
+  line-height: 1.05;
+  letter-spacing: -0.02em;
+  color: var(--color-text);
+}
+.figure__n[data-rail="call"] { color: var(--color-rail-call); }
+.figure__n[data-rail="hire"] { color: var(--color-rail-hire); }
+.figure__n[data-rail="mandate"] { color: var(--color-rail-mandate); }
+/*
+  A rail with nothing open is unlit here too, and unlit means dim rather than
+  bright white — otherwise a nought is the *loudest* figure in the strip, which
+  is the opposite of what it means.
+*/
+.figure__n[data-rail-off] { color: var(--color-dim); }
+.figure__label { font-size: var(--text-2xs); color: var(--color-dim); }
+
+@media (max-width: 900px) {
+  .hero { padding: 22px 0 18px; }
+  .hero__grid { grid-template-columns: 1fr; gap: 22px; }
+  .logotype--hero .logotype__word { font-size: 2.75rem; }  /* 44 */
+  .logotype--hero > svg { width: 44px; height: 34px; }
+  .hero__headline { max-width: none; }
+  .hero__figures { gap: 18px 28px; margin-top: 20px; }
+  .figure__n { font-size: var(--text-lg); }                /* 25 */
+}
+@media (max-width: 560px) {
+  /*
+    §13.3 puts display type between 34 and 44px. 39 is the desktop setting; on a
+    360px screen the same headline runs to four lines and the market is a scroll
+    away, so the phone takes the bottom of that range rather than leaving it.
+  */
+  .display { font-size: 2.125rem; line-height: 1.1; }  /* 34 — the floor §13.3 names */
+  .hero__promise { font-size: var(--text-xs); }
+  .hero__cta { margin-top: 14px; }
+
+  /*
+    The proof card tightens rather than loses a row. Three rails is the whole
+    argument of the product; dropping one of them on a small screen would drop
+    the one that costs the most to prove.
+  */
+  .hero__proof { padding: 12px 14px; }
+  .hero__proof-title { margin-bottom: 8px; }
+  .proofrow { padding: 7px 0; }
+  .proofrow__more { margin-top: 9px; }
+}
+
+@media (max-width: 420px) {
+  .logotype--hero .logotype__word { font-size: 2.125rem; } /* 34 */
+  .logotype--hero > svg { width: 34px; height: 26px; }
+}
+
+/*
+  Under 480px the bar keeps the mark and drops the word.
+
+  Four rooms, a call to action and an eight-character wordmark do not fit across
+  360 points, and the thing that gives way is the one a reader can identify from
+  the mark alone. The link keeps its accessible name either way.
+*/
+@media (max-width: 480px) {
+  .nav .logotype__word { display: none; }
+  .nav__links { flex: 1 1 auto; min-width: 0; }
+}
+
+/* ==========================================================================
+   The address field
+   ========================================================================== */
+/*
+  `.search__input` was referenced by the position form and by ForYourPosition
+  and **had no rule anywhere in this stylesheet**. Both rendered as a raw
+  browser input: a white box with black text and a system border, on a #0a1014
+  ground. It is the most important control on the homepage and it was the one
+  element on the page that had never been designed.
+*/
+.search__input {
+  font: inherit;
+  font-size: var(--text-xs);
+  color: var(--color-text);
+  background: var(--color-panel);
+  border: 1px solid var(--color-rule);
+  border-radius: var(--radius-ui);
+  padding: 8px 12px;
+  min-width: 0;
+  transition: border-color var(--d-hover) var(--ease-out), background var(--d-hover) var(--ease-out);
+}
+.search__input::placeholder { color: var(--color-dim); }
+.search__input:hover { border-color: color-mix(in srgb, var(--color-muted) 60%, var(--color-rule)); }
+.search__input:focus {
+  outline: none;
+  border-color: var(--color-rail-hire);
+  background: var(--color-panel-hi);
+}
+
+.positionform { display: flex; gap: 8px; flex-wrap: wrap; align-items: center; }
+.positionform__input { flex: 1 1 380px; min-width: 240px; }
+
+/*
+  At hero scale the field has to match the button it sits beside, or the pair
+  reads as a control and an afterthought. Same height, same radius, larger text.
+*/
+.positionform--hero { gap: 10px; }
+.positionform--hero .positionform__input {
+  font-size: var(--text-sm);
+  padding: 12px 16px;
+  flex: 1 1 300px;
+  max-width: 420px;
+}
+
+@media (max-width: 560px) {
+  /*
+    On a phone the pair stacks and both go full width. A 44px target is the
+    floor for a thumb, and the primary action must never be the narrower of the
+    two things on the row.
+  */
+  .positionform--hero { gap: 8px; }
+  .positionform--hero .positionform__input,
+  .positionform--hero .btn { width: 100%; max-width: none; justify-content: center; }
 }
