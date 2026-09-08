@@ -29,7 +29,7 @@ JavaScript off, and nothing animating on arrival.
 | **P1** Rail 1 — Call | `packages/rails/src/call.ts`, house agents answer 402 | **`rail-1-third-party`** — 0.01 USD1 paid to an endpoint we do not operate, tx `0x2e39…83ca`, block 120,590,203, six assertions. **11 third-party endpoints callable** after the false-timeout fix | **done** |
 | **P2** Rail 3 — Mandate | `mandate.ts` + `session.ts`, `ProvenScope` enforced by an unexported symbol, `RecipientBound.sol` | **`rail-3-scope-holds` — 9 proven, 0 failed, 1 inconclusive** on mainnet. Wrapper [`0x5863eda…952e`](https://bscscan.com/address/0x5863edaede7394470db19395ca05b1439662952e) bytecode-matched; grant → in-scope permitted → out-of-scope refused by name → withheld selector refused → [revoked](https://bscscan.com/tx/0xbbeb10c6eb6d1d3d5d3de2cdc5da068007b1f5abf2608275f310df2ed325b087) → key unknown | **done** |
 | **P3** Rail 2 — Hire | `hire.ts`, full ERC-8183 lifecycle, `disputeWindow()` read from chain, `prove-hire.ts` written | **`rail-2-escrow-funded` — 7 proven, 0 failed, 1 inconclusive** on testnet. Job 1139 FUNDED against a provider we do not operate; terms verbatim on chain; 1 $U escrowed | **testnet done, mainnet pending** |
-| **P4** Counterfactual | — `packages/counterfactual` does not exist | — | **not started** |
+| **P4** Counterfactual | `packages/counterfactual`: history, simulate, cost, replay, strategies. `no-lookahead` gate + 5 tests | Replays real PancakeSwap V3 swap history — 4,954 swaps over 5 hours, complete — and reports what each strategy would have done | **engine works, not on the page** |
 | **P5** Depth | Four job routes off one template, `/data`, `/register`, `/list`, `/api/v1/*`, `/api/mcp`, own agent card, origin cohorts | Four findings recorded, all measurements block-stamped | **partial** |
 | **P6** `OutcomePolicy` | — only `RecipientBound.sol` is in `contracts/src` | — | **not started** |
 | **P7** Supply and usage | — no Studio on-ramp, no seller dashboard | — | **not started** |
@@ -361,3 +361,75 @@ Protection is off; `/api/agents/range-keeper-i` answers 402 to anyone.
 The lesson is the same one the log walker taught: a check that cannot fail is
 not a check. Thirteen routes returning 200 told us nothing until one of them
 was asked to return something other than 200.
+
+
+## P4 — the counterfactual engine
+
+The plan calls this the single most important thing in the document, and it was
+blocked on an archive host that turned out to exist all along. `packages/counterfactual`
+now replays a strategy against a pool's real price series.
+
+| File | What it does |
+|---|---|
+| `history.ts` | Walks the pool's own `Swap` events into a price series. PancakeSwap's `Swap` has **nine** fields, not Uniswap's seven, so the topic is derived from the signature rather than pasted — a wrong topic matches nothing and reads exactly like a quiet pool. |
+| `simulate.ts` | Position value and **fee accrual computed from the swap**: `fee × amount × (our liquidity ÷ pool liquidity)`, every term out of the event. No assumed APR. |
+| `cost.ts` | Gas at the chain's price, and slippage bounded by the pool's in-range depth at that block. |
+| `replay.ts` | The loop. A strategy is handed one `Tick` by value and never the series. |
+| `strategies.ts` | Three keepers and a do-nothing arm. |
+
+**Verified against mainnet**: 4,954 swaps over five hours on WBNB/USDT, `complete=true`,
+served by the archive host in about twelve seconds.
+
+### What the first real replay said
+
+On a five-hour window with a ±60-tick opening band:
+
+| | in range | recentres | net vs open |
+|---|---|---|---|
+| Hold | 74.3% | 0 | **+7.08 USDT** |
+| Range Keeper I | 100% | 1 | −2.06 |
+| Range Keeper II | 100% | 1 | −1.68 |
+| Tight Band Keeper | 100% | 2 | −0.88 |
+
+**All three keepers lose to doing nothing.** Every one of them holds the price in
+range where holding does not, and every one is worse off, because the swap
+needed to recentre costs more than the extra fee capture is worth over five
+hours. That is the number the plan exists to surface — rule 5.5.5, losses shown
+at the same weight — and an engine that could not produce it would be a
+brochure.
+
+### Three bugs the first run found
+
+1. **`chargeRecentre` charged for a swap it never performed.** It returned
+   `amount0` untouched and took a fee off `amount1`. A position that had gone
+   out of range is held entirely in one token, so minting a band around the
+   current price found almost no liquidity on the other side and a single
+   recentre appeared to destroy the whole position — −1,890 USDT on a 1,900 USDT
+   position. The cost model was right; the mechanics were missing.
+
+2. **Gas was free.** BSC reports `baseFeePerGas` as **0** — it prices gas through
+   `eth_gasPrice`, not the header. Reading the header alone makes every action
+   cost nothing, which hands the win to whichever strategy churns hardest. That
+   is the precise failure the cost model exists to prevent, arriving through the
+   back door.
+
+3. **The engine had no way to mint a two-sided position** from one token, which
+   is correct behaviour and was worth confirming rather than patching.
+
+### The gate has teeth
+
+`no-lookahead` corrupts every tick after a cut, replays, and fails if any earlier
+decision moved. It passes — but a gate that cannot fail is decoration, so
+`packages/counterfactual/src/__tests__/replay.test.ts` builds a strategy that
+cheats the way a real cheat would (a closure over the series, captured before
+the replay) and asserts the detection catches it. Five tests, all passing.
+
+### What P4 still owes
+
+- **It is not on any page.** The engine runs from a script. The board's "for your
+  position" column and the agent-page headline are not built.
+- **Nothing reads a viewer's real position.** The replay takes a synthetic
+  opening band; connecting a wallet and replaying against a position somebody
+  actually holds is the next step and the one that makes it a product.
+- **One window, one pool.** A thirty-day replay is ~1,152 requests and belongs on
+  a schedule, cached by `(pool, blockRange)`, not in a request path.

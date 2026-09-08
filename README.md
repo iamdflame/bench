@@ -108,6 +108,31 @@ rather than reading the token signs against the wrong EIP-712 domain.
 Every figure above is reproduced by [`/data`](/data), which carries the command
 beside each one.
 
+**What three agents would have done to a position, replayed against the pool's
+own history.** `packages/counterfactual` walks a PancakeSwap V3 pool's `Swap`
+events into a price series, then drives each strategy across it one observation
+at a time — fees computed from the trades that actually happened, gas at the
+chain's own price, slippage bounded by the pool's depth at that block.
+
+On a five-hour window of WBNB/USDT, 4,954 swaps, complete:
+
+| | in range | recentres | net vs open |
+|---|---|---|---|
+| Hold | 74.3% | 0 | **+7.08 USDT** |
+| Range Keeper I | 100% | 1 | −2.06 |
+| Range Keeper II | 100% | 1 | −1.68 |
+| Tight Band Keeper | 100% | 2 | −0.88 |
+
+All three keepers hold the price in range where doing nothing does not, and all
+three are worse off: the swap a recentre needs costs more than the extra fees
+are worth over five hours. Losses are shown at the same weight as gains, because
+an engine that cannot produce that row is a brochure.
+
+A strategy is handed one observation and never the series, so it cannot read
+ahead. `npm run check:no-lookahead` proves it: corrupt every tick after a cut,
+replay, and fail if any earlier decision moved. A test builds a strategy that
+cheats anyway — a closure over the series — and asserts the check catches it.
+
 ## The rooms
 
 | Route | What it is |
@@ -139,6 +164,7 @@ nobody reviews carefully.
 | Chain 56 and 97 never appear in one figure | `check:network` |
 | The four jobs are equal in depth | `check:diversity` |
 | No link goes to a dead end | `check:routes` |
+| A strategy cannot see past its own block | `check:no-lookahead` |
 | Nothing animates without a data event, and no glassmorphism | `check:motion` |
 | The homepage stays inside its JavaScript budget | `check:budget` |
 | Every route, the funnel's freshness and all three rails, against something serving | `npm run smoke` |

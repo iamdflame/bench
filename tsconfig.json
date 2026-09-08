@@ -24,6 +24,9 @@
     },
     {
       "path": "./apps/agents"
+    },
+    {
+      "path": "./packages/counterfactual"
     }
   ]
 }

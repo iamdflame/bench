@@ -35,7 +35,7 @@
     "contracts:build": "cd contracts && forge build",
     "contracts:test": "cd contracts && forge test",
     "deploy:wrapper": "tsx --env-file-if-exists=.env --env-file-if-exists=.env.local apps/agents/src/scripts/deploy-wrapper.ts",
-    "check": "npm run check:diversity && npm run check:measurement && npm run check:absence && npm run check:network && npm run check:ranking && npm run check:routes && npm run check:motion",
+    "check": "npm run check:diversity && npm run check:measurement && npm run check:absence && npm run check:network && npm run check:ranking && npm run check:routes && npm run check:motion && npm run check:no-lookahead",
     "check:diversity": "tsx tools/checks/diversity.ts",
     "check:measurement": "tsx tools/checks/measurement.ts",
     "check:absence": "tsx tools/checks/absence.ts",
@@ -46,7 +46,8 @@
     "smoke": "tsx tools/checks/smoke.ts",
     "check:motion": "tsx tools/checks/motion.ts",
     "shots": "node tools/shot.mjs",
-    "examples": "tsx --env-file-if-exists=.env --env-file-if-exists=.env.local worker/src/cli.ts examples"
+    "examples": "tsx --env-file-if-exists=.env --env-file-if-exists=.env.local worker/src/cli.ts examples",
+    "check:no-lookahead": "tsx tools/checks/no-lookahead.ts"
   },
   "dependencies": {
     "@altananetwork/sdk": "^0.7.1",
@@ -58,7 +59,8 @@
     "postgres": "^3.4.9",
     "react": "^19.2.0",
     "react-dom": "^19.2.0",
-    "viem": "^2.56.3"
+    "viem": "^2.56.3",
+    "@bench/counterfactual": "*"
   },
   "devDependencies": {
     "@tailwindcss/postcss": "^4.3.3",
