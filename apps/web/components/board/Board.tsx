@@ -76,7 +76,7 @@ function Age({ row }: { row: Row }) {
  * track record. The order here is the order a person reads a row — what can I
  * do with it, what is it, what has it done, how fresh, what does it cost.
  */
-function columns(metric?: { key: string; label: string }, compare?: boolean) {
+function columns(metric?: { key: string; label: string }, compare?: boolean, forYou?: boolean) {
   return [
     ...(compare ? [{ key: "pick", label: "" as string }] : []),
     { key: "rails", label: "Rails", sort: "hireable" as Sort },
@@ -86,6 +86,7 @@ function columns(metric?: { key: string; label: string }, compare?: boolean) {
       label: metric?.label ?? "Track record",
       sort: (metric ? `metric:${metric.key}` : "track") as Sort,
     },
+    ...(forYou ? [{ key: "foryou", label: "For you", align: "right" as const }] : []),
     { key: "latency", label: "Latency", sort: "fresh" as Sort, align: "right" as const },
     { key: "price", label: "Price", sort: "price" as Sort, align: "right" as const },
     { key: "action", label: "" },
@@ -100,6 +101,7 @@ export default function Board({
   sortHref,
   metric,
   compare,
+  forYou,
 }: {
   rows: Row[];
   showJob?: boolean;
@@ -118,6 +120,19 @@ export default function Board({
   metric?: { key: string; label: string };
   /** Row keys currently selected for comparison, when compare mode is offered. */
   compare?: Set<string>;
+  /**
+   * §12.1's "FOR YOU" column: what each agent would have done to the reader's
+   * own position, keyed by the row's strategy slug.
+   *
+   * One replay serves the whole board. The reference strategies are shared, so
+   * a board with an address behind it costs a single walk of one pool's swaps
+   * rather than one per row — which is the only reason this column can exist on
+   * a page rather than in a batch job.
+   *
+   * A row with no entry is not a zero. An agent whose strategy is not published
+   * cannot be replayed at all, and the cell says so.
+   */
+  forYou?: Map<string, { text: string; sign: -1 | 0 | 1; title: string }>;
 }) {
   if (rows.length === 0) {
     return (
@@ -147,7 +162,7 @@ export default function Board({
       </caption>
       <thead>
         <tr>
-          {columns(metric, Boolean(compare)).map((c) => (
+          {columns(metric, Boolean(compare), Boolean(forYou)).map((c) => (
             <th
               key={c.key}
               scope="col"
@@ -274,6 +289,50 @@ export default function Board({
                 )}
               </td>
 
+              {forYou ? (
+                <td data-col="foryou" style={{ textAlign: "right" }}>
+                  {(() => {
+                    /*
+                      A house agent's identity already carries its strategy:
+                      `tokenId` is `house:<slug>`. Deriving it here beats adding
+                      a field to `Row`, which crosses the wire a thousand times
+                      per board render.
+                    */
+                    const slug = row.tokenId?.startsWith("house:") ? row.tokenId.slice(6) : null;
+                    const hit = slug ? forYou.get(slug) : undefined;
+                    if (!hit) {
+                      return (
+                        <span
+                          className="dim"
+                          title={
+                            row.job && row.job !== "rebalancing"
+                              ? `This agent does a different job — ${row.job} — so there is nothing to replay against a liquidity position. Its record can only be measured after it is hired.`
+                              : "This agent publishes no replayable strategy, so there is nothing to run against your position. Its record can only be measured after it is hired."
+                          }
+                        >
+                          not replayable
+                        </span>
+                      );
+                    }
+                    return (
+                      <span
+                        className="num"
+                        title={hit.title}
+                        style={{
+                          color:
+                            hit.sign > 0
+                              ? "var(--color-rail-call)"
+                              : hit.sign < 0
+                                ? "var(--color-rail-mandate)"
+                                : "var(--color-dim)",
+                        }}
+                      >
+                        {hit.text}
+                      </span>
+                    );
+                  })()}
+                </td>
+              ) : null}
               <td data-col="latency" style={{ textAlign: "right" }}>
                 <Latency row={row} />
                 <span className="board__sub provenance" style={{ display: "block" }}>

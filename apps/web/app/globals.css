@@ -537,6 +537,13 @@ td.num,
 .board [data-col="rails"] { width: 52px; }
 .board [data-col="agent"] { width: 27%; }
 .board [data-col="track"] { width: 29%; }
+/*
+  §12.1's FOR YOU column. Present only when the board has an address behind it,
+  so `track` gives up the width rather than the whole table reflowing: a column
+  that appears must not shove every other one sideways.
+*/
+.board [data-col="foryou"] { width: 116px; }
+.board:has([data-col="foryou"]) [data-col="track"] { width: 22%; }
 .board [data-col="latency"] { width: 112px; }
 .board [data-col="price"] { width: 126px; }
 .board [data-col="action"] { width: 130px; }
@@ -1022,6 +1029,8 @@ td.num,
   .board tbody td[data-col="rails"] { grid-row: 1 / span 3; padding-top: 5px; }
   .board tbody td[data-col="agent"] { grid-column: 2; grid-row: 1; }
   .board tbody td[data-col="track"] { grid-column: 2; grid-row: 2; }
+  /* Stacked, the counterfactual sits beside the record it should be read against. */
+  .board tbody td[data-col="foryou"] { grid-column: 1; grid-row: 3; text-align: left !important; width: auto !important; }
   .board tbody td[data-col="latency"] { grid-column: 2; grid-row: 3; text-align: left !important; }
   .board tbody td[data-col="price"] { grid-column: 3; grid-row: 1; text-align: right !important; }
   .board tbody td[data-col="action"] { grid-column: 3; grid-row: 2 / span 2; text-align: right !important; align-self: end; }

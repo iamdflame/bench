@@ -177,12 +177,46 @@ export const HOUSE_AGENTS: HouseAgent[] = [
 
 export const houseBySlug = (slug: string) => HOUSE_AGENTS.find((h) => h.slug === slug) ?? null;
 
-export const houseByTokenId = (tokenId: string) =>
-  HOUSE_AGENTS.find((h) => h.tokenId === tokenId) ?? null;
+/**
+ * Find one of ours by the id a board row actually carries.
+ *
+ * A house agent has two possible ids and this used to know only one. If it is
+ * registered under ERC-8004 it carries that token id; if it is not — which is
+ * all of them today, because reserving an id we do not hold is the claim this
+ * product refuses — `houseRows` writes the synthetic `house:<slug>` instead.
+ *
+ * Comparing only against `h.tokenId` therefore matched nothing, and
+ * `applyHouse` was a silent no-op for every one of our agents: it never
+ * refreshed a name, a description or an endpoint. Nothing failed, because
+ * `houseRows` had already written those fields once at creation — so the bug
+ * was invisible until the endpoint needed to change and did not.
+ */
+export const houseByTokenId = (tokenId: string | null) => {
+  if (!tokenId) return null;
+  const bySynthetic = tokenId.startsWith("house:") ? tokenId.slice("house:".length) : null;
+  return (
+    HOUSE_AGENTS.find((h) => (h.tokenId && h.tokenId === tokenId) || (bySynthetic && h.slug === bySynthetic)) ??
+    null
+  );
+};
 
 /** Our own site's origin, where the reference agents answer. */
+/**
+ * Where our own agents answer.
+ *
+ * The default matters more than it looks. It is baked into every house row the
+ * worker writes, so a stale one does not merely mislabel a link — it makes the
+ * prober call an origin that does not exist, mark all eight of our agents
+ * `endpoint-404`, and rank them below every third-party listing on the board.
+ * That is what a rename did here: the fallback still named the old deployment
+ * for hours after the site moved, and our own supply quietly vanished from our
+ * own front page.
+ *
+ * `NEXT_PUBLIC_SITE_URL` overrides it, and should be set wherever the worker
+ * runs as well as wherever the site does.
+ */
 export const houseOrigin = () =>
-  (process.env.NEXT_PUBLIC_SITE_URL ?? "https://bench-bnb.vercel.app").replace(/\/+$/, "");
+  (process.env.NEXT_PUBLIC_SITE_URL ?? "https://bench-six-sigma.vercel.app").replace(/\/+$/, "");
 
 export const houseEndpoint = (slug: string) => `${houseOrigin()}/api/agents/${slug}`;
 
@@ -198,7 +232,37 @@ export const houseEndpoint = (slug: string) => `${houseOrigin()}/api/agents/${sl
 export function applyHouse(agents: Agent[]): Agent[] {
   return agents.map((a) => {
     const h = houseByTokenId(a.tokenId);
-    return h ? { ...a, isOurs: true, name: h.name, description: h.description } : a;
+    if (!h) return a;
+
+    /*
+      The endpoint is re-derived, not preserved.
+
+      `houseRows` only *adds* rows that are absent, so a stored house row kept
+      whatever endpoint it was written with — and when this deployment was
+      renamed, all eight of our agents went on carrying a URL that no longer
+      existed, were probed as `endpoint-404`, and sank below every third-party
+      listing on our own board. The row survived; the truth in it did not.
+
+      Changing the endpoint also clears the probe that judged the old one. A
+      refusal has to be about the endpoint we would actually call, and
+      `endpoint-404` for a URL we have stopped using is a statement about our
+      own history rather than about the agent. The rails object is left alone
+      and closes on its own: a rail that has not been re-checked inside the
+      freshness window is already required to shut rather than stay green, so
+      clearing the probe is enough and does not risk handing a renderer a shape
+      it does not expect.
+    */
+    const endpoint = houseEndpoint(h.slug);
+    const moved = a.endpoint !== endpoint;
+    return {
+      ...a,
+      isOurs: true,
+      name: h.name,
+      description: h.description,
+      endpoint,
+      originHost: new URL(houseOrigin()).host,
+      ...(moved ? { probe: null } : {}),
+    };
   });
 }
 

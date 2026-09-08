@@ -7,6 +7,8 @@ import JobDoors from "@/components/board/JobDoors";
 import Board from "@/components/board/Board";
 import Ticker from "@/components/board/Ticker";
 import Strip from "@/components/board/Strip";
+import BoardForYou, { BoardPositionForm } from "@/components/board/BoardForYou";
+import { Suspense } from "react";
 import { readBoardView, type Sort } from "@/lib/board";
 
 /*
@@ -41,10 +43,16 @@ const SORTS: { key: Sort; label: string }[] = [
 export default async function BoardPage({
   searchParams,
 }: {
-  searchParams: Promise<{ rail?: string; sort?: string }>;
+  searchParams: Promise<{ rail?: string; sort?: string ; position?: string}>;
 }) {
   const sp = await searchParams;
   const rail = (RAILS as string[]).includes(sp.rail ?? "") ? (sp.rail as RailName) : null;
+  /*
+    Length-bounded before it is echoed anywhere. It is rendered into a form
+    value and into links, and an address is 42 characters — anything longer is
+    not one, and there is no reason to carry it around to find out.
+  */
+  const position = sp.position?.trim().slice(0, 64) || undefined;
   const sort = (SORTS.map((s) => s.key) as string[]).includes(sp.sort ?? "")
     ? (sp.sort as Sort)
     : "hireable";
@@ -54,7 +62,13 @@ export default async function BoardPage({
 
   const qs = (next: Record<string, string | null>) => {
     const p = new URLSearchParams();
-    for (const [k, v] of Object.entries({ rail, sort, ...next })) if (v) p.set(k, String(v));
+    /*
+      `position` rides along with every filter and sort link. Dropping it would
+      mean a reader who pasted an address loses the FOR YOU column the moment
+      they re-sort the board — a control that silently discards the state it was
+      given is the kind of thing §13.6 exists to prevent.
+    */
+    for (const [k, v] of Object.entries({ rail, sort, position, ...next })) if (v) p.set(k, String(v));
     const q = p.toString();
     return q ? `/?${q}` : "/";
   };
@@ -141,7 +155,39 @@ export default async function BoardPage({
             ))}
           </div>
 
-          <Board rows={view.rows} sort={sort} sortHref={(x) => qs({ sort: x })} />
+          {/*
+            §12.1's FOR YOU column, and the reason it is opt-in.
+
+            Without an address the board renders straight — no Suspense, so the
+            whole read path still works with JavaScript off, which is §13.5's
+            floor and what the smoke check holds. With one, the board streams,
+            because a walk of somebody's pool takes seconds and the doors and
+            filters above should not wait for it.
+          */}
+          <div style={{ margin: "0 0 12px" }}>
+            <BoardPositionForm action="/" address={position} />
+          </div>
+
+          {position ? (
+            <Suspense
+              fallback={
+                <p className="provenance" style={{ marginBottom: 10 }}>
+                  Reading your positions and walking the pool&rsquo;s swaps. A few seconds — it is replaying
+                  every trade in the window rather than averaging them.
+                </p>
+              }
+            >
+              <BoardForYou
+                chainId={56}
+                address={position}
+                rows={view.rows}
+                sort={sort}
+                sortHref={(x) => qs({ sort: x })}
+              />
+            </Suspense>
+          ) : (
+            <Board rows={view.rows} sort={sort} sortHref={(x) => qs({ sort: x })} />
+          )}
 
           {/* ------------------------------------------ the honest footnote */}
           <Strip snapshot={s} collapsed={view.collapsed} />

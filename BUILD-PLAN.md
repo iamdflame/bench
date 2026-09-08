@@ -33,7 +33,7 @@ Live: **https://bench-six-sigma.vercel.app**
 |---|---|
 | `/` `/j/[job]` `/a/[chain]/[id]` `/hire/[chain]/[id]` `/desk` `/register` `/data` `/list` | all present |
 | `/api/v1/*`, `/api/mcp`, `/.well-known/agent-card.json` | present |
-| **`/api/a2a`** | **missing** |
+| **`/api/a2a`** | **missing — next** |
 
 ## §8 Agents hiring agents — MCP tools
 
@@ -50,7 +50,7 @@ Live: **https://bench-six-sigma.vercel.app**
 | 12.1 four job doors, equal width, live hireable count, block-stamped | done |
 | 12.1 unhireable rows listed with the specific reason | done |
 | 12.1 honesty line at the bottom, muted, linking `/data` | done |
-| **12.1 `FOR YOU` column — the counterfactual, per row** | **missing** |
+| 12.1 `FOR YOU` column — the counterfactual, per row | **done** — one walk serves every row |
 | 12.2 counterfactual first, above the record and the rails | done |
 | **12.2 `▸ Every check we ran against the chain` — the §15 ladder** | **missing** |
 | **12.2 `▸ Reputation` — raw vs sybil-filtered, flagged cohort** | **to verify** |
@@ -123,3 +123,48 @@ makes a per-job comparison non-trivial. Recommend amending the plan rather than 
 4. **§12.4 projected vs actual** on `/desk`.
 5. **P6 `OutcomePolicy`.**
 6. The outstanding proof artifacts.
+
+
+## §12.1 — the `FOR YOU` column
+
+`/?position=0x…` reads the address's positions, replays the reference strategies
+against the largest, and puts each agent's figure on its own row.
+
+**One walk, not fifty.** The naive reading of "a figure on every row" is a replay
+per agent. It is not needed: the strategies are shared, so one walk of the
+reader's own pool produces every row at once, and the column costs exactly what
+the agent page's single panel costs.
+
+**The default board does not stream.** Next streams a Suspense boundary by
+sending the fallback and swapping it with an inline script, which never happens
+with JavaScript off — so wrapping the board unconditionally would have broken
+§13.5's floor and the smoke check that holds it. Only the opt-in path streams.
+`smoke` still reports 50 rows rendering with scripting disabled.
+
+### Three bugs found by building it
+
+**Our own eight agents had been invisible on our own board since the rename.**
+`houseOrigin()` still defaulted to `bench-bnb.vercel.app`, so the prober called
+an origin that no longer existed and marked every house agent `endpoint-404` —
+below every third-party listing on our own front page. Callable went **11 → 19**.
+
+**`applyHouse` had never once done anything.** It looks a house agent up by
+`houseByTokenId`, which compared only against a *registered* ERC-8004 id. None
+of ours is registered — reserving an id we do not hold is the claim this product
+refuses — so `houseRows` writes the synthetic `house:<slug>` instead and the
+lookup matched nothing. Nothing failed, because `houseRows` had already written
+the name and description once at creation, so the no-op was invisible until the
+endpoint needed to change and did not.
+
+**An endpoint that moves invalidates the probe that judged it.** `endpoint-404`
+for a URL we have stopped using is a statement about our own history, not about
+the agent. Changing it now clears the probe and lets the freshness rule close
+the rails, which §12.1 already required.
+
+### A zero that is an answer, not a blank
+
+Over the first window tried, the position was 98.9% in range and the patient
+keepers correctly did nothing — `vsHold = 0` exactly. Rendered as `0.000` in the
+grey used for refusals it read as a missing number, which is the opposite of
+what it is. It renders as **"no change"** with the reason attached, and the
+summary line says how many never acted and why.
