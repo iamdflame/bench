@@ -61,6 +61,91 @@
       "passed": 6,
       "failed": 0,
       "inconclusive": 0
+    },
+    {
+      "id": "rail-3-scope-holds",
+      "rail": "mandate",
+      "title": "A session that could do four things, could not do anything else, and stopped when it was revoked",
+      "what": "BENCH derived an allowlist from what the chain shows a wallet actually doing, granted a capped, expiring session on that basis, then attacked it: an in-scope selector, an out-of-scope target, a deliberately withheld selector, and — after revoking — the in-scope selector again.",
+      "why": "Every serious team on this chain hit the same wall and stopped: you cannot safely hand a session key to a stranger's agent, because a key binds a target and four selector bytes and cannot bind an argument. The answer is not to trust the agent, it is to make the grant narrower than the agent and prove the narrowing holds. This is that proof, on mainnet, against a session that existed.",
+      "subject": "0xcccd447e00fa38a288a8b6c29de52385a8342582",
+      "subjectNote": "Not ours. A wallet the chain shows using PancakeSwap V3, chosen because the allowlist has to be derived from somebody's real behaviour to mean anything.",
+      "principal": "0x54c06cC2623aAA2Dcc38B17fA07aD2e99b363C90",
+      "wrapper": "0x5863edaede7394470db19395ca05b1439662952e",
+      "job": "rebalancing",
+      "capWei": "1000000000000000",
+      "capText": "0.001 BNB",
+      "ttlSeconds": 900,
+      "granted": 4,
+      "withheld": 8,
+      "revokeTx": "0xbbeb10c6eb6d1d3d5d3de2cdc5da068007b1f5abf2608275f310df2ed325b087",
+      "at": "2026-09-08T16:25:00Z",
+      "reproduce": "npm run prove-scope -- --job rebalancing --wallet 0xcccd447e00fa38a288a8b6c29de52385a8342582",
+      "assertions": [
+        {
+          "n": 1,
+          "claim": "authority is derived from on-chain evidence",
+          "result": "proven",
+          "detail": "4 calls granted, 8 withheld"
+        },
+        {
+          "n": 2,
+          "claim": "calls that carry a destination are bound to the principal",
+          "result": "proven",
+          "detail": "RecipientBound 0x5863eda…952e"
+        },
+        {
+          "n": 3,
+          "claim": "a scoped, capped, expiring session is granted",
+          "result": "proven",
+          "detail": "cap 0.001 BNB, 15 minutes"
+        },
+        {
+          "n": 4,
+          "claim": "the key is registered in the KeyStore, with its transaction",
+          "result": "inconclusive",
+          "detail": "No Authorize log was found, so it is recorded as unregistered. The session enforces identically either way; registration is what would let a counterparty verify the scope without asking us."
+        },
+        {
+          "n": 5,
+          "claim": "the session survives a restart and can be reloaded",
+          "result": "proven",
+          "detail": "reloaded from disk"
+        },
+        {
+          "n": 6,
+          "claim": "an in-scope target is not refused by policy",
+          "result": "proven",
+          "detail": "reverted with no reason — the target refused the bare selector, the policy did not"
+        },
+        {
+          "n": 7,
+          "claim": "an out-of-scope target is refused",
+          "result": "proven",
+          "detail": "UnauthorizedCall, naming target 0xfd36e2c2… and selector 0xb0772d0b"
+        },
+        {
+          "n": 8,
+          "claim": "a withheld selector on an allowed target is refused",
+          "result": "proven",
+          "detail": "UnauthorizedCall on a selector the allowlist deliberately omits"
+        },
+        {
+          "n": 9,
+          "claim": "revocation completes and is recorded",
+          "result": "proven",
+          "detail": "tx 0xbbeb10c6…b087"
+        },
+        {
+          "n": 10,
+          "claim": "the same in-scope call now fails",
+          "result": "proven",
+          "detail": "the relay reports the key hash as unknown"
+        }
+      ],
+      "passed": 9,
+      "failed": 0,
+      "inconclusive": 1
     }
   ],
   "findings": [
@@ -141,6 +226,22 @@
         "timeoutsAfter": 0
       },
       "reproduce": "npm run probe -- --limit 1000"
+    },
+    {
+      "id": "proof-read-the-wrong-field",
+      "title": "Rail 3 was enforcing its allowlist correctly on mainnet, and our own proof script could not tell.",
+      "method": "prove-scope-classifier",
+      "measuredAt": "2026-09-08T16:22:07Z",
+      "detail": "prove-scope reported 6 proven, 0 failed, 4 inconclusive — and the four were the assertions that matter: in-scope allowed, out-of-scope refused, withheld selector refused, revoked call fails. Two defects in the script, neither in the rail. First, the in-scope baseline computed `signature.slice(0, indexOf(\"(\"))` — the function *name*, \"mint\", cast `as Hex` — then discarded that object and sent `data: \"0x\"`. The baseline exercised no selector at all, and every comparison was drawn against it. Second, the classifier read `shortMessage ?? details`, and Porto's shortMessage is the constant string \"An error occurred while executing calls.\" for every outcome. The discriminating text was one field away, in `details`: `UnauthorizedCall(UnauthorizedCall { keyHash: 0xb4a3…, target: 0xfd36e2c2…, data: 0xb0772d0b })` — the Altana account naming the exact target and the exact four bytes it refused. With both fixed the same rail scores 8 proven and 0 failed against a session that existed for real.",
+      "whyItMatters": "The rail had been right the whole time. The account refuses an out-of-scope target and a withheld selector by name, an in-scope call fails at the target rather than at the policy, and revocation makes the key unknown to the relay. None of that changed today; only our ability to read it did. A proof that reads the first field that happens to be set will report a working system as unproven, and the same habit pointed the other way reports a broken one as fine — which is exactly what the predecessor project did when it matched a regex against the whole serialised error and called seven of eight assertions passed. The rule this leaves behind: search the field that discriminates, and if you cannot say which field that is, you do not yet have a proof.",
+      "breakdown": {
+        "provenBefore": 6,
+        "provenAfter": 8,
+        "inconclusiveBefore": 4,
+        "inconclusiveAfter": 2,
+        "failed": 0
+      },
+      "reproduce": "npm run prove-scope -- --job rebalancing --wallet 0xcccd447e00fa38a288a8b6c29de52385a8342582"
     }
   ]
 }

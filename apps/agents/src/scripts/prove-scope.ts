@@ -73,32 +73,67 @@ const arg = (name: string, dflt: string) => {
  * The three that matter are distinguishable in the message the relay returns.
  * Anything else is `unknown`, and an unknown never counts as a proof.
  */
-type Kind = "policy" | "funds" | "revoked" | "unknown";
+type Kind = "policy" | "funds" | "revoked" | "reverted" | "unknown";
 
 function classify(err: unknown): { kind: Kind; message: string } {
-  const raw = String(err);
-  /*
-    The message is searched, never the whole serialised error. The permissions
-    payload is echoed inside a request body that appears in the error object,
-    and it contains words like `limit` and `calls` — matching against that is
-    exactly how the earlier version fooled itself.
-  */
-  const message =
-    (err as { shortMessage?: string })?.shortMessage ??
-    (err as { details?: string })?.details ??
-    raw.split("\n")[0] ??
-    raw;
+  const e = err as { shortMessage?: string; details?: string; message?: string };
 
-  const m = message.toLowerCase();
-  if (/unauthorized|not authorized|permission|not allowed|denied|scope/.test(m)) {
+  /*
+    Every informative field, not the first one that exists.
+
+    This used to read `shortMessage ?? details ?? …`, and Porto's shortMessage
+    is the constant string "An error occurred while executing calls." for every
+    outcome — so the classifier saw the same words whether the account had
+    enforced the allowlist or the target had simply reverted, and reported four
+    inconclusives against a rail that was working. The discriminating text is in
+    `details`:
+
+      UnauthorizedCall(UnauthorizedCall { keyHash: 0xcb0e…,
+        target: 0xfd36e2c2…, data: 0xb0772d0b })
+
+    which names the refused target and the refused four bytes. Reading only the
+    first field that happened to be set is how a proof misses its own evidence.
+
+    The whole error is still not searched. The request body — permissions and
+    all — is echoed inside the error object and contains words like `limit` and
+    `calls`, and matching against that is how the predecessor project fooled
+    itself into reporting seven of eight assertions passing.
+  */
+  const message = e?.details ?? e?.shortMessage ?? e?.message ?? String(err).split("\n")[0] ?? String(err);
+  const m = `${e?.details ?? ""} ${e?.shortMessage ?? ""} ${e?.message ?? ""}`.toLowerCase();
+
+  /*
+    The account rejected the call at validation. `UnauthorizedCall` is the
+    Porto/Altana account's own revert for a call outside the session's
+    allowlist, and it carries the target and selector it refused.
+  */
+  if (/unauthorizedcall|unauthorized|not authorized|permission|not allowed|denied|out of scope/.test(m)) {
     return { kind: "policy", message };
   }
-  if (/revoked|expired|unknown key|no such key|key not found/.test(m)) {
+  /*
+    A revoked key is not "unauthorized" — it is *absent*. The relay says so as
+    "key hash 0xb4a3… is unknown", which the obvious pattern `unknown key` does
+    not match, so the strongest assertion in the file — that revocation really
+    ends the authority — was reported as inconclusive while the chain had
+    already done the right thing.
+  */
+  if (/revoked|expired|unknown key|no such key|key not found|keynotfound|key hash \S+ is unknown|is unknown/.test(m)) {
     return { kind: "revoked", message };
   }
   if (/insufficient|balance|funds|gas required|exceeds/.test(m)) {
     return { kind: "funds", message };
   }
+
+  /*
+    An empty revert. The call was *permitted* and the target rejected it — which
+    is what a bare selector with no arguments does to a function that decodes
+    them. It is the opposite of a policy refusal and must never be confused with
+    one, because the in-scope baseline depends on telling them apart.
+  */
+  if (/^0x$/.test((e?.details ?? "").trim()) || /reason: 0x\s*$/.test(m) || /execution reverted/.test(m)) {
+    return { kind: "reverted", message: message === "0x" ? "reverted with no reason — the target refused it, the policy did not" : message };
+  }
+
   return { kind: "unknown", message };
 }
 
@@ -224,7 +259,7 @@ async function main() {
   record(
     6,
     "an in-scope target is not refused by policy",
-    baseline.ok || baseline.kind !== "policy" ? "proven" : "failed",
+    baseline.ok || baseline.kind === "reverted" ? "proven" : baseline.kind !== "policy" ? "inconclusive" : "failed",
     baseline.ok ? `executed ${baseline.hash ?? ""}` : `${baseline.kind}: ${baseline.message.slice(0, 96)}`,
   );
 

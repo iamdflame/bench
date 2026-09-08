@@ -64,6 +64,35 @@ function readProofs(): Proofs | null {
   return null;
 }
 
+/**
+ * The transaction a proof turns on, whichever kind of proof it is.
+ *
+ * A payment proof is settled by its own transfer; a session proof is settled by
+ * its revocation, because "we ended it, here is the hash" is the claim that
+ * matters and the grant itself is only half the story.
+ */
+function proofTx(p: { txHash?: string; revokeTx?: string }): `0x${string}` | null {
+  const h = p.txHash ?? p.revokeTx;
+  return h ? (h as `0x${string}`) : null;
+}
+
+/** What that transaction shows, in the units the proof is actually about. */
+function proofLabel(p: {
+  txHash?: string;
+  revokeTx?: string;
+  amountText?: string;
+  block?: number;
+  capText?: string;
+}): string {
+  if (p.txHash && p.amountText) {
+    return p.block
+      ? `${p.amountText} on chain, block ${p.block.toLocaleString("en-US")}`
+      : `${p.amountText} on chain`;
+  }
+  if (p.revokeTx) return p.capText ? `revoked on chain, cap was ${p.capText}` : "revoked on chain";
+  return "on chain";
+}
+
 export default async function DataPage() {
   const view = readBoardView({ limit: 1 });
   const s = view.snapshot;
@@ -165,18 +194,55 @@ export default async function DataPage() {
                 <ul className="stack" style={{ gap: 4, marginTop: 12 }}>
                   {p.assertions.map((a) => (
                     <li key={a.n} className="provenance">
-                      <span style={{ color: a.result === "proven" ? "var(--color-rail-call)" : "var(--color-error)" }}>
-                        {a.result === "proven" ? "✓" : "✗"}
+                      {/*
+                        Three outcomes, not two. An inconclusive assertion is one
+                        where the call failed for a reason that cannot be credited
+                        to the thing being tested — it is neither a pass nor a
+                        failure, and colouring it like a failure would make an
+                        honest report look like a broken rail. It renders dim,
+                        with the mark the script itself uses.
+                      */}
+                      <span
+                        style={{
+                          color:
+                            a.result === "proven"
+                              ? "var(--color-rail-call)"
+                              : a.result === "failed"
+                                ? "var(--color-error)"
+                                : "var(--color-dim)",
+                        }}
+                      >
+                        {a.result === "proven" ? "✓" : a.result === "failed" ? "✗" : "?"}
                       </span>{" "}
                       {a.claim} — <span className="dim">{a.detail}</span>
                     </li>
                   ))}
                 </ul>
+                {/*
+                  A proof is not always a payment.
+
+                  The first one was, so this line read `p.amountText` and
+                  `p.block` directly and the build crashed the moment a proof of
+                  a different shape arrived — a session grant, which has a
+                  revocation transaction and no amount at all. The tally is the
+                  part every proof has; the link is whatever transaction that
+                  particular proof turns on, and a proof that turns on no single
+                  transaction says so rather than rendering "undefined".
+                */}
                 <p className="provenance" style={{ marginTop: 12 }}>
-                  {p.passed} proven · {p.failed} failed · {p.inconclusive} inconclusive ·{" "}
-                  <a className="nav__link" style={{ textDecoration: "underline" }} href={txUrl(56, p.txHash)}>
-                    {p.amountText} on chain, block {p.block.toLocaleString("en-US")}
-                  </a>
+                  {p.passed} proven · {p.failed} failed · {p.inconclusive} inconclusive
+                  {proofTx(p) ? (
+                    <>
+                      {" · "}
+                      <a
+                        className="nav__link"
+                        style={{ textDecoration: "underline" }}
+                        href={txUrl(56, proofTx(p)!)}
+                      >
+                        {proofLabel(p)}
+                      </a>
+                    </>
+                  ) : null}
                 </p>
                 <p className="provenance" style={{ marginTop: 6 }}>
                   reproduce: <span className="num">{p.reproduce}</span>

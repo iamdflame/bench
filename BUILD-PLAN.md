@@ -23,7 +23,7 @@ Last verified: 2026-09-08 15:30 UTC, at the block the snapshot names.
 |---|---|---|---|
 | **P0** The spine | Route tree, `Measurement`/`Maybe`, board, four doors, ERC-8004 sweep, prober with the three-input check, B402 ingest | Funnel serves a block-stamped snapshot; 50 rows render with JavaScript off | **done** |
 | **P1** Rail 1 — Call | `packages/rails/src/call.ts`, house agents answer 402 | **`rail-1-third-party`** — 0.01 USD1 paid to an endpoint we do not operate, tx `0x2e39…83ca`, block 120,590,203, six assertions. **11 third-party endpoints callable** after the false-timeout fix | **done** |
-| **P2** Rail 3 — Mandate | `mandate.ts` + `session.ts`, `ProvenScope` enforced by an unexported symbol, `RecipientBound.sol` | **Wrapper deployed** at [`0x5863eda…952e`](https://bscscan.com/address/0x5863edaede7394470db19395ca05b1439662952e), bytecode matching source exactly. **Three real mainnet sessions granted and revoked**, e.g. [`0xc7b92e38…aa36`](https://bscscan.com/tx/0xc7b92e380c97fa1afe00289e9df0249553107a7bcc43a4bc9bab5c49aa9aaa36). **6 of 10 assertions proven, 0 failed, 4 inconclusive** | **partly proven** |
+| **P2** Rail 3 — Mandate | `mandate.ts` + `session.ts`, `ProvenScope` enforced by an unexported symbol, `RecipientBound.sol` | **`rail-3-scope-holds` — 9 proven, 0 failed, 1 inconclusive** on mainnet. Wrapper [`0x5863eda…952e`](https://bscscan.com/address/0x5863edaede7394470db19395ca05b1439662952e) bytecode-matched; grant → in-scope permitted → out-of-scope refused by name → withheld selector refused → [revoked](https://bscscan.com/tx/0xbbeb10c6eb6d1d3d5d3de2cdc5da068007b1f5abf2608275f310df2ed325b087) → key unknown | **done** |
 | **P3** Rail 2 — Hire | `hire.ts`, full ERC-8183 lifecycle, `disputeWindow()` read from chain | — nothing recorded | **code only** |
 | **P4** Counterfactual | — `packages/counterfactual` does not exist | — | **not started** |
 | **P5** Depth | Four job routes off one template, `/data`, `/register`, `/list`, `/api/v1/*`, `/api/mcp`, own agent card, origin cohorts | Four findings recorded, all measurements block-stamped | **partial** |
@@ -255,14 +255,34 @@ and every comparison was drawn against it. Fixed to send a real `toFunctionSelec
 out-of-scope probe now carries a valid selector too, so the only variable is whether the target was
 granted.
 
-**They are still inconclusive after the fix.** The Altana relay returns an error the classifier
-cannot attribute to policy, and the script now prints that message instead of the bare word
-"unknown" — but the fourth run hung on the grant, apparently rate-limited after three in quick
-succession, and was killed before it printed. Its session was revoked on chain regardless; no
-authority is dangling.
+**The rail had been right the whole time.** Reading one raw relay error settled it. Porto's
+`shortMessage` is the constant string *"An error occurred while executing calls."* for every
+outcome, and `classify()` read `shortMessage ?? details` — so it never saw the field that
+discriminates. In `details` was:
 
-**This is the honest state of P2: the rail runs on mainnet, and its central claim is not yet
-proven.** The remaining work is to read one raw relay error and either widen `classify` to
-recognise a genuine policy refusal or accept that the account is not enforcing per-selector scope —
-which would be a finding worth more than the assertion. It costs ~0.0015 BNB per run; the principal
-holds 0.0175.
+```
+UnauthorizedCall(UnauthorizedCall { keyHash: 0xe0551dd9…,
+  target: 0xfd36e2c2a6789db23113685031d7f16329158384, data: 0xb0772d0b })
+```
+
+The Altana account naming the exact target and the exact four bytes it refused. Two more reading
+errors sat behind it: an in-scope call returns an empty `0x` revert — the *target* rejecting bare
+calldata, which is the opposite of a policy refusal and had to become its own `reverted` kind — and
+a revoked key reports as `key hash 0x… is unknown`, which the obvious pattern `unknown key` does
+not match.
+
+**P2 now scores 9 proven, 0 failed, 1 inconclusive** and is recorded as the proof
+`rail-3-scope-holds`. The one inconclusive is KeyStore registration: no `Authorize` log is found,
+so it is reported as unregistered. That is genuinely unproven rather than a reporting artefact —
+the session enforces identically either way, but registration is what would let a counterparty
+verify the scope without asking us.
+
+### 8. The engagement store could claim a session the chain never had
+
+Found while cleaning up. A grant is two things — a local record and a key on the account — and a
+run killed between them leaves the record alive while the key never existed. `revokeEngagement`
+then answers `KeyDoesNotExist`, and `isLive` went on reporting a live session: `/desk` telling
+someone they have authority outstanding that nobody ever had.
+
+Now marked `orphanedAt` rather than `revokedAt`, and `isLive` honours it. The distinction is the
+point: *we ended it* and *it never began* are different facts, and only one of them has a hash.

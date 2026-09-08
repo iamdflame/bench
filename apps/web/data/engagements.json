@@ -217,5 +217,297 @@
   "grantedAt": "2026-09-08T16:00:27.960Z",
   "revokedAt": "2026-09-08T16:00:39.180Z",
   "revokedTx": "0x05f9d830cc2b67b12a0b4690615104153c24b4ddd28713a86db32124b176da38"
+ },
+ {
+  "id": 4,
+  "chainId": 56,
+  "job": "rebalancing",
+  "tokenId": null,
+  "agentName": "relay diagnostic",
+  "principal": "0x54c06cC2623aAA2Dcc38B17fA07aD2e99b363C90",
+  "sessionKey": "0x04d8578b46275c341d9ec299ca624065735c1bbddc5931f9238748f327a1cf2072faad69643d2218e8f56b5339f4b6b65bf8284b2b4068322fb67352e0376e7f72",
+  "account": "0x54c06cC2623aAA2Dcc38B17fA07aD2e99b363C90",
+  "capWei": "1000000000000000",
+  "expiry": 1788885132,
+  "allowlist": [
+   {
+    "to": "0x5863edaede7394470db19395ca05b1439662952e",
+    "signature": "mint((address,address,uint24,int24,int24,uint256,uint256,uint256,uint256,address,uint256))"
+   },
+   {
+    "to": "0x46a15b0b27311cedf172ab29e4f4766fbe7f4364",
+    "signature": "increaseLiquidity((uint256,uint256,uint256,uint256,uint256,uint256))"
+   },
+   {
+    "to": "0x46a15b0b27311cedf172ab29e4f4766fbe7f4364",
+    "signature": "decreaseLiquidity((uint256,uint128,uint256,uint256,uint256))"
+   },
+   {
+    "to": "0x5863edaede7394470db19395ca05b1439662952e",
+    "signature": "collect((uint256,address,uint128,uint128))"
+   }
+  ],
+  "withheld": [
+   {
+    "signature": "sweepToken(address,uint256,address)",
+    "because": "It sends any token balance to an address the agent picks."
+   },
+   {
+    "signature": "refundETH()",
+    "because": "It moves native value out on a path the grant cannot see."
+   },
+   {
+    "signature": "unwrapWETH9(uint256,address)",
+    "because": "It unwraps and forwards to an address the agent picks."
+   },
+   {
+    "signature": "multicall(bytes[])",
+    "because": "It lets an agent compose calls the allowlist never approved individually."
+   },
+   {
+    "signature": "approve(address,uint256)",
+    "because": "It would let the agent authorise a third party to spend your tokens."
+   },
+   {
+    "signature": "transferFrom(address,address,uint256)",
+    "because": "It moves your tokens directly."
+   },
+   {
+    "signature": "setApprovalForAll(address,bool)",
+    "because": "It would hand your whole position collection to another contract."
+   },
+   {
+    "signature": "borrow(uint256)",
+    "because": "This marketplace does not grant the authority to take on debt in your name."
+   }
+  ],
+  "provenVenues": [
+   "0x46a15b0b27311cedf172ab29e4f4766fbe7f4364"
+  ],
+  "rationale": "Derived from 2 on-chain observations over about 2.1 days of BNB Smart Chain, blocks 120316709 to 120716709. Granted calls are the intersection of this job's canonical calls with the venues the chain shows this wallet using.",
+  "registered": false,
+  "wrapper": "0x5863edaede7394470db19395ca05b1439662952e",
+  "grantedAt": "2026-09-08T16:17:45.798Z",
+  "orphanedAt": "2026-09-08T16:26:07.182Z",
+  "orphanedReason": "The grant was interrupted before the key was authorized on chain; revokeEngagement answered KeyDoesNotExist. No authority ever existed for this record."
+ },
+ {
+  "id": 5,
+  "chainId": 56,
+  "job": "rebalancing",
+  "tokenId": null,
+  "agentName": "relay diagnostic",
+  "principal": "0x54c06cC2623aAA2Dcc38B17fA07aD2e99b363C90",
+  "sessionKey": "0x04193399ff697315790667cbfdd93e926a2cf6d2f6d4b62e4b085309a11bdb27c9ddfc2568ebf126c007bbd7a942c02b229557770034d9e6fe156438eda1f8398b",
+  "account": "0x54c06cC2623aAA2Dcc38B17fA07aD2e99b363C90",
+  "capWei": "1000000000000000",
+  "expiry": 1788885235,
+  "allowlist": [
+   {
+    "to": "0x5863edaede7394470db19395ca05b1439662952e",
+    "signature": "mint((address,address,uint24,int24,int24,uint256,uint256,uint256,uint256,address,uint256))"
+   },
+   {
+    "to": "0x46a15b0b27311cedf172ab29e4f4766fbe7f4364",
+    "signature": "increaseLiquidity((uint256,uint256,uint256,uint256,uint256,uint256))"
+   },
+   {
+    "to": "0x46a15b0b27311cedf172ab29e4f4766fbe7f4364",
+    "signature": "decreaseLiquidity((uint256,uint128,uint256,uint256,uint256))"
+   },
+   {
+    "to": "0x5863edaede7394470db19395ca05b1439662952e",
+    "signature": "collect((uint256,address,uint128,uint128))"
+   }
+  ],
+  "withheld": [
+   {
+    "signature": "sweepToken(address,uint256,address)",
+    "because": "It sends any token balance to an address the agent picks."
+   },
+   {
+    "signature": "refundETH()",
+    "because": "It moves native value out on a path the grant cannot see."
+   },
+   {
+    "signature": "unwrapWETH9(uint256,address)",
+    "because": "It unwraps and forwards to an address the agent picks."
+   },
+   {
+    "signature": "multicall(bytes[])",
+    "because": "It lets an agent compose calls the allowlist never approved individually."
+   },
+   {
+    "signature": "approve(address,uint256)",
+    "because": "It would let the agent authorise a third party to spend your tokens."
+   },
+   {
+    "signature": "transferFrom(address,address,uint256)",
+    "because": "It moves your tokens directly."
+   },
+   {
+    "signature": "setApprovalForAll(address,bool)",
+    "because": "It would hand your whole position collection to another contract."
+   },
+   {
+    "signature": "borrow(uint256)",
+    "because": "This marketplace does not grant the authority to take on debt in your name."
+   }
+  ],
+  "provenVenues": [
+   "0x46a15b0b27311cedf172ab29e4f4766fbe7f4364"
+  ],
+  "rationale": "Derived from 2 on-chain observations over about 0.8 days of BNB Smart Chain, blocks 120567001 to 120717001. Granted calls are the intersection of this job's canonical calls with the venues the chain shows this wallet using.",
+  "registered": false,
+  "wrapper": "0x5863edaede7394470db19395ca05b1439662952e",
+  "grantedAt": "2026-09-08T16:19:26.904Z",
+  "revokedAt": "2026-09-08T16:19:35.564Z",
+  "revokedTx": "0xfd6969a93a0f8859c4baf148602feee58c4ffa5a01922e983c8216e87e5aea6e"
+ },
+ {
+  "id": 6,
+  "chainId": 56,
+  "job": "rebalancing",
+  "tokenId": null,
+  "agentName": "prove-scope rebalancing",
+  "principal": "0x54c06cC2623aAA2Dcc38B17fA07aD2e99b363C90",
+  "sessionKey": "0x047664b0e0bde63bd8d60c2637ab5ba4f3adc0d88a87790573c2f458c07bf6e0d2d22fdd8c2f170ad51fc735f1ade62aafe12553050b08a872cde1c4ee0b2f5016",
+  "account": "0x54c06cC2623aAA2Dcc38B17fA07aD2e99b363C90",
+  "capWei": "1000000000000000",
+  "expiry": 1788885389,
+  "allowlist": [
+   {
+    "to": "0x5863edaede7394470db19395ca05b1439662952e",
+    "signature": "mint((address,address,uint24,int24,int24,uint256,uint256,uint256,uint256,address,uint256))"
+   },
+   {
+    "to": "0x46a15b0b27311cedf172ab29e4f4766fbe7f4364",
+    "signature": "increaseLiquidity((uint256,uint256,uint256,uint256,uint256,uint256))"
+   },
+   {
+    "to": "0x46a15b0b27311cedf172ab29e4f4766fbe7f4364",
+    "signature": "decreaseLiquidity((uint256,uint128,uint256,uint256,uint256))"
+   },
+   {
+    "to": "0x5863edaede7394470db19395ca05b1439662952e",
+    "signature": "collect((uint256,address,uint128,uint128))"
+   }
+  ],
+  "withheld": [
+   {
+    "signature": "sweepToken(address,uint256,address)",
+    "because": "It sends any token balance to an address the agent picks."
+   },
+   {
+    "signature": "refundETH()",
+    "because": "It moves native value out on a path the grant cannot see."
+   },
+   {
+    "signature": "unwrapWETH9(uint256,address)",
+    "because": "It unwraps and forwards to an address the agent picks."
+   },
+   {
+    "signature": "multicall(bytes[])",
+    "because": "It lets an agent compose calls the allowlist never approved individually."
+   },
+   {
+    "signature": "approve(address,uint256)",
+    "because": "It would let the agent authorise a third party to spend your tokens."
+   },
+   {
+    "signature": "transferFrom(address,address,uint256)",
+    "because": "It moves your tokens directly."
+   },
+   {
+    "signature": "setApprovalForAll(address,bool)",
+    "because": "It would hand your whole position collection to another contract."
+   },
+   {
+    "signature": "borrow(uint256)",
+    "because": "This marketplace does not grant the authority to take on debt in your name."
+   }
+  ],
+  "provenVenues": [
+   "0x46a15b0b27311cedf172ab29e4f4766fbe7f4364"
+  ],
+  "rationale": "Derived from 2 on-chain observations over about 2.1 days of BNB Smart Chain, blocks 120317272 to 120717272. Granted calls are the intersection of this job's canonical calls with the venues the chain shows this wallet using.",
+  "registered": false,
+  "wrapper": "0x5863edaede7394470db19395ca05b1439662952e",
+  "grantedAt": "2026-09-08T16:22:00.819Z",
+  "revokedAt": "2026-09-08T16:22:10.843Z",
+  "revokedTx": "0x3d4e749e1a74ccd75534c51edfb3d81d5955ef87abea28b9c801afef74fb7b3d"
+ },
+ {
+  "id": 7,
+  "chainId": 56,
+  "job": "rebalancing",
+  "tokenId": null,
+  "agentName": "prove-scope rebalancing",
+  "principal": "0x54c06cC2623aAA2Dcc38B17fA07aD2e99b363C90",
+  "sessionKey": "0x04ed4cf04eaf45c03e3eaf16abcb36998d446e84bd341a04d1a553945caa84844a7a79289915c0084865cb5a4d92c5ea665f19e1f37ab17210d88d245d08d45341",
+  "account": "0x54c06cC2623aAA2Dcc38B17fA07aD2e99b363C90",
+  "capWei": "1000000000000000",
+  "expiry": 1788885534,
+  "allowlist": [
+   {
+    "to": "0x5863edaede7394470db19395ca05b1439662952e",
+    "signature": "mint((address,address,uint24,int24,int24,uint256,uint256,uint256,uint256,address,uint256))"
+   },
+   {
+    "to": "0x46a15b0b27311cedf172ab29e4f4766fbe7f4364",
+    "signature": "increaseLiquidity((uint256,uint256,uint256,uint256,uint256,uint256))"
+   },
+   {
+    "to": "0x46a15b0b27311cedf172ab29e4f4766fbe7f4364",
+    "signature": "decreaseLiquidity((uint256,uint128,uint256,uint256,uint256))"
+   },
+   {
+    "to": "0x5863edaede7394470db19395ca05b1439662952e",
+    "signature": "collect((uint256,address,uint128,uint128))"
+   }
+  ],
+  "withheld": [
+   {
+    "signature": "sweepToken(address,uint256,address)",
+    "because": "It sends any token balance to an address the agent picks."
+   },
+   {
+    "signature": "refundETH()",
+    "because": "It moves native value out on a path the grant cannot see."
+   },
+   {
+    "signature": "unwrapWETH9(uint256,address)",
+    "because": "It unwraps and forwards to an address the agent picks."
+   },
+   {
+    "signature": "multicall(bytes[])",
+    "because": "It lets an agent compose calls the allowlist never approved individually."
+   },
+   {
+    "signature": "approve(address,uint256)",
+    "because": "It would let the agent authorise a third party to spend your tokens."
+   },
+   {
+    "signature": "transferFrom(address,address,uint256)",
+    "because": "It moves your tokens directly."
+   },
+   {
+    "signature": "setApprovalForAll(address,bool)",
+    "because": "It would hand your whole position collection to another contract."
+   },
+   {
+    "signature": "borrow(uint256)",
+    "because": "This marketplace does not grant the authority to take on debt in your name."
+   }
+  ],
+  "provenVenues": [
+   "0x46a15b0b27311cedf172ab29e4f4766fbe7f4364"
+  ],
+  "rationale": "Derived from 2 on-chain observations over about 2.1 days of BNB Smart Chain, blocks 120317575 to 120717575. Granted calls are the intersection of this job's canonical calls with the venues the chain shows this wallet using.",
+  "registered": false,
+  "wrapper": "0x5863edaede7394470db19395ca05b1439662952e",
+  "grantedAt": "2026-09-08T16:24:27.729Z",
+  "revokedAt": "2026-09-08T16:24:38.381Z",
+  "revokedTx": "0xbbeb10c6eb6d1d3d5d3de2cdc5da068007b1f5abf2608275f310df2ed325b087"
  }
 ]

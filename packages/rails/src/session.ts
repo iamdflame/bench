@@ -136,6 +136,13 @@ export interface Engagement {
   /** On chain and final. */
   revokedAt?: string;
   revokedTx?: string;
+  /**
+   * Set when the chain has no key for this engagement — a grant interrupted
+   * between writing the record and authorizing the key. Distinct from
+   * `revokedAt`, which is a claim about a transaction that happened.
+   */
+  orphanedAt?: string;
+  orphanedReason?: string;
   /** Ours, off chain, reversible. A paused session exists and cannot get a signer. */
   pausedAt?: string;
   /**
@@ -485,7 +492,28 @@ export function pauseEngagement(id: number, paused: boolean): Engagement | null 
 
 /** Live means granted, not revoked, not expired. Paused is live and held. */
 export function isLive(e: Engagement, now = Math.floor(Date.now() / 1000)): boolean {
-  return !e.revokedAt && e.expiry > now;
+  return !e.revokedAt && !e.orphanedAt && e.expiry > now;
+}
+
+/**
+ * Mark an engagement the chain has no key for.
+ *
+ * A grant is two things: a local record and a key on the account. Interrupt the
+ * process between them — which happened on 2026-09-08, when a diagnostic run was
+ * killed mid-grant — and the record survives while the key never existed.
+ * `revokeEngagement` then answers `KeyDoesNotExist`, and `isLive` went on
+ * reporting a session that was never on chain, which is `/desk` telling someone
+ * they have authority outstanding that nobody ever had.
+ *
+ * It is recorded as orphaned rather than revoked, because revoked is a claim
+ * about a transaction and there was none. The distinction is the whole point:
+ * "we ended it" and "it never began" are different facts, and only one of them
+ * has a hash.
+ */
+export function markOrphaned(id: number, reason: string): Engagement | null {
+  const e = readEngagement(id);
+  if (!e) return null;
+  return persist({ ...e, orphanedAt: new Date().toISOString(), orphanedReason: reason });
 }
 
 export const keystoreUrl = (chainId: SupportedChain) => KEYSTORE[chainId];
