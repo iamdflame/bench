@@ -22,7 +22,8 @@
     "geist": "^1.7.2",
     "@bench/agents": "*",
     "@tailwindcss/postcss": "^4.3.3",
-    "tailwindcss": "^4.3.3"
+    "tailwindcss": "^4.3.3",
+    "@bench/counterfactual": "*"
   },
   "devDependencies": {
     "typescript": "^5.9.3",

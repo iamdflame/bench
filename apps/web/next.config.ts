@@ -44,7 +44,24 @@ for (const file of [".env", ".env.local"]) {
 const config: NextConfig = {
   reactStrictMode: true,
   outputFileTracingRoot: new URL("../../", import.meta.url).pathname,
-  transpilePackages: ["@bench/shared", "@bench/measure", "@bench/index", "@bench/probe", "@bench/metrics", "@bench/rails"],
+  /*
+    Every workspace package the app imports, listed here and declared as a
+    dependency of `@bench/web`.
+
+    Both are load-bearing and only one of them fails locally. npm workspaces
+    hoist the sibling packages, so an undeclared import resolves fine on this
+    machine and dies on Vercel with "Can't resolve @bench/…" — which is how
+    `@bench/counterfactual` reached production and stopped the build.
+  */
+  transpilePackages: [
+    "@bench/shared",
+    "@bench/measure",
+    "@bench/index",
+    "@bench/probe",
+    "@bench/metrics",
+    "@bench/rails",
+    "@bench/counterfactual",
+  ],
   /**
    * Left as runtime requires rather than bundled.
    *
