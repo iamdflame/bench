@@ -16,6 +16,8 @@ import Nav from "@/components/board/Nav";
 import Footer from "@/components/board/Footer";
 import { findRow } from "@/lib/board";
 import HireAction from "@/components/board/HireAction";
+import Execute from "@/components/board/Execute";
+import { planFor, type WirePlan } from "@/lib/hirePlan";
 
 /*
   The screen where authority is decided.
@@ -38,7 +40,7 @@ export default async function HirePage({
   searchParams,
 }: {
   params: Promise<{ chain: string; id: string }>;
-  searchParams: Promise<{ rail?: string }>;
+  searchParams: Promise<{ rail?: string; buyer?: string }>;
 }) {
   const { chain, id: rawId } = await params;
   const sp = await searchParams;
@@ -72,6 +74,24 @@ export default async function HirePage({
   const job = row.job ? jobBySlug(row.job) : null;
   const kernel = erc8183(chainId);
   const u = TOKENS[chainId].U;
+
+  /*
+    The escrow plan is built here, on the server, whenever a buyer is known.
+
+    That is not an optimisation. It means the whole document — the five calls,
+    the exact approval, the guardrails, the settlement date read from the policy
+    contract — renders in the HTML with JavaScript switched off. The only thing
+    that needs a browser is the signature itself, which is the one thing that
+    genuinely cannot happen anywhere else.
+
+    A refusal here is rendered as a refusal, not as an empty screen: a quote the
+    seller will not sign, a budget over the ceiling and an unreachable endpoint
+    are all different, and each says which it was.
+  */
+  const buyer = /^0x[0-9a-fA-F]{40}$/.test(sp.buyer ?? "") ? (sp.buyer as `0x${string}`) : null;
+  const built = rail === "hire" && buyer ? await planFor(chainId, id, buyer) : null;
+  const plan: WirePlan | null = built?.ok ? built.plan : null;
+  const planRefusal = built && !built.ok ? built.refusedBecause : null;
 
   return (
     <>
@@ -224,8 +244,14 @@ export default async function HirePage({
                     Exactly the budget, never unlimited. An unlimited approval would save you one signature
                     and leave the kernel able to move every {u.symbol} you will ever hold.
                   </dd>
-                  <dt>Signatures</dt>
-                  <dd className="num">up to 5, or 1 batched through an Altana wallet</dd>
+                  {/*
+                    The count is no longer copy. It was written here as "up to
+                    5, or 1 batched through an Altana wallet" — true in general
+                    and never true of the reader, who has one specific wallet
+                    that either batches or does not. `Execute` asks theirs on
+                    mount and prints the answer before the first popup, which is
+                    what §12.3 actually requires.
+                  */}
                 </>
               ) : null}
 
@@ -257,14 +283,56 @@ export default async function HirePage({
             </dl>
 
             <div style={{ marginTop: 22 }}>
-              <HireAction
-                chainId={chainId}
-                id={id}
-                rail={rail}
-                name={row.name}
-                price={row.rails[rail].price}
-                resource={service?.resource ?? null}
-              />
+              {rail === "hire" ? (
+                plan ? (
+                  <Execute plan={plan} chainId={chainId} name={row.name} />
+                ) : (
+                  <>
+                    {/*
+                      An escrow plan is specific to the wallet that funds it —
+                      whether an approval step is needed depends on your own
+                      allowance. There is no honest default for that, so this
+                      asks rather than guessing, and the address can be pasted as
+                      readily as connected.
+                    */}
+                    <form method="get" className="row positionform positionform--hero">
+                      <input type="hidden" name="rail" value="hire" />
+                      <input
+                        name="buyer"
+                        defaultValue={sp.buyer ?? ""}
+                        placeholder="The wallet that will fund it"
+                        className="search__input positionform__input"
+                        spellCheck={false}
+                        autoComplete="off"
+                        aria-label="The address that will fund this escrow"
+                      />
+                      <button type="submit" className="btn btn--hire btn--lg">
+                        Build the escrow &rarr;
+                      </button>
+                    </form>
+                    {planRefusal ? (
+                      <p className="refusal" style={{ marginTop: 12, maxWidth: "72ch" }}>
+                        {planRefusal}
+                      </p>
+                    ) : (
+                      <p className="provenance" style={{ marginTop: 8, maxWidth: "62ch" }}>
+                        Nothing is signed by this. It returns the exact calls your wallet would make, in
+                        order, with the number of signatures and the settlement date, before you are asked
+                        for the first one.
+                      </p>
+                    )}
+                  </>
+                )
+              ) : (
+                <HireAction
+                  chainId={chainId}
+                  id={id}
+                  rail={rail}
+                  name={row.name}
+                  price={row.rails[rail].price}
+                  resource={service?.resource ?? null}
+                />
+              )}
             </div>
           </section>
         ) : null}

@@ -20,22 +20,17 @@
  */
 
 import { NextResponse } from "next/server";
-import { formatEther, type Address } from "viem";
-import { TOKENS, jobBySlug, resolveChain } from "@bench/shared";
-import { probeQuote } from "@bench/probe";
-import { assertAllowedQuote, buildHirePlan, QuoteRejected } from "@bench/rails";
-import { REASON_CODE_TEXT } from "@bench/probe";
-import { findRow } from "@/lib/board";
+import { resolveChain } from "@bench/shared";
+import type { Address } from "viem";
+import { planFor } from "@/lib/hirePlan";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
 export const maxDuration = 60;
 
-/** The most this marketplace will plan without the buyer raising it. */
-const MAX_BUDGET = 2_000_000_000_000_000_000n; // 2 $U
 
 export async function POST(request: Request) {
-  let body: { chainId?: number; id?: string; buyer?: string; budget?: string };
+  let body: { chainId?: number; id?: string; buyer?: string; batched?: boolean };
   try {
     body = (await request.json()) as typeof body;
   } catch {
@@ -43,74 +38,15 @@ export async function POST(request: Request) {
   }
 
   const { chainId } = resolveChain(body.chainId);
-  const id = String(body.id ?? "");
-  const hit = findRow(chainId, id);
-  if (!hit || !hit.agent) {
+  const buyer = /^0x[0-9a-fA-F]{40}$/.test(body.buyer ?? "") ? (body.buyer as Address) : null;
+  const built = await planFor(chainId, String(body.id ?? ""), buyer, { batched: body.batched });
+
+  if (!built.ok) {
     return NextResponse.json(
-      {
-        ok: false,
-        executed: false,
-        refusedBecause:
-          "Rail 2 escrows a job against a provider address. This listing has no on-chain agent identity, so there is nobody for the kernel to pay.",
-      },
-      { status: 200 },
+      { ok: false, executed: false, refusedBecause: built.refusedBecause },
+      { status: built.status ?? 200 },
     );
   }
-
-  const agent = hit.agent;
-  if (!agent.job.known) {
-    return NextResponse.json(
-      {
-        ok: false,
-        executed: false,
-        refusedBecause: `It is not classified into one of the four jobs, so there is no job specification to quote against. ${agent.job.reason}`,
-      },
-      { status: 200 },
-    );
-  }
-  const job = jobBySlug(agent.job.value)!;
-  const provider = (agent.agentWallet ?? agent.owner) as Address | null;
-  if (!provider) {
-    return NextResponse.json(
-      { ok: false, executed: false, refusedBecause: "The registry does not resolve this token to a wallet, so there is nobody to escrow against." },
-      { status: 200 },
-    );
-  }
-
-  /* ---------------------------------------------------------- 1. the quote */
-  const quote = await probeQuote(agent.endpoint, job, { chainId });
-  if (!quote.accepted) {
-    const because =
-      quote.reasonCode && REASON_CODE_TEXT[quote.reasonCode]
-        ? `It was asked for a quote and declined: ${REASON_CODE_TEXT[quote.reasonCode]}.`
-        : quote.refusal === "no-8183-seller"
-          ? "It does not implement the ERC-8183 seller side, so there is no quote to escrow against. Rail 2 is the one rail that needs the other side to speak the protocol."
-          : (quote.reason ?? "It did not return an accepted quote for this job.");
-    return NextResponse.json({ ok: false, executed: false, refusedBecause: because }, { status: 200 });
-  }
-
-  /* --------------------------------------------------------- 2. the refusal */
-  const u = TOKENS[chainId].U;
-  try {
-    assertAllowedQuote(quote, { maxBudget: MAX_BUDGET, token: u.address });
-  } catch (e) {
-    return NextResponse.json(
-      { ok: false, executed: false, refusedBecause: e instanceof QuoteRejected ? e.why : String(e).slice(0, 200) },
-      { status: 200 },
-    );
-  }
-
-  /* ----------------------------------------------------------- 3. the plan */
-  const buyer = (/^0x[0-9a-fA-F]{40}$/.test(body.buyer ?? "") ? body.buyer : provider) as Address;
-  const plan = await buildHirePlan({
-    chainId,
-    buyer,
-    provider,
-    job,
-    budget: quote.price!,
-    description: JSON.stringify(quote.result ?? { task: job.title, price: quote.price!.toString() }).slice(0, 4096),
-    batched: false,
-  });
 
   return NextResponse.json({
     ok: true,
@@ -120,18 +56,6 @@ export async function POST(request: Request) {
       reads descriptions still cannot mistake this for one.
     */
     executed: false,
-    plan: {
-      jobId: plan.jobId.toString(),
-      provider: plan.provider,
-      budget: `${formatEther(plan.budget)} ${plan.token.symbol}`,
-      expiredAt: plan.expiredAt,
-      signatures: plan.maximumSignatures,
-      steps: plan.intents.map((i) => ({ step: i.step, says: i.says, to: i.to, data: i.data })),
-      guardrails: plan.guardrails,
-      note: [
-        `Nothing has been signed. These are the ${plan.intents.length} calls your wallet would make, in order.`,
-        ...plan.notes,
-      ].join(" "),
-    },
+    plan: built.plan,
   });
 }
