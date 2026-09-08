@@ -65,6 +65,29 @@ const env = (k: string): Address | null => {
   return /^0x[0-9a-fA-F]{40}$/.test(v) ? (v as Address) : null;
 };
 
+/**
+ * The two wallets our reference agents sell from.
+ *
+ * Written here rather than left to environment variables that were never set.
+ * Every one of these agents reported `wallet: null` in production, which meant
+ * Rail 2 refused with "the registry does not resolve this token to a wallet, so
+ * there is nobody to escrow against" — a true sentence about a wallet we do in
+ * fact control, and the reason nothing on this board has ever been hireable.
+ *
+ * A payee address is public by construction: it appears on chain the first time
+ * anybody pays it. There is nothing to protect here, and an environment
+ * variable that silently defaults to null protects nothing while breaking the
+ * rail. `HOUSE_*` still overrides, for a deployment that runs its own.
+ *
+ * Two rather than eight, because they are two real accounts rather than eight
+ * invented ones. The rebalancing and grid agents sell from the first; yield and
+ * health from the second.
+ */
+const SELLER_A = "0xd6d11Aa5046dc5C7BE8d63B9223b60D7AD94cBe9" as Address;
+const SELLER_B = "0x090d19610cdb4d6bb011d9EB579910Ac3296BB0a" as Address;
+
+const seller = (k: string, fallback: Address): Address => env(k) ?? env("HOUSE_PAY_TO") ?? fallback;
+
 const CENT = 10_000_000_000_000_000n; // 0.01 in 18 decimals
 const HALF = 500_000_000_000_000_000n; // 0.50 in 18 decimals
 
@@ -77,7 +100,7 @@ export const HOUSE_AGENTS: HouseAgent[] = [
     description:
       "Keeps a PancakeSwap V3 position earning as the price moves. It recentres the range when price leaves the band, and does nothing when the fees it would collect would not cover the gas and the loss of moving.",
     proof: "Time in range; impermanent loss and gas crystallised per recentre; fees against an un-pooled hold.",
-    wallet: env("HOUSE_RANGE_I"),
+    wallet: seller("HOUSE_RANGE_I", SELLER_A),
     tokenId: process.env.HOUSE_RANGE_I_TOKEN ?? null,
     callPrice: CENT,
     hirePrice: HALF,
@@ -90,7 +113,7 @@ export const HOUSE_AGENTS: HouseAgent[] = [
     description:
       "The same job with a wider band and a higher bar for moving. It recentres less often, crystallises less loss, and accepts more time near the edge of the range in exchange.",
     proof: "Same benchmark as Range Keeper I, fewer recentres, less churn.",
-    wallet: env("HOUSE_RANGE_II"),
+    wallet: seller("HOUSE_RANGE_II", SELLER_A),
     tokenId: process.env.HOUSE_RANGE_II_TOKEN ?? null,
     callPrice: CENT,
     hirePrice: HALF,
@@ -103,7 +126,7 @@ export const HOUSE_AGENTS: HouseAgent[] = [
     description:
       "Maintains a ladder of buy and sell orders inside a band on PancakeSwap, taking the spread as the price moves back and forth. It is capped per leg and stops if the band breaks.",
     proof: "Realized profit from completed round trips; fills; how far inventory drifted from balanced.",
-    wallet: env("HOUSE_GRID_I"),
+    wallet: seller("HOUSE_GRID_I", SELLER_A),
     tokenId: process.env.HOUSE_GRID_I_TOKEN ?? null,
     callPrice: CENT,
     hirePrice: HALF,
@@ -116,7 +139,7 @@ export const HOUSE_AGENTS: HouseAgent[] = [
     description:
       "The same ladder with a trend brake and a loss brake: it stops adding to a side the price is running away from, and stops entirely after a drawdown you set.",
     proof: "Realized profit with the brakes engaged, and the trades it declined to make.",
-    wallet: env("HOUSE_GRID_II"),
+    wallet: seller("HOUSE_GRID_II", SELLER_A),
     tokenId: process.env.HOUSE_GRID_II_TOKEN ?? null,
     callPrice: CENT,
     hirePrice: HALF,
@@ -129,7 +152,7 @@ export const HOUSE_AGENTS: HouseAgent[] = [
     description:
       "Compares the net rate actually reachable at your size across Venus, Aave and MasterChef, and moves capital when the extra yield pays back the gas before the rate is likely to change.",
     proof: "Net rate captured against the best reachable; how many days each move took to pay for itself.",
-    wallet: env("HOUSE_YIELD_I"),
+    wallet: seller("HOUSE_YIELD_I", SELLER_B),
     tokenId: process.env.HOUSE_YIELD_I_TOKEN ?? null,
     callPrice: CENT,
     hirePrice: HALF,
@@ -142,7 +165,7 @@ export const HOUSE_AGENTS: HouseAgent[] = [
     description:
       "The same comparison with a much higher bar for acting. It moves only on a durable gap, which costs some captured yield and avoids paying gas to chase a rate that reverts in an hour.",
     proof: "Net rate captured with high hysteresis, and the rotations it declined.",
-    wallet: env("HOUSE_YIELD_II"),
+    wallet: seller("HOUSE_YIELD_II", SELLER_B),
     tokenId: process.env.HOUSE_YIELD_II_TOKEN ?? null,
     callPrice: CENT,
     hirePrice: HALF,
@@ -155,7 +178,7 @@ export const HOUSE_AGENTS: HouseAgent[] = [
     description:
       "Watches a Venus borrow position and repays part of the debt before the health factor reaches the threshold you set, rather than after. Venus charges a ten percent liquidation penalty; a pre-emptive repayment costs gas.",
     proof: "The lowest health factor reached; the gap between crossing the threshold and the repair landing.",
-    wallet: env("HOUSE_HEALTH_I"),
+    wallet: seller("HOUSE_HEALTH_I", SELLER_B),
     tokenId: process.env.HOUSE_HEALTH_I_TOKEN ?? null,
     callPrice: CENT,
     hirePrice: HALF,
@@ -168,7 +191,7 @@ export const HOUSE_AGENTS: HouseAgent[] = [
     description:
       "The same watch, defending with collateral instead of repayment. It keeps the borrow intact and raises the denominator, which suits a position you do not want to unwind.",
     proof: "The lowest health factor reached, defended without reducing the loan.",
-    wallet: env("HOUSE_HEALTH_II"),
+    wallet: seller("HOUSE_HEALTH_II", SELLER_B),
     tokenId: process.env.HOUSE_HEALTH_II_TOKEN ?? null,
     callPrice: CENT,
     hirePrice: HALF,
@@ -254,12 +277,28 @@ export function applyHouse(agents: Agent[]): Agent[] {
     */
     const endpoint = houseEndpoint(h.slug);
     const moved = a.endpoint !== endpoint;
+    /*
+      The wallet is refreshed here too, and its absence was the same bug this
+      function's own comment describes one level up.
+
+      `houseRows` writes `owner` and `agentWallet` once, when a row is first
+      created; `cli.ts` only calls it for rows that do not already exist. So
+      once the eight rows were on the board, giving the agents wallets in this
+      file changed nothing — every row kept the `null` it was born with, and
+      Rail 2 went on refusing with "the registry does not resolve this token to
+      a wallet" about a wallet we control.
+
+      Anything derived from the house definition has to be re-derived here, or
+      it is written once and silently frozen.
+    */
     return {
       ...a,
       isOurs: true,
       name: h.name,
       description: h.description,
       endpoint,
+      owner: h.wallet ?? a.owner,
+      agentWallet: h.wallet ?? a.agentWallet,
       originHost: new URL(houseOrigin()).host,
       ...(moved ? { probe: null } : {}),
     };

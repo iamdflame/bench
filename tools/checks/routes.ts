@@ -156,6 +156,12 @@ console.log(`  route tree: ${ROUTES.sort().join("  ")}\n`);
     */
     "/api/rails/call/settle",
     "/api/agents", "/api/agents/[slug]",
+    /*
+      The ERC-8183 seller side for our own agents. Rail 2 is the one rail that
+      needs the other side to speak the protocol, and until this existed every
+      agent on the board — ours included — refused with `no-8183-seller`.
+    */
+    "/api/agents/[slug]/negotiate",
     // The marketplace's own ERC-8004 card, at the conventional place.
     "/.well-known", "/.well-known/agent-card.json",
     "/api/v1", "/api/v1/agents", "/api/v1/agents/[chain]", "/api/v1/agents/[chain]/[id]",
