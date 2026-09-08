@@ -176,52 +176,87 @@ export async function readPositions(
     ),
   );
 
-  const positions: OwnedPosition[] = [];
-  let closed = 0;
+  /*
+    Two rounds of parallel reads, not a sequential loop.
 
-  for (const id of ids) {
-    if (id === null) continue;
-    const tokenId = id as bigint;
-    const raw = await client
-      .readContract({ address: POSITION_MANAGER, abi: NPM_ABI, functionName: "positions", args: [tokenId] })
-      .catch(() => null);
-    if (!raw) continue;
+    This walked the ids one at a time — `positions(id)`, then `getPool(...)`,
+    awaited in turn — which is two round trips per position in series. From this
+    machine that is invisible; from a serverless function several thousand miles
+    from the RPC host it is the difference between a page that answers and one
+    somebody abandons. `chainClient` already enables JSON-RPC batching, and
+    batching can only collapse calls that are in flight together, so a
+    sequential await defeats the one optimisation already paid for.
 
+    Both rounds are `Promise.all`, so each becomes a single batched request.
+  */
+  const raws = await Promise.all(
+    ids.map((id) =>
+      id === null
+        ? Promise.resolve(null)
+        : client
+            .readContract({
+              address: POSITION_MANAGER,
+              abi: NPM_ABI,
+              functionName: "positions",
+              args: [id as bigint],
+            })
+            .catch(() => null),
+    ),
+  );
+
+  const decoded = raws.map((raw, i) => {
+    const id = ids[i];
+    if (!raw || id === null) return null;
     const p = raw as readonly unknown[];
-    const token0 = p[2] as Address;
-    const token1 = p[3] as Address;
-    const feePips = Number(p[4]);
-    const tickLower = Number(p[5]);
-    const tickUpper = Number(p[6]);
-    const liquidity = p[7] as bigint;
-    const owed0 = p[10] as bigint;
-    const owed1 = p[11] as bigint;
+    return {
+      tokenId: (id as bigint).toString(),
+      token0: p[2] as Address,
+      token1: p[3] as Address,
+      feePips: Number(p[4]),
+      tickLower: Number(p[5]),
+      tickUpper: Number(p[6]),
+      liquidity: p[7] as bigint,
+      owed0: p[10] as bigint,
+      owed1: p[11] as bigint,
+    };
+  });
 
-    if (liquidity === 0n) {
-      closed++;
-      continue;
-    }
+  const open = decoded.filter((d): d is NonNullable<typeof d> => d !== null && d.liquidity > 0n);
+  const closed = decoded.filter((d) => d !== null && d.liquidity === 0n).length;
 
-    const pool = await client
-      .readContract({
-        address: V3_FACTORY,
-        abi: FACTORY_ABI,
-        functionName: "getPool",
-        args: [token0, token1, feePips],
-      })
-      .catch(() => null);
-    if (!pool || pool === "0x0000000000000000000000000000000000000000") continue;
+  const pools = await Promise.all(
+    open.map((d) =>
+      client
+        .readContract({
+          address: V3_FACTORY,
+          abi: FACTORY_ABI,
+          functionName: "getPool",
+          args: [d.token0, d.token1, d.feePips],
+        })
+        .catch(() => null),
+    ),
+  );
 
+  const positions: OwnedPosition[] = [];
+  open.forEach((d, i) => {
+    const pool = pools[i];
+    if (!pool || pool === "0x0000000000000000000000000000000000000000") return;
     positions.push({
-      tokenId: tokenId.toString(),
+      tokenId: d.tokenId,
       pool: pool as Address,
-      token0,
-      token1,
-      feePips,
-      position: { tickLower, tickUpper, liquidity, owed0, owed1 },
-      widthTicks: tickUpper - tickLower,
+      token0: d.token0,
+      token1: d.token1,
+      feePips: d.feePips,
+      position: {
+        tickLower: d.tickLower,
+        tickUpper: d.tickUpper,
+        liquidity: d.liquidity,
+        owed0: d.owed0,
+        owed1: d.owed1,
+      },
+      widthTicks: d.tickUpper - d.tickLower,
     });
-  }
+  });
 
   if (positions.length === 0) {
     return {

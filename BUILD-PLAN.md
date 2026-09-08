@@ -538,3 +538,77 @@ screen in the product that can.
 - **Rail 3's own agents.** The three keepers are reference strategies. A
   third-party agent has no replayable strategy object, so its row cannot be
   replayed — only measured after it is hired, which is §9's ledger.
+
+
+## The production deployment had no RPC configuration at all
+
+Chased after the per-position replay took ~30 seconds cold in production against
+6.2 seconds locally. The log walk was not the cause — a one-hour window of that
+pool is **two** `eth_getLogs` calls, measured by counting them.
+
+The cause was that `BSC_RPC_URL` and `LOG_RPC_URL` were never set in production.
+Only five variables were: `HOUSE_PAY_TO`, `NEXT_PUBLIC_SITE_URL`, `SCAN_API_KEY`,
+`SCAN_BASE_URL`, `B402_BAZAAR_URL`. So **every server-side chain read in
+production fell through to `publicnode`** — the host measured earlier as
+403-prone on receipts and rate-limited under load.
+
+Measured, host by host, for an ordinary `eth_call`:
+
+| host | `eth_call` |
+|---|---|
+| `bsc.rpc.blxrbdn.com` | **169ms** |
+| `bsc-dataseed.bnbchain.org` | 204ms |
+| `bsc-rpc.publicnode.com` | 551ms |
+| `bsc.drpc.org` | refused |
+
+Both variables are set now, blxrbdn first, and `.env.example` documents why
+rather than leaving the next person to rediscover it.
+
+**The general lesson, and it is the same one three times today:** the local
+environment is more forgiving than the deployed one. A `.env` file that exists
+here and nowhere else is indistinguishable from a default until something is
+measured on the other side. Deploying is not the last step of building; it is
+the first step of finding out what was only ever true locally.
+
+### And the RPC config was not the whole answer
+
+With both variables set, the cold path in production is still about **29
+seconds** — warm 1.4s, first byte 0.76s. The honest account:
+
+- **Not the log walk.** An hour of the busiest pool tried is two `eth_getLogs`
+  calls, about four seconds. Instrumenting `fetch` around the walk settled that
+  in one run and ruled out the whole "parallelise the walker" direction before
+  any of it was written.
+- **Not the host.** blxrbdn is three times faster per `eth_call` than the
+  fallback, and setting it changed the total very little.
+- **It is per-round-trip latency from the deploy region.** The cold path is
+  roughly eight round trips; here they cost about eight seconds in total and in
+  `iad1` about twenty-nine. That ratio is distance to the RPC host, not work.
+
+What was fixed anyway: `readPositions` walked its ids **sequentially** —
+`positions(id)` then `getPool(...)`, awaited in turn, two round trips per
+position in series. `chainClient` already enables JSON-RPC batching, and
+batching can only collapse calls in flight together, so a sequential await
+defeats the one optimisation already paid for. It is two rounds of `Promise.all`
+now: **four requests for any number of positions, where twelve positions
+previously cost twenty-six.**
+
+That does not rescue a single-position address, which was already four. The
+remaining levers are Multicall3 (four requests down to two) and an RPC provider
+near the deploy region — neither worth doing before somebody is waiting on this
+page.
+
+**What a reader experiences today:** first byte 0.76s, the page complete and
+readable immediately, the table arriving up to half a minute later cold and in
+1.4s warm. Acceptable for an opt-in panel; not acceptable for the board's own
+rows, which is why §5.6's per-row column is not built this way.
+
+**A caution on all of these numbers.** They were taken from a machine whose own
+connectivity was degraded for part of the session — `vercel.com` itself took
+twenty seconds to answer at one point, and two deploys failed with `fetch
+failed` while both builds actually succeeded. The readings above were taken
+after it settled and against a static-page baseline of 2.4–3.4s, but they are
+measurements of a remote thing through a link that had already proven
+unreliable, and they deserve re-taking from somewhere else before anything is
+concluded from them.
+
