@@ -155,6 +155,12 @@ console.log(`  route tree: ${ROUTES.sort().join("  ")}\n`);
       wallet at all.
     */
     "/api/rails/call/settle",
+    /*
+      Ending a session. Altana's own qualification line is "a user can see what
+      their agent may do, and revoke it", and until this existed the desk's
+      Revoke was a disabled span over a `revokeEngagement` nothing called.
+    */
+    "/api/rails/mandate/revoke",
     "/api/agents", "/api/agents/[slug]",
     /*
       The ERC-8183 seller side for our own agents. Rail 2 is the one rail that

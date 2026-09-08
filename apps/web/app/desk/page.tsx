@@ -6,6 +6,8 @@ import { KEYSTORE, addressUrl, txUrl } from "@bench/shared";
 import Nav from "@/components/board/Nav";
 import Footer from "@/components/board/Footer";
 import { getBoard } from "@/lib/board";
+import { Reclaim, Revoke } from "@/components/board/DeskActions";
+import { buildReclaim, readEngagements as readSessions } from "@bench/rails";
 
 /**
  * Your engagements.
@@ -42,6 +44,12 @@ interface Engagement {
   amountText?: string;
   status: string;
   detail: string;
+  /** Set on a hire, so Reclaim has something to call. */
+  jobId?: string;
+  /** Unix seconds. The kernel reverts a reclaim before this. */
+  reclaimableAt?: number;
+  /** Set on a session this deployment granted, so Revoke has something to end. */
+  engagementId?: number;
 }
 
 /**
@@ -49,8 +57,15 @@ interface Engagement {
  *
  * This deployment does not hold a visitor's key, so it cannot show a
  * visitor's engagements — it shows the ones it has itself made, which are the
- * ones it can honestly account for. When a wallet connection lands, this
- * reads that wallet's jobs and sessions from chain instead.
+ * ones it can honestly account for.
+ *
+ * Two sources, merged, and the second one had never been read by anything.
+ * `proofs.json` is written by the `prove-*` scripts and is what this page has
+ * always shown. `engagements.json` is written by `grantEngagement` every time a
+ * session is granted, and carries the fields that make a session actionable:
+ * its id, its allowlist, its expiry, and whether it has already been revoked.
+ * Without it the desk could describe a session but could not end one, which is
+ * how `Revoke` came to be a disabled span.
  */
 function readEngagements(): Engagement[] {
   for (const p of [join(process.cwd(), "data", "proofs.json"), join(process.cwd(), "apps/web/data", "proofs.json")]) {
@@ -68,22 +83,84 @@ function readEngagements(): Engagement[] {
           what: string;
         }[];
       };
-      return doc.proofs.map((p2) => ({
-        id: p2.id,
-        rail: p2.rail,
-        title: p2.title,
-        target: p2.target,
-        at: p2.at,
-        txHash: p2.txHash,
-        amountText: p2.amountText,
-        status: p2.rail === "call" ? "settled" : "open",
-        detail: p2.what,
-      }));
+      /*
+        A proof row is matched to a live session by its key. The proof records
+        what happened; the engagement record is the thing that can still be
+        acted on, and only it knows the id revocation is keyed on.
+      */
+      /*
+        Session rows come from the engagement record rather than the proof
+        record, and replace the mandate proofs rather than sitting beside them.
+
+        A proof says a session was granted; the engagement record is the session
+        — it knows the id revocation is keyed on, the expiry, and whether it has
+        already ended. Matching the two was attempted by transaction hash and
+        cannot work: the grant hash is never persisted. So the actionable record
+        wins for its own rail, and the proof rows carry the other two.
+      */
+      const sessions = liveSessions();
+      const fromProofs = doc.proofs
+        .filter((p2) => !(p2.rail === "mandate" && sessions.length > 0))
+        .map((p2) => ({
+          id: p2.id,
+          rail: p2.rail,
+          title: p2.title,
+          target: p2.target,
+          at: p2.at,
+          txHash: p2.txHash,
+          amountText: p2.amountText,
+          status: p2.rail === "call" ? "settled" : "open",
+          detail: p2.what,
+        }));
+      return [...sessions, ...fromProofs];
     } catch {
       return [];
     }
   }
   return [];
+}
+
+/**
+ * The sessions this deployment has actually granted, as desk rows.
+ *
+ * Read defensively: the file is written by a CLI on a different machine from
+ * the one serving this page, so its absence is ordinary rather than an error,
+ * and an unreadable one must not take the desk down with it.
+ *
+ * An orphaned session — the record written, the key never authorised — is shown
+ * as orphaned rather than as revocable. There is nothing on chain to end, and
+ * offering a button that would send a transaction against a key that was never
+ * granted is worse than saying what happened.
+ */
+function liveSessions(): Engagement[] {
+  let records: ReturnType<typeof readSessions>;
+  try {
+    records = readSessions();
+  } catch {
+    return [];
+  }
+  return records.map((e) => {
+    const expired = e.expiry * 1000 < Date.now();
+    return {
+      id: `session-${e.id}`,
+      rail: "mandate" as const,
+      title: `${e.agentName} — a session over ${e.account.slice(0, 10)}…`,
+      target: e.sessionKey,
+      at: e.grantedAt,
+      ...(e.registrationTx ? { txHash: e.registrationTx } : {}),
+      amountText: `${e.capWei === "0" ? "no spend" : e.capWei} cap`,
+      status: e.revokedAt ? "revoked" : e.orphanedAt ? "orphaned" : expired ? "expired" : "live",
+      detail: [
+        `It may call ${e.allowlist.length} ${e.allowlist.length === 1 ? "method" : "methods"}, and deliberately not ${e.withheld.length} more.`,
+        e.rationale,
+        e.registered
+          ? "Registered in the KeyStore, so a third party can verify its authority and its revocation without asking us."
+          : "Not registered in the KeyStore, so its authority is enforced on chain but not independently verifiable.",
+      ].join(" "),
+      /* Only a live session can be ended. The rest have already ended. */
+      ...(e.revokedAt || e.orphanedAt ? {} : { engagementId: e.id }),
+    };
+  });
 }
 
 export default async function DeskPage() {
@@ -164,22 +241,40 @@ export default async function DeskPage() {
                         quoted amount, once, from an authorization whose nonce cannot be spent twice.
                       </p>
                     ) : null}
-                    {e.rail === "hire" ? (
-                      <>
-                        <span className="btn btn--sm" aria-disabled="true">
-                          Reclaim after the deadline
-                        </span>
-                        <span className="provenance">
-                          Reclaim is a call from your own wallet against the kernel. This deployment holds no
-                          key and cannot make it for you.
-                        </span>
-                      </>
+                    {/*
+                      Both, or neither. A reclaim needs the job id to call and
+                      the deadline to know whether calling it would revert, and
+                      defaulting the deadline to zero would render "reclaim now"
+                      over a kernel that is going to refuse. `check:absence`
+                      failed this line for exactly that, correctly.
+                    */}
+                    {e.rail === "hire" && e.jobId && e.reclaimableAt !== undefined ? (
+                      <Reclaim
+                        chainId={56}
+                        reclaimableAt={e.reclaimableAt}
+                        intent={{
+                          to: buildReclaim(56, BigInt(e.jobId)).to,
+                          data: buildReclaim(56, BigInt(e.jobId)).data,
+                          value: "0",
+                        }}
+                      />
+                    ) : e.rail === "hire" ? (
+                      <p className="provenance" style={{ margin: 0, maxWidth: "64ch" }}>
+                        Reclaim is a call from your own wallet against the kernel, and it needs this job&rsquo;s
+                        id and its deadline. Neither is in this record, so the button is not offered rather
+                        than offered and broken.
+                      </p>
                     ) : null}
                     {e.rail === "mandate" ? (
                       <>
-                        <span className="btn btn--sm" aria-disabled="true">
-                          Revoke
-                        </span>
+                        {e.status === "revoked" ? (
+                          <p className="provenance" style={{ margin: 0, maxWidth: "64ch" }}>
+                            <span className="chip chip--refused">revoked</span> This authority ended on chain
+                            and does not come back. The row stays because what was done still happened.
+                          </p>
+                        ) : e.engagementId !== undefined ? (
+                          <Revoke id={e.engagementId} />
+                        ) : null}
                         <a
                           className="provenance nav__link"
                           style={{ textDecoration: "underline" }}

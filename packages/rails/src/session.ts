@@ -204,7 +204,23 @@ export interface Engagement {
   "observing only" in production.
 */
 const SECRET_DIR = join(process.cwd(), ".sessions");
-const PUBLIC_FILE = join(process.cwd(), "apps/web/data/engagements.json");
+
+/*
+  Resolved against two roots, because two processes read this file from
+  different working directories: a CLI run from the repository root, and the web
+  server run from `apps/web`. The record was written by the first and, until
+  now, looked for by the second at `apps/web/apps/web/data/engagements.json` —
+  which does not exist, so the desk silently found no sessions and fell back to
+  showing proof rows with nothing to revoke.
+
+  A read tries both. A write uses whichever already exists, and the repository
+  layout otherwise.
+*/
+const PUBLIC_CANDIDATES = [
+  join(process.cwd(), "apps/web/data/engagements.json"),
+  join(process.cwd(), "data/engagements.json"),
+];
+const PUBLIC_FILE = PUBLIC_CANDIDATES.find((p) => existsSync(p)) ?? PUBLIC_CANDIDATES[0]!;
 
 const secretPath = (id: number) => join(SECRET_DIR, `engagement-${id}.key`);
 
