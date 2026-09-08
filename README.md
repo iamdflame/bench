@@ -3,9 +3,12 @@
 **Hire an agent to run your money on BNB Chain.**
 Choose how much it can do. Watch it work. Take it back anytime.
 
+**Live: https://bench-six-sigma.vercel.app**
+
 This file describes what the deployed site does today, in the present tense.
 Every link in it is checked by CI (`npm run check:routes`), so a route named
-here is a route that exists.
+here is a route that exists, and `npm run smoke` checks them against the
+deployment rather than the source.
 
 ---
 

@@ -13,7 +13,11 @@ actually happened on chain 56 and is recorded in `apps/web/data/proofs.json` by 
 rather than by hand. A phase is only **done** when both are true, because a marketplace that
 grades itself on lines of code is the failure mode in `PLAN.md` §3.
 
-Last verified: 2026-09-08 15:30 UTC, at the block the snapshot names.
+Last verified: 2026-09-08 17:35 UTC, at the block the snapshot names.
+
+**Deployed: https://bench-six-sigma.vercel.app** — `npm run smoke` passes against it:
+18 checks, every route, the reference agent answering 402 on chain 56, 50 rows rendering with
+JavaScript off, and nothing animating on arrival.
 
 ---
 
@@ -329,3 +333,31 @@ and an inconclusive assertion renders dim rather than as a failure.
 - **A deliverable.** The buyer's half is exercised end to end. The seller's
   `submit(uint256,bytes32,bytes)` on the router and the settle-or-dispute
   branch are not, because that needs a counterparty who wants the money.
+
+
+## Deploying it, and three things that only fail in production
+
+The site is on Vercel. Nothing about getting it there was interesting except
+the parts that were invisible locally.
+
+**`"next": "*"` resolves to next@7.0.2-canary.49.** npm workspaces hoists the
+root's `^15.5.25` locally, so a wildcard in `apps/web/package.json` is
+indistinguishable from a pin — until Vercel installs that package on its own
+and npm picks a 2018 canary off the registry. The build then reports "legacy
+mode" and dies looking for a `pages` directory. Third-party dependencies of a
+deployed workspace package are pinned now.
+
+**A build under a root directory cannot see the repository's devDependencies.**
+`@tailwindcss/postcss` and `tailwindcss` (the postcss plugin) and `typescript`
+plus `@types/*` (`next build` type-checks) all lived at the repo root and were
+simply absent. What a build needs is declared where it is used.
+
+**The deployment was behind Vercel's SSO wall, and every route answered 200.**
+That 200 was the login page. It is exactly the failure this plan names in §22
+about a competitor — a paid path closed at admission, so a machine buyer
+literally cannot hire — and we shipped it ourselves for twenty minutes.
+Protection is off; `/api/agents/range-keeper-i` answers 402 to anyone.
+
+The lesson is the same one the log walker taught: a check that cannot fail is
+not a check. Thirteen routes returning 200 told us nothing until one of them
+was asked to return something other than 200.
