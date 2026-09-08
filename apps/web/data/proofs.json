@@ -146,6 +146,78 @@
       "passed": 9,
       "failed": 0,
       "inconclusive": 1
+    },
+    {
+      "id": "rail-2-escrow-funded",
+      "rail": "hire",
+      "title": "An escrow funded against an agent we do not operate, on terms the chain carries verbatim",
+      "chainId": 97,
+      "what": "BENCH built a five-call hire plan, simulated it before signing anything, sent it, and then read the job back from the kernel: the client, the provider, the budget and the full quoted description, character for character. One $U left the buyer and sits in the escrow contract.",
+      "why": "Rail 3 hands an agent a key, which is the right instrument only once the chain has shown you what that agent does. Rail 2 is the answer for a stranger: the money goes into a contract the agent can only open by delivering, and if nothing arrives the buyer takes all of it back without anyone's permission. That is what makes this a marketplace rather than a shop.",
+      "buyer": "0x54c06cC2623aAA2Dcc38B17fA07aD2e99b363C90",
+      "provider": "0xD8c45dA4e4036f4946132B18fc7568096CB7535f",
+      "providerNote": "Not ours. A provider already carrying jobs on this kernel.",
+      "jobId": "1139",
+      "kernel": "0xa206c0517B6371C6638CD9e4a42Cc9f02A33B0DE",
+      "policy": "0xd6a4217588F6B1F5657a92A3e94E6422aD771cEA",
+      "disputeWindowSeconds": 900,
+      "amountText": "1 $U",
+      "txHash": "0x7e0af97a9fc5b7e0ecb17c3fa6b9475e7b2042bf656a9a6f68519c7c81eedf27",
+      "at": "2026-09-08T17:36:00Z",
+      "reproduce": "npm run prove-hire",
+      "assertions": [
+        {
+          "n": 1,
+          "claim": "the dispute window is read from the policy contract",
+          "result": "proven",
+          "detail": "900s, read from the policy the network actually uses"
+        },
+        {
+          "n": 2,
+          "claim": "the plan simulates before anything is signed",
+          "result": "proven",
+          "detail": "5 intents, createJob clean"
+        },
+        {
+          "n": 3,
+          "claim": "every intent in the plan lands on chain",
+          "result": "proven",
+          "detail": "5 transactions, all successful"
+        },
+        {
+          "n": 4,
+          "claim": "the terms on chain are the terms that were quoted",
+          "result": "proven",
+          "detail": "93 characters, verbatim, plus client provider and budget"
+        },
+        {
+          "n": 5,
+          "claim": "exactly the budget left the buyer and sits in escrow",
+          "result": "proven",
+          "detail": "1 $U"
+        },
+        {
+          "n": 6,
+          "claim": "the kernel reports the job as funded",
+          "result": "proven",
+          "detail": "status 1 = FUNDED"
+        },
+        {
+          "n": 7,
+          "claim": "reclaim is one call the buyer makes from their own wallet",
+          "result": "proven",
+          "detail": "claimRefund(1139), to the kernel, from the buyer"
+        },
+        {
+          "n": 8,
+          "claim": "the escrow returns to the buyer if nothing arrives",
+          "result": "inconclusive",
+          "detail": "Not attempted. The kernel refuses reclaim until expiredAt, and sending a call to watch it revert on a deadline we already read would be theatre."
+        }
+      ],
+      "passed": 7,
+      "failed": 0,
+      "inconclusive": 1
     }
   ],
   "findings": [
@@ -242,6 +314,22 @@
         "failed": 0
       },
       "reproduce": "npm run prove-scope -- --job rebalancing --wallet 0xcccd447e00fa38a288a8b6c29de52385a8342582"
+    },
+    {
+      "id": "stale-policy-address",
+      "title": "The Altana SDK ships a policy address the network does not use, and it makes every ERC-8183 escrow unfundable.",
+      "method": "stale-policy-address",
+      "measuredAt": "2026-09-08T17:30:00Z",
+      "detail": "`@altananetwork/sdk@0.7.1` reports chain 97's dispute policy as 0x4F4678D4…78A6. That contract is deployed and answers disputeWindow() with 86,400. No job on the network is registered against it. Every live registerJob in the last four thousand blocks names 0xd6a42175…1cEA instead, whose window is 900 seconds — found by scanning the router's own logs for a call that succeeded and reading the address out of its calldata.",
+      "whyItMatters": "The failure is silent and total. registerJob reverts with an unnamed custom error, so the policy is never bound, so fund reverts with PolicyNotSet() and the escrow can never be filled. Nothing in either error says 'wrong policy'. Rail 2 was dead for this reason and nobody had noticed, because `npm run prove-hire` had been advertised in package.json for the life of the rail while pointing at a file that was never written. It also vindicates the plan's own figure and corrects a correction made earlier the same day: this repository briefly recorded testnet's dispute window as 24 hours and marked the plan's 900 seconds as wrong. The plan was right. The 24 hours belonged to a contract nobody uses. When a constant and the chain disagree, the chain is the constant.",
+      "breakdown": {
+        "sdkPolicyWindowSeconds": 86400,
+        "livePolicyWindowSeconds": 900,
+        "mainnetWindowSeconds": 604800,
+        "testnetJobsOnKernel": 1139,
+        "mainnetJobsOnKernel": 56748
+      },
+      "reproduce": "npm run prove-hire, or read POLICY_OVERRIDE in packages/shared/src/addresses.ts"
     }
   ]
 }

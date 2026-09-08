@@ -36,10 +36,37 @@ export const REPUTATION_REGISTRY: Record<SupportedChain, Address | null> = {
  * and `paymentToken` is $U — the token the kernel escrows and the only one it
  * will accept.
  */
+/**
+ * Policies the network actually uses, where the SDK's constant is stale.
+ *
+ * `@altananetwork/sdk@0.7.1` reports chain 97's policy as
+ * `0x4F4678D4…78A6`. That contract is deployed and answers `disputeWindow()`
+ * with 86,400 — and no job on the network is registered against it. Every live
+ * `registerJob` in the last four thousand blocks names
+ * `0xd6a42175…1cea` instead, whose window is **900 seconds**.
+ *
+ * The cost of the stale address is not a warning, it is a dead rail:
+ * `registerJob` reverts, so the policy is never bound, so `fund` reverts with
+ * `PolicyNotSet()` and the escrow can never be filled. Nothing in the error
+ * says "wrong policy".
+ *
+ * Found by scanning the router's own logs for a `registerJob` that worked and
+ * reading the address out of its calldata, which is the general remedy: when a
+ * constant and the chain disagree, the chain is the constant.
+ *
+ * This also vindicates the plan's own figure. An earlier reading here reported
+ * testnet's window as 24 hours and marked the plan's 900s as wrong; the plan
+ * was right, and the 24 hours belonged to a contract nobody uses.
+ */
+const POLICY_OVERRIDE: Partial<Record<SupportedChain, Address>> = {
+  97: "0xd6a4217588F6B1F5657a92A3e94E6422aD771cEA",
+};
+
 export function erc8183(chainId: SupportedChain): Erc8183Addresses {
   const a = ERC8183_ADDRESSES[chainId];
   if (!a) throw new Error(`no ERC-8183 deployment for chain ${chainId}`);
-  return a;
+  const override = POLICY_OVERRIDE[chainId];
+  return override ? { ...a, policy: override } : a;
 }
 
 /** Tokens, with the decimals that break naive integrations. */

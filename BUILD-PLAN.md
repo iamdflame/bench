@@ -24,7 +24,7 @@ Last verified: 2026-09-08 15:30 UTC, at the block the snapshot names.
 | **P0** The spine | Route tree, `Measurement`/`Maybe`, board, four doors, ERC-8004 sweep, prober with the three-input check, B402 ingest | Funnel serves a block-stamped snapshot; 50 rows render with JavaScript off | **done** |
 | **P1** Rail 1 — Call | `packages/rails/src/call.ts`, house agents answer 402 | **`rail-1-third-party`** — 0.01 USD1 paid to an endpoint we do not operate, tx `0x2e39…83ca`, block 120,590,203, six assertions. **11 third-party endpoints callable** after the false-timeout fix | **done** |
 | **P2** Rail 3 — Mandate | `mandate.ts` + `session.ts`, `ProvenScope` enforced by an unexported symbol, `RecipientBound.sol` | **`rail-3-scope-holds` — 9 proven, 0 failed, 1 inconclusive** on mainnet. Wrapper [`0x5863eda…952e`](https://bscscan.com/address/0x5863edaede7394470db19395ca05b1439662952e) bytecode-matched; grant → in-scope permitted → out-of-scope refused by name → withheld selector refused → [revoked](https://bscscan.com/tx/0xbbeb10c6eb6d1d3d5d3de2cdc5da068007b1f5abf2608275f310df2ed325b087) → key unknown | **done** |
-| **P3** Rail 2 — Hire | `hire.ts`, full ERC-8183 lifecycle, `disputeWindow()` read from chain | — nothing recorded | **code only** |
+| **P3** Rail 2 — Hire | `hire.ts`, full ERC-8183 lifecycle, `disputeWindow()` read from chain, `prove-hire.ts` written | **`rail-2-escrow-funded` — 7 proven, 0 failed, 1 inconclusive** on testnet. Job 1139 FUNDED against a provider we do not operate; terms verbatim on chain; 1 $U escrowed | **testnet done, mainnet pending** |
 | **P4** Counterfactual | — `packages/counterfactual` does not exist | — | **not started** |
 | **P5** Depth | Four job routes off one template, `/data`, `/register`, `/list`, `/api/v1/*`, `/api/mcp`, own agent card, origin cohorts | Four findings recorded, all measurements block-stamped | **partial** |
 | **P6** `OutcomePolicy` | — only `RecipientBound.sol` is in `contracts/src` | — | **not started** |
@@ -286,3 +286,46 @@ someone they have authority outstanding that nobody ever had.
 
 Now marked `orphanedAt` rather than `revokedAt`, and `isLive` honours it. The distinction is the
 point: *we ended it* and *it never began* are different facts, and only one of them has a hash.
+
+
+## Rail 2, and four things that were wrong because nobody had run it
+
+`npm run prove-hire` had been advertised in `package.json` for the life of the
+rail, pointing at a file that was never written. Writing it found the rest.
+
+**1. Every signature in `COMMERCE_ABI` was wrong.** `createJob` took three
+arguments instead of five and in a different order; `setBudget` and `fund` were
+missing their trailing `bytes`; and `registerJob` was addressed to the kernel
+when it lives on the router. Five intents, five selectors the chain has never
+heard of. The plan would have reverted on its first call.
+
+**2. The Altana SDK ships a policy address the network does not use.**
+`@altananetwork/sdk@0.7.1` reports chain 97's policy as `0x4F4678D4…78A6`. That
+contract is deployed, answers `disputeWindow()` with 86,400 — and no job on the
+network is registered against it. Every live `registerJob` in the last four
+thousand blocks names `0xd6a42175…1cEA`, whose window is **900 seconds**.
+
+The failure is silent and total: `registerJob` reverts with an unnamed custom
+error, so the policy is never bound, so `fund` reverts with `PolicyNotSet()`
+and the escrow can never be filled. Nothing in either error says "wrong
+policy". Found by scanning the router's own logs for a `registerJob` that
+worked and reading the address out of its calldata.
+
+**3. This corrects a correction.** Earlier the same day this tracker recorded
+testnet's dispute window as 24 hours and marked the plan's 900 seconds as
+wrong. **The plan was right.** The 24 hours belonged to a contract nobody uses.
+When a constant and the chain disagree, the chain is the constant — and that
+applies to a constant in the SDK exactly as much as to one in the plan.
+
+**4. `/data` assumed every proof was a payment.** A proof carrying a revocation
+and no amount crashed the build. It now renders what each proof actually holds,
+and an inconclusive assertion renders dim rather than as a failure.
+
+### What P3 still owes
+
+- **Mainnet.** The window there is 604,800 seconds read from the policy, so a
+  mainnet job has to be funded early enough to settle inside the period someone
+  is watching.
+- **A deliverable.** The buyer's half is exercised end to end. The seller's
+  `submit(uint256,bytes32,bytes)` on the router and the settle-or-dispute
+  branch are not, because that needs a counterparty who wants the money.

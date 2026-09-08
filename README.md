@@ -52,6 +52,38 @@ transfer. Six assertions, six proven.
 npm run prove-call
 ```
 
+**A session that could do four things, could not do anything else, and stopped
+when it was revoked.** Rail 3, on mainnet. BENCH read what the chain shows a
+wallet actually doing at PancakeSwap V3, granted a session scoped to exactly
+that — four calls allowed, eight withheld, capped at 0.001 BNB, expiring in
+fifteen minutes — and then attacked it. An in-scope selector was permitted and
+failed at the target. An out-of-scope target was refused by the account itself,
+naming the target and the four bytes: `UnauthorizedCall { target:
+0xfd36e2c2…, data: 0xb0772d0b }`. A deliberately withheld selector was refused
+the same way. Revocation landed in
+[`0xbbeb10c6…d325b087`](https://bscscan.com/tx/0xbbeb10c6eb6d1d3d5d3de2cdc5da068007b1f5abf2608275f310df2ed325b087),
+after which the relay reports the key as unknown. **Nine proven, none failed,
+one inconclusive** — the KeyStore registration, which is reported as unproven
+rather than rounded up.
+
+```bash
+npm run prove-scope -- --job rebalancing --wallet 0xcccd447e00fa38a288a8b6c29de52385a8342582
+```
+
+**An escrow funded against an agent we do not operate.** Rail 2, on testnet.
+Five intents, simulated before anything was signed, then sent: job 1139 exists
+on the ERC-8183 kernel carrying the quoted terms character for character, one
+$U left the buyer and sits in the escrow contract, and the kernel reports
+`FUNDED`. The dispute window is read from the policy the network actually uses
+— 900 seconds — not from a constant here. Reclaim is one `claimRefund` call the
+buyer makes from their own wallet. **Seven proven, none failed, one
+inconclusive**: reclaim is not attempted, because sending a call to watch it
+revert on a deadline we already read would be theatre.
+
+```bash
+npm run prove-hire
+```
+
 **Binance's B402 Bazaar lists 979 paid endpoints for BNB Chain. Four of them
 can be paid on BNB Chain.** Every resource in the catalogue was called and its
 live 402 parsed: 941 answered a well-formed challenge asking for payment on
@@ -104,9 +136,14 @@ nobody reviews carefully.
 | Chain 56 and 97 never appear in one figure | `check:network` |
 | The four jobs are equal in depth | `check:diversity` |
 | No link goes to a dead end | `check:routes` |
+| Nothing animates without a data event, and no glassmorphism | `check:motion` |
+| The homepage stays inside its JavaScript budget | `check:budget` |
+| Every route, the funnel's freshness and all three rails, against something serving | `npm run smoke` |
+| A log filter that is dropped rather than rejected | `packages/shared/src/__tests__/client.test.ts` asserts on the JSON-RPC body that leaves the process |
 
 ```bash
-npm run check          # all six
+npm run check          # the static gates
+npm run smoke          # against a running deployment
 npm run contracts:test # 18 tests, incl. a 512-run fuzz on the cap invariant
 ```
 
@@ -152,7 +189,8 @@ third party's database is unhappy.
 | Variable | Purpose |
 |---|---|
 | `BSC_RPC_URL` | Comma-separated read endpoints, primary first |
-| `LOG_RPC_URL` | Hosts that will actually serve ranged `eth_getLogs`. Measured: of ten public BSC hosts, one does. |
+| `LOG_RPC_URL` | Extra hosts for ranged `eth_getLogs`, tried first. |
+| `ARCHIVE_RPC_URL` | A host serving deep history. Optional: `bsc.rpc.blxrbdn.com` ships as the default and answers 208 days back, capped at 5,000 blocks a request. |
 | `SCAN_API_KEY` | 8004scan, for enrichment only. The crawl does not depend on it. |
 | `BUYER_KEY` | Funds the Call rail's float so a visitor can see it work without funding a wallet |
 | `RECIPIENT_BOUND` | The deployed wrapper for a (principal, agent) pair. Absent means no wrapper, and the hire screen says so. |
@@ -171,19 +209,23 @@ packages/
   rails         call · hire · mandate.
 contracts       RecipientBound.sol and its tests. Nothing else.
 worker          Indexer, prober, capability scanner, metrics, snapshot.
-tools/checks    The six gates above.
+tools/checks    The gates above.
 ```
 
 ## What is not true yet
 
-- **Rail 2 has not been exercised against a third party.** The plan builder,
-  the quote prober and the refusal path are live, and no agent found so far
-  implements the ERC-8183 seller side. Until one does, or until another team
-  points theirs at us, this rail is proven against the protocol and not against
-  a counterparty.
-- **Rail 3 has not been granted on mainnet from this deployment.** The scope
-  derivation runs and refuses correctly; the grant itself is a signature from a
-  principal's own account, and none has been made here.
+- **Rail 2 is proven on testnet, not on mainnet.** An escrow is funded and the
+  terms are on chain, against a provider we do not operate. Mainnet's dispute
+  window is seven days, read from the policy contract, so a mainnet job has to
+  be funded early enough to settle inside the window somebody is watching.
+- **No deliverable has been submitted or settled.** The buyer's half of Rail 2
+  is exercised end to end; the seller's `submit` and the settle-or-dispute
+  branch are not, because that needs a counterparty who wants the money.
+- **The KeyStore registration does not land.** Rail 3's sessions enforce
+  correctly either way — that is proven — but no `Authorize` log is found, so
+  every engagement is recorded `registered: false`. Registration is what would
+  let a counterparty verify a scope without asking us, and it is reported as
+  unproven rather than quietly dropped.
 - **The reference agents are not funded.** Their strategies and endpoints exist
   and their rows say `not funded on its own mainnet wallet yet` rather than
   showing a track record they have not earned.

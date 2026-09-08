@@ -15,11 +15,19 @@
     "@bench/probe": "*",
     "@bench/metrics": "*",
     "@bench/rails": "*",
-    "next": "*",
-    "react": "*",
-    "react-dom": "*",
-    "viem": "*",
-    "geist": "*",
-    "@bench/agents": "*"
+    "next": "^15.5.25",
+    "react": "^19.2.0",
+    "react-dom": "^19.2.0",
+    "viem": "^2.56.3",
+    "geist": "^1.7.2",
+    "@bench/agents": "*",
+    "@tailwindcss/postcss": "^4.3.3",
+    "tailwindcss": "^4.3.3"
+  },
+  "devDependencies": {
+    "typescript": "^5.9.3",
+    "@types/node": "^24.13.3",
+    "@types/react": "^19.2.18",
+    "@types/react-dom": "^19.2.7"
   }
 }

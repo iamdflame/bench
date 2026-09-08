@@ -29,3 +29,5 @@ contracts/lib/
 # dangerous thing in the working tree: 0600 on disk, and never in a commit.
 .sessions/
 *.key
+.vercel
+.env*

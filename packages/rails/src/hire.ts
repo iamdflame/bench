@@ -49,19 +49,47 @@ import { ERC20_ABI, TOKENS, chainClient, erc8183, type Job, type SupportedChain 
  * lets an Altana wallet batch all five into one atomic relayed intent — one
  * signature where a Studio buyer needs five self-paid transactions.
  */
+/*
+  The kernel's real interface, read off the deployed contract rather than
+  transcribed from prose.
+
+  Every signature here was wrong until 2026-09-08, and none of it had been
+  noticed because no hire plan had ever been submitted: `createJob` took three
+  arguments instead of five and in a different order, `setBudget` and `fund`
+  were missing their trailing `bytes`, and `registerJob` was addressed to the
+  kernel when it lives on the router. Five intents, five wrong selectors — the
+  plan would have reverted on its first call and told the buyer nothing useful
+  about why.
+
+  Confirmed against chain 97 by calling `getJob(1)` and matching the returned
+  tuple, and against `jobCounter()` on both chains: 56,748 jobs on mainnet,
+  1,134 on testnet. A plan built from a signature nobody has sent is a
+  hypothesis.
+*/
 export const COMMERCE_ABI = parseAbi([
   "function jobCounter() view returns (uint256)",
-  "function createJob(address provider, string description, uint256 expiredAt) returns (uint256)",
-  "function registerJob(uint256 jobId, address evaluator, address hook)",
-  "function setBudget(uint256 jobId, address token, uint256 amount)",
-  "function fund(uint256 jobId)",
+  "function paymentToken() view returns (address)",
+  "function createJob(address provider, address evaluator, uint256 expiredAt, string description, address hook) returns (uint256)",
+  "function setBudget(uint256 jobId, uint256 amount, bytes optParams)",
+  "function fund(uint256 jobId, uint256 expectedBudget, bytes optParams)",
   "function claimRefund(uint256 jobId)",
+  "function getJob(uint256 jobId) view returns ((uint256 id, address client, address provider, address evaluator, string description, uint256 budget, uint256 expiredAt, uint8 status, address hook, uint256 submittedAt, bytes32 deliverable))",
+]);
+
+/** `registerJob` and `settle` live on the router, not the kernel. */
+export const ROUTER_ABI = parseAbi([
+  "function registerJob(uint256 jobId, address policy)",
+  "function settle(uint256 jobId, bytes evidence)",
 ]);
 
 export const POLICY_ABI = parseAbi([
-  "function disputeWindow() view returns (uint256)",
+  "function disputeWindow() view returns (uint64)",
   "function dispute(uint256 jobId)",
 ]);
+
+/** Job status, in the kernel's own order. */
+export const JOB_STATUS = ["OPEN", "FUNDED", "SUBMITTED", "COMPLETED", "REJECTED", "EXPIRED"] as const;
+export type JobStatusName = (typeof JOB_STATUS)[number];
 
 /** One transaction the user will be asked to authorise, in plain terms. */
 export interface Intent {
@@ -242,6 +270,19 @@ export async function buildHirePlan(input: {
   batched?: boolean;
 }): Promise<HirePlan> {
   const { chainId, buyer, provider, budget, description } = input;
+
+  /*
+    The kernel rejects a description over 4096 bytes, and the description is the
+    signed quote verbatim. Truncating it here would make the terms on chain
+    differ from the terms the agent signed, which is the one thing an escrow
+    cannot survive — so this refuses instead.
+  */
+  const descriptionBytes = new TextEncoder().encode(description).length;
+  if (descriptionBytes > 4096) {
+    throw new QuoteRejected(
+      `The signed terms are ${descriptionBytes} bytes and the job kernel accepts 4096. They are not truncated here, because the description on chain has to be the quote the agent signed.`,
+    );
+  }
   const a = erc8183(chainId);
   const token = TOKENS[chainId].U;
 
@@ -282,18 +323,18 @@ export async function buildHirePlan(input: {
       data: encodeFunctionData({
         abi: COMMERCE_ABI,
         functionName: "createJob",
-        args: [provider, description, BigInt(expiredAt)],
+        args: [provider, a.router, BigInt(expiredAt), description, a.router],
       }),
       value: 0n,
     },
     {
       step: "registerJob",
       says: "Bind the job to the policy that decides a dispute, so neither side picks the referee later.",
-      to: a.commerce,
+      to: a.router,
       data: encodeFunctionData({
-        abi: COMMERCE_ABI,
+        abi: ROUTER_ABI,
         functionName: "registerJob",
-        args: [jobId, a.router, a.router],
+        args: [jobId, a.policy],
       }),
       value: 0n,
     },
@@ -304,15 +345,20 @@ export async function buildHirePlan(input: {
       data: encodeFunctionData({
         abi: COMMERCE_ABI,
         functionName: "setBudget",
-        args: [jobId, token.address, budget],
+        args: [jobId, budget, "0x"],
       }),
       value: 0n,
     },
     {
       step: "fund",
       says: "Move the money into escrow. It leaves your wallet here and the agent cannot touch it.",
+      /*
+        `expectedBudget` is passed rather than omitted: the kernel compares it
+        to what `setBudget` stored, so a job whose budget changed between the
+        two calls reverts instead of quietly escrowing a different number.
+      */
+      data: encodeFunctionData({ abi: COMMERCE_ABI, functionName: "fund", args: [jobId, budget, "0x"] }),
       to: a.commerce,
-      data: encodeFunctionData({ abi: COMMERCE_ABI, functionName: "fund", args: [jobId] }),
       value: 0n,
     },
   );
