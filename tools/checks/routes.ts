@@ -145,7 +145,8 @@ console.log(`  route tree: ${ROUTES.sort().join("  ")}\n`);
     "/", "/j", "/j/[job]", "/a", "/a/[chain]", "/a/[chain]/[id]",
     "/hire", "/hire/[chain]", "/hire/[chain]/[id]",
     "/desk", "/register", "/data", "/list",
-    "/api", "/api/mcp", "/api/rails", "/api/rails/call", "/api/rails/hire", "/api/rails/mandate",
+    // §11's machine surfaces. `/api/a2a` is named there alongside `/api/mcp`.
+    "/api", "/api/mcp", "/api/a2a", "/api/rails", "/api/rails/call", "/api/rails/hire", "/api/rails/mandate",
     "/api/agents", "/api/agents/[slug]",
     // The marketplace's own ERC-8004 card, at the conventional place.
     "/.well-known", "/.well-known/agent-card.json",

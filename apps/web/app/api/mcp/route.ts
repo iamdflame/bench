@@ -88,6 +88,38 @@ const TOOLS = [
     },
   },
   {
+    name: "counterfactual",
+    description:
+      "Replay every reference strategy against a PancakeSwap V3 position an address actually holds, and return what each would have done to it. Figures are differences against leaving the position alone, in the pool's second token — not returns. Reads the chain only; needs an address, never a signature, and cannot move anything. Slow: it walks every swap in the window rather than averaging them.",
+    inputSchema: {
+      type: "object",
+      properties: {
+        address: { type: "string", description: "An address holding a PancakeSwap V3 position." },
+        chainId: { type: "number", enum: [56, 97] },
+        hours: {
+          type: "number",
+          description: "How far back to replay. Defaults to 1; a longer window costs proportionally more time.",
+        },
+      },
+      required: ["address"],
+      additionalProperties: false,
+    },
+  },
+  {
+    name: "request_quote",
+    description:
+      "Ask one listing for a signed ERC-8183 quote, so a job can be funded against it. Returns the quote and its terms, or the exact condition that stopped it. Makes an outbound request to the seller; signs nothing and spends nothing.",
+    inputSchema: {
+      type: "object",
+      properties: {
+        id: { type: "string", description: "A board id, as returned by find_agents." },
+        chainId: { type: "number", enum: [56, 97] },
+      },
+      required: ["id"],
+      additionalProperties: false,
+    },
+  },
+  {
     name: "list_agent",
     description:
       "Check whether an agent would be listed, by calling it live with the same code the worker runs. Give a token id or an endpoint URL. Returns a per-rail verdict with the condition that failed, so a failing check can be fixed rather than guessed at. Makes an outbound request; spends nothing.",
@@ -121,6 +153,18 @@ async function callTool(name: string, args: Args, origin: string): Promise<unkno
       });
       return serialise({
         rows: view.rows.map((r) => ({
+          /*
+            The id every other tool consumes.
+
+            Without it a machine could discover an agent and then had no way to
+            act on it: `read_agent`, `plan_hire` and `request_quote` all take a
+            board id, and the rows carried only a token id and a URL. §8 asks
+            for discovery, evaluation and hire without a browser, and the chain
+            broke silently between the first step and the third — the sort of
+            gap that is invisible from a page, because a page passes the id
+            along in a link.
+          */
+          id: r.key,
           name: r.name,
           tokenId: r.tokenId,
           job: r.job,
@@ -180,6 +224,91 @@ async function callTool(name: string, args: Args, origin: string): Promise<unkno
         note:
           "Nothing was signed or sent. " +
           `${RAIL_COPY[rail as (typeof RAILS)[number]].verb} on this rail is a signature from your own account, and this server holds no keys.`,
+      };
+    }
+
+    case "counterfactual": {
+      /*
+        The same engine the board and the agent page use, over MCP.
+
+        §8's point is that a machine buyer should be able to answer "is this
+        worth hiring" without a browser, and the honest answer to that question
+        is this replay rather than a rating. The refusals travel too: an address
+        with no position, or a pool with too little history in the window, are
+        different facts from a result of zero and are returned as such.
+      */
+      const { readPositions, replayForPosition } = await import("@bench/counterfactual");
+      const { chainClient } = await import("@bench/shared");
+      const address = String(args.address ?? "");
+      const found = await readPositions(chainId, address);
+      if (!found.ok) {
+        return { measured: false, why: found.reason, remedy: found.remedy };
+      }
+      const owned = [...found.positions].sort((a, b) =>
+        a.position.liquidity === b.position.liquidity ? 0 : a.position.liquidity > b.position.liquidity ? -1 : 1,
+      )[0]!;
+      const hours = Math.min(Math.max(Number(args.hours ?? 1) || 1, 0.25), 6);
+      const replay = await replayForPosition(chainId, owned, chainClient(chainId) as never, { hours });
+      if (!replay) {
+        return {
+          measured: false,
+          why: "That pool traded too little in the window we can read to say anything about it.",
+          remedy: "Try a longer window, or a position in a busier pool.",
+        };
+      }
+      return {
+        measured: true,
+        position: {
+          tokenId: owned.tokenId,
+          pool: owned.pool,
+          feePips: owned.feePips,
+          bandTicks: [owned.position.tickLower, owned.position.tickUpper],
+          widthTicks: owned.widthTicks,
+        },
+        window: {
+          hours: replay.hours,
+          swaps: replay.swaps,
+          fromBlock: replay.fromBlock,
+          toBlock: replay.toBlock,
+          complete: replay.complete,
+          shortenedBecause: replay.shortenedBecause,
+          via: replay.via,
+        },
+        unit: "the pool's second token, as a difference against doing nothing",
+        rows: replay.rows.map((r) => ({
+          strategy: r.strategy,
+          name: r.name,
+          timeInRangePercent: r.timeInRangePercent,
+          recentres: r.recentres,
+          vsHold: r.vsHold1.toString(),
+        })),
+        caution:
+          "One window is not a track record. The same replay over a window shifted by a few hundred blocks can change every figure here, and has.",
+      };
+    }
+
+    case "request_quote": {
+      const hit = findRow(chainId, String(args.id ?? ""));
+      if (!hit) return { quoted: false, why: "This deployment has not read that id yet." };
+      const state = hit.row.rails.hire;
+      if (!state.open) {
+        return {
+          quoted: false,
+          why: state.detail ?? state.reason,
+          note: "No quote was requested, because the condition above already rules one out.",
+        };
+      }
+      const res = await fetch(`${origin}/api/rails/hire`, {
+        method: "POST",
+        headers: { "content-type": "application/json" },
+        body: JSON.stringify({ chainId, id: args.id }),
+      });
+      const payload = (await res.json()) as Record<string, unknown>;
+      return {
+        ...payload,
+        quoted: true,
+        executed: false,
+        note: "A quote is not a commitment. Nothing was signed or sent, and funding it is a signature from your own account.",
       };
     }
 

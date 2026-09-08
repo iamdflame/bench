@@ -203,6 +203,33 @@ export async function POST(request: Request) {
     }
   }
 
+  /*
+    What actually happened to the money, said in words.
+
+    `paid: null, txHash: null` is ambiguous to anything that is not a person:
+    it reads equally as "the call was free" and as "we owe them a cent". Those
+    are different facts and §14.1's rule is that an absence carries a reason, so
+    the machine surface states which one this is rather than leaving a reader to
+    infer it from two nulls.
+
+    The middle case is the real one. x402 separates authorising a transfer from
+    submitting it: the buyer signs, the seller verifies the signature and the
+    balance and serves the answer, and a facilitator submits the transfer. A
+    deployment with no settler key has done everything except the last step, and
+    the honest word for that is outstanding, not free.
+  */
+  const settlement = txHash
+    ? { state: "settled" as const, why: "The transfer is on chain at the hash below." }
+    : result.paid
+      ? {
+          state: "outstanding" as const,
+          why: "The buyer signed a valid EIP-3009 authorisation and the seller verified it and answered. The transfer itself was not submitted by this deployment, so the seller is owed the amount above and can still submit the authorisation itself.",
+        }
+      : {
+          state: "unpaid" as const,
+          why: "This endpoint answered without requiring payment, so nothing was owed and nothing was signed.",
+        };
+
   return NextResponse.json({
     ok: true,
     status: result.status,
@@ -210,5 +237,6 @@ export async function POST(request: Request) {
     latencyMs: result.latencyMs,
     paid: result.paid ? `${formatEther(result.paid.amount)} ${result.paid.symbol ?? ""}`.trim() : null,
     txHash,
+    settlement,
   });
 }

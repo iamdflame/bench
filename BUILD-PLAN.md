@@ -33,14 +33,14 @@ Live: **https://bench-six-sigma.vercel.app**
 |---|---|
 | `/` `/j/[job]` `/a/[chain]/[id]` `/hire/[chain]/[id]` `/desk` `/register` `/data` `/list` | all present |
 | `/api/v1/*`, `/api/mcp`, `/.well-known/agent-card.json` | present |
-| **`/api/a2a`** | **missing — next** |
+| `/api/a2a` | **done** — one engine, two vocabularies |
 
 ## §8 Agents hiring agents — MCP tools
 
 | Tool | State |
 |---|---|
 | `find_agents`, `read_agent`, `plan_hire`, `list_agent` | present |
-| **`counterfactual`**, **`request_quote`** | **missing** |
+| `counterfactual`, `request_quote` | **done** — seven tools |
 
 ## §12 Screen specifications
 
@@ -107,7 +107,7 @@ No seller dashboard. Ranking is published on `/data` and enforced by `check:rank
 | 7 | A counterfactual on a real user position with a reproduce command | **done** |
 | 8 | Four categories, each with a first-party agent and a chain-read metric | **partial** |
 | 9 | The funnel and the 96.84% origin concentration, block-pinned, with method | **done** |
-| 10 | An agent hires from BENCH over MCP with no browser | **owed** |
+| 10 | An agent hires from BENCH over MCP with no browser | **discovery → read → plan works over A2A and MCP**; a settled hire still owed |
 
 ---
 
@@ -177,3 +177,50 @@ keepers correctly did nothing — `vsHold = 0` exactly. Rendered as `0.000` in t
 grey used for refusals it read as a missing number, which is the opposite of
 what it is. It renders as **"no change"** with the reason attached, and the
 summary line says how many never acted and why.
+
+
+## §8 and §11 — the machine surfaces
+
+`/api/a2a` is a thin translation over the MCP engine, not a second
+implementation. A2A and MCP are both JSON-RPC over POST; the difference is
+vocabulary (`message/send` with parts against `tools/call` with arguments), not
+capability. Two implementations would disagree the first time one changed, and
+the disagreement would be invisible until somebody hired the wrong thing through
+the stale one. `skills/list` is derived from `tools/list`, so the two cannot
+drift.
+
+Seven tools now: `find_agents`, `read_agent`, `read_funnel`, `plan_hire`,
+**`counterfactual`**, **`request_quote`**, `list_agent`.
+
+### Walking the journey found the gap the journey exists to prevent
+
+§8 claims an agent can discover, evaluate and hire without a browser. Trying it
+end to end, the chain broke twice between the first step and the third:
+
+1. **`find_agents` returned no usable id.** Rows carried a token id and a URL;
+   every action tool takes a board id. A machine could find an agent and then
+   had nothing to act on it with.
+2. **`findRow` would not accept its own output.** Given the row key it emits —
+   `a:56:<id>` — it answered that the deployment had never heard of it.
+
+Neither is visible from a page, because a page carries the id inside an href it
+built itself. Only a caller round-tripping our own output could see it, and
+until this route existed there was no such caller.
+
+**The rule that settles it: anything this product emits as an identifier must be
+accepted back as one.** A surface that will not take its own output is not an
+API.
+
+### `paid: null` was ambiguous, and money is the wrong thing to be ambiguous about
+
+The call rail returned `paid` and `txHash` with no account of what a null meant.
+To a person it reads as "free"; the truth was usually "we owe them a cent".
+x402 separates authorising a transfer from submitting it — the buyer signs, the
+seller verifies and answers, a facilitator submits — so a deployment with no
+settler key has done everything except the last step.
+
+The response now carries `settlement: { state, why }` with three distinct
+states: **settled**, **outstanding** (signed, verified, served, not submitted —
+the seller is owed and can still submit the authorisation itself), and
+**unpaid** (the endpoint asked for nothing). §14.1 requires an absence to carry
+a reason, and two nulls are not a reason.

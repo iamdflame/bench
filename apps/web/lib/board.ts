@@ -582,13 +582,40 @@ export function readExample(job: JobSlug, chainId: SupportedChain = DEFAULT_CHAI
 }
 
 /** One row, by the key the board built. Used by /a and /hire. */
-export function findRow(chainId: SupportedChain, id: string): { row: Row; agent: Agent | null; service: BazaarService | null } | null {
+/**
+ * Find one listing by any identifier the product hands out.
+ *
+ * It used to accept only the bare id — a token id, or `svc:<url>` — and the
+ * machine surface hands out the row *key*, which is `a:<chain>:<id>`. So an
+ * agent could call `find_agents`, take the id it was given, pass it straight to
+ * `plan_hire`, and be told the deployment had never heard of it. The browser
+ * never hit this because a page carries the id inside an href it built itself;
+ * only a caller round-tripping our own output could see it.
+ *
+ * The rule this settles: **anything this product emits as an identifier must be
+ * accepted back as one.** A surface that will not take its own output is not an
+ * API, and §8's claim is that an agent can go from discovery to hire without a
+ * browser.
+ */
+export function findRow(chainId: SupportedChain, rawId: string): { row: Row; agent: Agent | null; service: BazaarService | null } | null {
   const board = getBoard(chainId);
+
+  /* `a:56:<id>` and `s:56:<resource>` are row keys; unwrap to the id inside. */
+  const keyed = /^[as]:\d+:(.+)$/.exec(rawId);
+  const id = keyed ? keyed[1]! : rawId;
+
   if (id.startsWith("svc:")) {
     const resource = id.slice(4);
     const s = board.services.find((x) => x.resource === resource);
     return s ? { row: serviceRow(s), agent: null, service: s } : null;
   }
   const a = board.agents.find((x) => x.tokenId === id);
-  return a ? { row: agentRow(a), agent: a, service: null } : null;
+  if (a) return { row: agentRow(a), agent: a, service: null };
+
+  /* A service key unwraps to a bare URL rather than an `svc:` id. */
+  if (/^https?:\/\//.test(id)) {
+    const s2 = board.services.find((x) => x.resource === id);
+    if (s2) return { row: serviceRow(s2), agent: null, service: s2 };
+  }
+  return null;
 }
