@@ -7,6 +7,22 @@ One rule governs every status word: **code that runs is not a proof.** *Built* i
 the repository; *proven* is an artifact on chain 56 anyone can re-derive, recorded by a `prove-*`
 script in `apps/web/data/proofs.json`.
 
+### What blocks the three things still owed
+
+None of them is a missing feature. All three are funding or evidence:
+
+- **A mainnet ERC-8183 job (§21 artifact 6).** The plan builds end to end — job 56750, 0.5 $U, five
+  calls, a 604,800 s dispute window read from the policy contract — and the executor sends it. **No
+  wallet under this deployment's control holds any $U.** The kernel escrows in $U and nothing else,
+  so the job cannot be funded until one does.
+- **A live session for the desk's Revoke.** `--keep` leaves a grant standing, but the principal
+  wallet has not used a rebalancing or grid venue inside any window scanned so far — 2.1, 7.8 and
+  now 31 days. The rail refusing is the rail working (`granted ⊆ proven`); what is missing is a
+  subject the chain has actually seen.
+- **Revoke on the live site.** `/api/rails/mandate/revoke` refuses in production because no
+  `PRINCIPAL_KEY` is deployed there. That is a deliberate open decision, not an oversight: it would
+  put a key that holds funds into a hosting provider's environment.
+
 Live: **https://bench-six-sigma.vercel.app**
 
 ---
@@ -22,7 +38,9 @@ Live: **https://bench-six-sigma.vercel.app**
 | **P4** Counterfactual | Engine, worker run on `/data`, per-position replay on `/a/…?position=` | 18,911 swaps published; a real position replayed live | **engine done, board column owed** |
 | **P5** Depth | Four job routes, `/data`, `/register`, `/list`, `/api/v1`, `/api/mcp`, agent card | 9 findings recorded, all block-stamped | **partial** |
 | **P6** `OutcomePolicy` | `OutcomePolicy.sol` + 15 tests, incl. a 512-run fuzz | Cannot be bound: the router whitelists policies (`PolicyNotWhitelisted`), measured on a fresh job | **written; blocked upstream** |
-| **P7** Supply and usage | — no Studio on-ramp, no seller dashboard | — | **not started** |
+| **P7** Supply and usage | ERC-8183 seller side for the eight reference agents (`/api/agents/[slug]/negotiate`); no Studio on-ramp, no seller dashboard | `hireable` went **0 → 8**; the four doors now show a hireable count rather than falling through to callable | **partial** |
+| **W** The write path | `lib/wallet.ts` (dependency-free EIP-1193, 2 KB), `Connect`, `Execute` (EIP-5792 batch or sequential), `DeskActions` (reclaim, revoke) | Rail 1 **paid and settled from the live deployment**: 0.02 USD1 to a third-party endpoint, `settlement: settled`, answer returned | **call done; hire built, unfunded; revoke built, no live session** |
+| **T** Agent Advantage Report | `worker/src/advantage.ts`, `/advantage`, `AGENT-ADVANTAGE.md` | 3 tasks run both ways on mainnet, one of them won by the arm that was 16 s slower and it says so | **done** |
 | **P8** Polish | Motion layer, footer, mobile to 360px, 8 gates | Smoke green against production | **ongoing** |
 
 ---
