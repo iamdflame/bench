@@ -1,342 +1,230 @@
-# DRYRUN — Rebuild Plan
+# CRUCIBLE
 
-*See what an agent would have done to **your** money — before you pay it a cent.*
+**Agents bid for your capital with their own.**
 
-The plan to take the $30,000 main prize, the Altana track and the TermiX track,
-and to win them by a margin that is not arguable.
-
-- **Was:** BENCH — not in the top 15
-- **Keeps:** the proof engine
-- **Burns:** brand, frontend, data layer, indexer
-- **Deadline:** explicitly ignored
+A capital-allocation market on BNB Smart Chain where an agent cannot be listed
+without posting a bond, cannot win a mandate without outbidding rivals on a
+measured claim, and cannot miss that claim without being slashed to the person
+whose money it was managing.
 
 ---
 
-## 1. Why it is not in the top fifteen
+## 0. What was wrong with the last plan
 
-Not a quality problem. A shape problem.
+It was a directory with better data. That is what every serious entry in this
+hackathon is, and being the best directory is a competition for second place.
 
-BENCH has the best measurement engine in this hackathon attached to the emptiest
-shop floor in it. Judges do not read your engine. They land on your homepage, and
-your homepage says the shelves are bare.
+Worse, it was a *retreat*. The original framing of this project — recorded in
+the public census — was "agents bid for your capital with their own; agents post
+bonds and are slashed". That is a genuine financial mechanism. It got replaced
+by "three rails plus careful measurement", which is a feature set. This plan
+goes back to the mechanism and builds it properly.
 
-| Measured | Value |
+The frontend was never touched at all. It is now a first-class deliverable with
+its own phase, its own design system and its own gates.
+
+---
+
+## 1. The problem nobody in the field has admitted
+
+Measured on chain 56 by this repository:
+
+| | |
 |---|---|
-| Hireable per category | **2** |
-| Board rows unclassified | **189 / 200** |
-| Registry read | **257** of 310,318 |
-| Rows marked hireable | 0 |
+| Registered on BSC | **310,436** |
+| Declare a way to reach them | 33,813 |
+| Distinct descriptions among those | **3,234** |
+| Do any of the four required jobs | **245** |
+| Endpoint domain verified | **6** |
+| Have ever received one piece of feedback | **509** |
 
-From the live API: `/api/v1/snapshot` reports `registered: 310,318` against
-`read: 257`. `/api/v1/agents` returns 200 rows of which **189 carry `job: null`**
-and **every one carries `hireable: null`**. Each of the four job cards shows `2`.
+Every entry in this hackathon is building a shopfront for a warehouse with 245
+things in it, six of which have a verified address. The winner will not be the
+prettiest shopfront. It will be whoever makes the supply *exist* and makes it
+*trustworthy* — and those are the same problem, because nothing creates supply
+like a market where competence pays and incompetence costs.
 
-The first four rows on the board are our own agents — Grid Runner I/II, Health
-Shield I/II — each with "not measured" as its track record. A judge scoring
-**Data Quality** and **Agent Diversity** sees an empty marketplace selling four
-house agents with no record.
-
-### The competitors have the inverse problem
-
-- **Marque** indexes 298,817 agents and cannot hire one (`charters/active` = `[]`)
-- **trust8004** has 1,936 commits whose four flagship agents are all `marketplace-operated-*`
-- **SMEAI** probes 303 endpoints and gates its own hire path
-
-**Nobody has both supply and proof.** That gap is the whole opportunity.
+**A marketplace cannot fix a supply problem by listing harder.**
 
 ---
 
-## 2. The unlock
+## 2. The mechanism
 
-We crawl the registry backwards from the chain head — hence 257 of 310,318.
-8004scan already has the whole thing indexed, and the hackathon grants entrants
-Pro tier: **500 req/min, 100,000/day**.
+Five steps. Every one settles on BNB Smart Chain.
 
-| Fact | Value | Consequence |
+### 1 — Bond
+An agent that wants to be listed posts collateral. No bond, no listing. The bond
+is the agent's own money and it is at risk from the moment it is listed.
+
+### 2 — Bid
+A principal posts a mandate: *"1,000 USDT in a WBNB/USDT V3 position, keep it in
+range, 24 hours."* Agents bid. A bid is not a price — it is a **claim** plus the
+**bond backing it**:
+
+> *Range Keeper II — 95% time in range, ≤3 recentres, fee 8% of surplus,
+> bonded 250 USD1.*
+
+Signed by the agent's own wallet, verifiable against its ERC-8004 identity.
+
+### 3 — Trial
+Before a single cent moves, every bid is replayed against **that principal's
+real position** using the pool's own swap history. This is the counterfactual
+engine that already exists and that no competitor has. The trial is adversarial:
+bids are ranked by what they would have done to *this* position, not by
+self-reported history.
+
+**The trial is public and reproducible.** Every row carries the command.
+
+### 4 — Mandate
+The winner receives an Altana session key scoped to exactly the calls the trial
+proved it needs — capped, expiring, revocable, registered in the KeyStore. The
+`RecipientBound` wrapper means the session cannot redirect funds anywhere, ever,
+because the destination is not a parameter in the interface.
+
+### 5 — Settle
+At the end of the window the outcome is read from chain and compared to the
+claim.
+
+- **Beat the claim** → the agent takes its fee, its bond returns, its record grows.
+- **Miss the claim** → the bond is slashed to the principal, automatically.
+
+The agent's track record is therefore not a review score. It is a history of
+money it kept and money it lost, on chain, and it cannot be faked because
+faking it costs the bond.
+
+---
+
+## 3. Why this wins on the published criteria
+
+| Criterion | What everyone else does | What CRUCIBLE does |
 |---|---|---|
-| Total agents, chain 56 | `310,387` | The denominator, handed to us |
-| Pagination | cursor + page | Fully walkable, stable ordering |
-| At `limit=100` | ~3,104 requests | **Under 10 minutes** for the whole registry |
-| Daily quota | 100,000 | Re-index 32x/day and stay inside it |
-| Fields | `x402_supported`, `health_score`, `total_score`, `rank`, `is_verified`, `supported_protocols`, `total_feedbacks` | Pre-filter the paid-callable set |
+| **Functionality** | Land, browse, click hire | Post a mandate, receive competing bonded bids, watch a public trial, grant a scoped key, settle or slash — end to end, on mainnet |
+| **Data Quality** | Counts, probes, uptime | A continuously-run adversarial tournament where every claim has money behind it. The dataset is *generated* by the market, not scraped from a registry |
+| **Agent Diversity** | Four category tabs | Four live markets, each with bids, bonds, trials and settlements. Depth is symmetric because the mechanism is identical in all four |
 
-**257 rows becomes 310,387, and it is an afternoon of work.**
-
----
-
-## 3. The thesis
-
-> Every other entry tells you an agent *exists*. DRYRUN shows you what that agent
-> *would have done to the position you actually hold*, replayed against the pool's
-> own history, before you give it a cent — and then lets you hire it three ways,
-> each with a smaller blast radius than the last.
-
-The rubric defines Data Quality as "real-time, accurate data that goes beyond
-basic counts… a genuinely informed call on which agent to hire." That is a
-description of a counterfactual replay. We already built one. **No other entry in
-the field has anything like it.**
-
-DRYRUN is not a directory. It is the **proving ground** — where an agent earns
-its listing, and where a buyer rehearses a hire against their own money for free.
+And the meta-prize: BNB is choosing an **Agent Studio marketplace**. A directory
+cannot be adopted as infrastructure because it has no economics. A bonded market
+with a settlement contract, an agent SDK and a published standard *is*
+infrastructure.
 
 ---
 
-## 4. Name and mark
+## 4. Manufacturing the supply
 
-**DRYRUN.** One word, names the mechanic no competitor has, survives out of
-context. Kills the collision with `Ritapossible/Bench` (confirmed entry #32).
+245 agents do the four jobs and most are other hackathon entries. So the market
+ships with the means to create competitors.
 
-Runners-up: PROVING GROUND, CRUCIBLE, PRECEDENT.
+**`npx crucible init`** scaffolds a competing agent in one command: the strategy
+interface, the four job templates, an ERC-8004 registration, an x402 seller
+endpoint, a bond deposit, and a local harness that replays the strategy against
+real pool history before it ever bids.
 
-The three ascending bars survive the rename — teal, gold, ember — because they
-encode the product: three rails in ascending order of what you give up. It now
-reads as a dry-run trace stepping up.
+This is the "Studio" in *BNB Agent Studio*, and nobody is building it. Everyone
+is indexing agents; we make them.
 
-- **Teal — Call it.** You give a payment.
-- **Gold — Hire it.** You give an escrow it must earn.
-- **Ember — Mandate it.** You give standing authority, capped and revocable.
+**Target: 40 bonded agents across the four markets by submission, at least 20 of
+them not ours.** Every one is real supply that did not exist before.
 
 ---
 
-## 5. Visual identity
+## 5. The contracts
 
-Twelve competitor homepages captured at 1440x1000. Eight are the same page:
-near-black ground, one warm gold accent, a promise headline, a row of huge
-numbers, four category chips. trust8004, Marque, SMEAI, Genesis, Pokter,
-onplaced and current BENCH are mutually indistinguishable as thumbnails.
+Four, small, each with one job. All tested, all fuzzed, all verified on BscScan.
 
-Only two escaped, both by committing to a material: **Kawal** (cream ledger form,
-"Most agents on BSC cannot be hired") and **Agripinaa** (boutique catalogue).
+| Contract | Job |
+|---|---|
+| `BondVault` | Holds agent collateral. Deposit, lock against a mandate, release, slash. Nothing else. |
+| `ClaimRegistry` | Records a signed claim and the bond backing it, so a bid is a commitment rather than a sentence. |
+| `Settlement` | Reads the outcome, compares it to the claim, pays the fee or slashes the bond. The only contract that can move a bond. |
+| `RecipientBound` | Already built. Removes `recipient` from the interface so a session key cannot redirect funds. |
 
-**The unclaimed position: nobody is cold.** Every dark entry is neutral-black
-plus warm gold. Deep ink-navy with a cold mint signal reads as an instrument —
-an oscilloscope, a risk terminal — the exact register of "we measured it".
+**Invariants, fuzzed:** a bond can only be slashed by `Settlement`; a bond can
+never be slashed twice for one mandate; a slash can never exceed the bond; a
+locked bond can never be withdrawn; the principal is the only recipient of a
+slash.
 
-### Palette
+---
 
-| Role | Hex | Use |
+## 6. The frontend — a floor, not a directory
+
+Every competitor renders a grid of agent cards on a dark page with a gold accent.
+CRUCIBLE renders a **market**. This is a full rebuild, not a reskin.
+
+### The idea
+The homepage is a live trading floor. Four markets, bids arriving, bonds at risk,
+trials running, settlements landing. Nothing on it is decorative and nothing on
+it is static, because a market that is not moving is not a market.
+
+### Screens
+
+| Screen | What it is |
+|---|---|
+| `/` | **The floor.** Four markets side by side. Live tape of bids, trials and settlements. Total bonded, total slashed, open mandates. |
+| `/m/[job]` | **One market.** Depth of bids, the current best claim, bonds at risk, the leaderboard by settled record. |
+| `/post` | **Post a mandate.** Paste an address, we read the real position, you set the window and the cap. |
+| `/t/[id]` | **The trial.** Every bid replayed against this position, side by side, with the command that reproduces it. |
+| `/a/[id]` | **An agent's file.** Bonds posted, claims made, claims met, claims missed, slashes taken. A record, not a rating. |
+| `/settle/[id]` | **The settlement.** Claim vs outcome, the arithmetic, the transaction. |
+| `/build` | **The studio.** One command to a bonded, competing agent. |
+| `/standard` | The published test every listed agent passes. |
+| `/data` | Every figure's method and block. |
+
+### The look
+
+**Direction: an instrument, not a brochure.** Cold ink ground, mint signal, and
+the whole interface built on a monospaced numeric grid — because this is a market
+and the numbers are the interface. The field is uniformly warm black-and-gold; a
+cold, dense, terminal-grade surface is unmistakable at thumbnail size.
+
+| Token | Value | Role |
 |---|---|---|
-| Ink | `#0B1220` | ground |
-| Surface | `#111B2B` | cards |
-| Signal / Call | `#5FE3C0` | proven, teal rail |
-| Escrow / Hire | `#F0B429` | gold rail |
-| Mandate | `#FF8A5B` | ember rail |
-| Refused | `#6C7C8B` | never red |
+| Ink | `#0A0F18` | ground |
+| Surface | `#101827` | panels |
+| Signal | `#5FE3C0` | measured, proven, live |
+| Bond | `#F0B429` | money at risk |
+| Slash | `#FF6B4A` | a bond taken |
+| Quiet | `#64748B` | absent, never red |
 
-Ship a real light mode. Almost the entire field is dark-only.
+**Type.** Display: a tight industrial grotesk. Data: a monospaced face with
+tabular numerals, used for *every* figure on the site. Reading: a serif, because
+the method notes are meant to be read.
 
-### Typography
+**Motion.** Only ever driven by a data event — a bid arriving, a trial finishing,
+a bond being slashed. Nothing decorative moves. The existing `check:motion` gate
+already enforces this and stays.
 
-| Role | Face | Why |
+**Both themes, and a real light mode.** Almost the entire field is dark-only.
+
+---
+
+## 7. Partner tracks, all four
+
+| Track | Requirement | How the mechanism satisfies it natively |
 |---|---|---|
-| Display | Archivo 800, tight | Industrial grotesk. Not Inter, not Space Grotesk — the field's defaults. |
-| Reading | Source Serif 4 | A serif body signals a document, not a landing page. Nobody in the field uses one. |
-| Data | JetBrains Mono, tabular | Every figure, hash, block, selector. |
-
-### Voice
-
-The README voice — flat, exact, willing to say what failed — moves onto the site
-verbatim. Never a slogan that would still be true if the product did not work.
-Every figure carries its block. A refusal is a finding, not an error.
+| **Altana** — 50,000 XP | Own wallets, sessions with allowlist/cap/expiry, KeyStore registration, real onchain txs, user-facing revoke | The mandate *is* an Altana session. Bonded agents each hold their own wallet. Revoke is a button on every open mandate. |
+| **TermiX** — $6,000 | Agent Advantage Report: 3+ tasks both ways, ≥1 trading/stock/security | Every settlement is a task run both ways — the agent's arm and the do-nothing arm — with outputs attached. The report writes itself from the ledger. |
+| **PancakeSwap** — 1,000 CAKE | Real benefit to PCS traders/LPs, funds never at risk | Rebalancing and grid markets run on PancakeSwap V3. `RecipientBound` is a literal answer to "never at risk". |
+| **AltLayer / 8004scan** | ERC-8004 identity | Every bid is signed by a registered ERC-8004 agent and the identity is checked before the bid is accepted. |
 
 ---
 
-## 6. Competitive map — what to take
+## 8. What could go wrong, and the answer
 
-| From | Idea | Why | Verdict |
-|---|---|---|---|
-| Marque | Published funnel: registered → declares → responds → works → dead → **never probed** | Turns shallow-crawl weakness into an honesty feature | Take |
-| trust8004 | Provenance tag per fact: `declared`/`observed`/`onchain`/`derived` | Directly serves Data Quality; Measure type already carries method | Take |
-| trust8004 | MCP search with four categories as typed enum | Judges drive it from Cursor | Extend |
-| SMEAI | Clone/cluster detection | We already compute origin clustering and don't show it | Ship it |
-| docket | Six-rung evidence ladder | Makes listing quality legible | Take |
-| agentcensus | URI-kind breakdown + alive/dead/**degraded**/never-probed | "Degraded" is a state we lack | Take |
-| chainhelix | Multi-asset x402 with eip3009 **and** permit2-exact | We proved USDT/USDC lack EIP-3009; permit2 sells to USDT holders | Take |
-| chainhelix | Quotes signed EIP-191, verified against agent wallet | Closes our `signed: false` gap | Take |
-| agripinaa | Execution receipts with surplus in bps | Only rival with verified mainnet execution | Match |
-| positioncrew | Production smoke on a schedule | Ours exists but the runner is locked | Fix |
-| kawal | Nerve: "Most agents on BSC cannot be hired" | Proof the honest-scarcity headline lands | Nerve only |
-| onplaced | Network graph | Low information — unless fed our cluster data | Only with our data |
-| Marque | Spend-capped revocable charters | Theirs never exercised; ours revokes on mainnet | **Already ahead** |
+| Risk | Answer |
+|---|---|
+| Nobody bids | The house runs four reference agents that always bid, marked as ours, ranked by the same rule, and never favoured. `check:ranking` already enforces this. |
+| A bond is slashed unfairly | Settlement reads the outcome from chain at a pinned block, the arithmetic is on the page, and the dispute window is the ERC-8183 policy's, not ours. |
+| The trial is gamed by lookahead | `check:no-lookahead` already corrupts the future and fails if any earlier decision moves. It stays, and now guards money. |
+| One replay window flatters an agent | Every claim is trialled over N windows and the distribution is published, not a point estimate. |
+| Slashing looks hostile to builders | The bond is small, the fee is real, and a good agent earns more than it risks. The page shows both. |
 
 ---
 
-## 7. The rooms
+## 9. The bar
 
-Homepage headline:
+Not "a good hackathon project". The bar is that BNB Chain looks at 87 entries and
+finds exactly one that shipped a **working financial market** with contracts,
+economics, an SDK, a public standard and a terminal-grade interface — and cannot
+name a second one close to it.
 
-> **310,387 agents are registered on BNB Chain. 1,186 declare a way to reach
-> them. We called every one.**
-
-| Route | Job | Change |
-|---|---|---|
-| `/` | Funnel + four doors | Rebuilt around 310,387. House agents never first by default. |
-| `/j/[job]` | One category in depth | Four genuinely equal templates. This is the Agent Diversity score. |
-| `/a/[chain]/[id]` | One agent's file | Claim vs chain vs probe, each fact provenance-tagged |
-| `/dryrun/[id]` | **New. Hero room.** | Address in → replay against real position → verdict, incl. "hire nobody" |
-| `/hire/[chain]/[id]` | The engagement | May/may-not, custody, signature count, server-rendered |
-| `/desk` | What is working | Real Reclaim/Revoke + plain-English may/may-not per Altana |
-| `/standard` | **New.** Listing test | Published, versioned test. The ratings-agency play. |
-| `/advantage` | TermiX report | Needs trading/stock/security task + outputs attached |
-| `/data` | Every number's method | Keep. Already better than anything in the field. |
-
----
-
-## 8. Four categories, genuinely equal
-
-| Question | Rebalancing | Grid | Yield | Health factor |
-|---|---|---|---|---|
-| What we index | LP range mgmt | Grid orders | APR routing | Liquidation defence |
-| Live data | V3 position, band, in-range % | Pool depth, realised vol, fee tier | Venus/Lista/PCS APRs at a block | Venus liquidity, borrow limit, HF |
-| Dry run | Replay recentres — **built** | Replay ladder fills — **extend** | Replay rotations vs APR series — **build** | Replay top-ups vs price path — **build** |
-| Counterfactual | Every category compares against **doing nothing**, and prints it even when doing nothing wins |
-| Activation | All three rails in all four categories, or the row says which is closed and why |
-
-**Yield replay:** walk Venus/Lista rate history, drive rotation, charge real gas,
-compare against sitting in the highest-APR pool at t=0. Likely finding: rotation
-loses to sitting still after gas — exactly the result that wins Data Quality.
-
-**Health-factor replay:** real Venus borrow position, walk the collateral price
-path, simulate top-ups at the declared threshold vs doing nothing. Output: how
-close to liquidation each got, and what the defence cost.
-
----
-
-## 9. Scoring every criterion
-
-### Main track — $30,000 + adoption
-
-| Criterion | Brief's words | Now | To the ceiling |
-|---|---|---|---|
-| Functionality | "land, find by category, understand, activate, minimal friction" | Strong — 3 rails, 1 settled on mainnet | No wallet gate. Every category needs a row with all three rails open. EIP-5792 batching → one popup. |
-| Data Quality | "beyond basic counts… genuinely informed call" | Engine yes, corpus no | 310,387 indexed + funnel + provenance + **dry run on the user's own position** |
-| Agent Diversity | "all four, equally deep" | **Failing** | Classify the whole set; per-category counts within a stated ratio; gate in CI |
-| Phase 2 | "more criteria in the second phase" | — | Unknown criteria reward depth. Build for round two. |
-
-**Two-stage contest:** top 3 shortlisted publicly, then Phase 2. Stage one is won
-on the first screen and the four doors. Stage two on the engine. We are currently
-built only for stage two.
-
-### Altana — 50,000 XP, winner takes all
-
-| Asks for | Status | Action |
-|---|---|---|
-| Agents on their own Altana wallets | Not funded | Fund each reference agent on its own mainnet wallet |
-| Sessions with allowlist, cap, expiry | **Proven** | Done: 4 allowed, 8 withheld, 0.001 BNB, 15 min |
-| Sessions registered in Keystore | **Does not land** | The one blocking bug — see §10 |
-| Real onchain tx through session key | **Proven** | Mainnet, with negative tests |
-| User-facing see + revoke | Half | Revoke real; add plain-English may/may-not for a visitor's session |
-| Bonus: ERC-8183 SDK, x402 server SDK | Partial | Move escrow to mainnet; stand up a seller endpoint |
-
-### TermiX — $6,000 / $3,000 / $1,000
-
-| Weight | Criterion | Action |
-|---|---|---|
-| 30% | Value of Services | Call rail is $0.01, settles without buyer gas. Lead with price + settled tx. |
-| 30% | Proven Agent Advantage | Report required for eligibility. 3+ tasks both ways, outputs attached, ≥1 trading/stock/security. |
-| 20% | High-stakes + track record | They want win rate, window, risk taken. The replay engine produces exactly those three. |
-| 20% | Marketplace quality | "Find, compare, hire, without instructions." The frontend rebuild. |
-
-Keep the losing round in the report. "Measured, not asserted" is a 30% criterion,
-and a report where hiring loses once is the most credible evidence the rest was
-measured.
-
-### PancakeSwap — 1,000 CAKE
-
-Lead with `RecipientBound.sol`, not the agent. It removes the `recipient`
-argument from the interface so a session key cannot redirect funds — a literal
-answer to "without ever putting user funds at risk."
-
----
-
-## 10. Architecture
-
-### Keep — the moat
-- `packages/counterfactual` — replay engine + no-lookahead proof. **Nobody else has this.**
-- `packages/rails` — call/hire/mandate with the mainnet proofs
-- `packages/measure` — Measure/Maybe. An unknown is never a zero.
-- `contracts/RecipientBound.sol` — 18 tests, 512-run fuzz on the cap invariant
-- `tools/checks` and the writing voice
-
-### Burn and rebuild
-- The entire frontend and IA — new brand, new rooms, light + dark
-- `packages/index` — rewrite around 8004scan cursor pagination
-- Job classification — currently leaves 189/200 `null`
-- The board data model — must carry `hireable`, a ladder rung, a provenance tag
-- The worker — scheduled execution on a runner that is not locked
-
-### The pipeline
-
-| Stage | Source | Output | Cadence |
-|---|---|---|---|
-| 1 Index | 8004scan cursor walk + chain for truth | 310,387 rows | hourly |
-| 2 Resolve | tokenURI → data:/ipfs:/https: | Endpoint + card, or a stated reason | hourly |
-| 3 Cluster | Origin host + card similarity | Spam farms collapsed (`evoevo.ai` 141, `example.com` 40) | hourly |
-| 4 Classify | Card text → one of four jobs + rationale | **Zero `job: null` on listed rows** | hourly |
-| 5 Probe | Call endpoint, parse 402 | alive/degraded/dead/never-probed + latency | 15 min |
-| 6 Quote | ERC-8183 negotiate, verify EIP-191 | Price, expiry, signer verified | on view |
-| 7 Replay | Pool swaps / rate history / price path | The dry run | on demand + nightly |
-| 8 Publish | Snapshot with block + method | The committed board | 15 min |
-
-Keep the committed-board design — it is why the front door does not go blank when
-a third party has a bad day.
-
-### The Keystore bug, diagnosed
-
-`findRegistrationTx` in `packages/rails/src/session.ts` filters logs by
-`address: account` — the delegated account. The Keystore is a **separate
-contract** at `0x6572427ED530BadcF7375Cf9A4709D8d2b0E7E0a`, confirmed live on BSC
-mainnet with **8,756 bytes of code**. Registration events belong to it.
-
-Two fixes, in order:
-1. Re-run the log query against the Keystore address rather than the account.
-2. Drive registration through the SDK's `grantSession` with registration enabled
-   and capture the receipt's logs directly rather than searching afterwards.
-
-The contract emitted no logs in the last ~2,000 blocks sampled, so the path may be
-cold — the receipt-capture approach is the likelier fix.
-
----
-
-## 11. The gates
-
-| Gate | Enforces | Status |
-|---|---|---|
-| `check:ranking` | House agents never outrank a better-measured third party | Have |
-| `check:absence` | An unknown is never a zero, blank or dash | Have |
-| `check:measurement` | Every figure carries its block and method | Have |
-| `check:network` | Chain 56 and 97 never in one figure | Have |
-| `check:no-lookahead` | A strategy cannot see past its own block | Have |
-| `check:diversity` | The four jobs are equal in depth | **Tighten** — must fail on 5/18/16/8 |
-| `check:classified` | No listed row carries `job: null` | **Build** |
-| `check:hireable` | Every category has ≥1 row with all three rails open | **Build** |
-| `check:provenance` | Every rendered fact carries its provenance | **Build** |
-| `check:freshness` | Snapshot younger than a stated age, or the site says its age | **Build** |
-
-**Fix the runner first.** The most recent commit reads *"GitHub Actions is locked
-on this account, so nothing scheduled has ever run."* Every gate is decoration
-until something executes them on a schedule.
-
----
-
-## 12. Risks
-
-| Risk | Why real | Insurance |
-|---|---|---|
-| Supply is genuinely scarce | Only 1,186 of 310,387 declare an endpoint | Make scarcity the headline. The funnel *is* the product. |
-| The runner stays locked | Already blocked every scheduled job | Phase 0 task zero. Railway is already configured. |
-| Keystore never lands | Contract emitted no logs in the sampled window | Report unproven — but try receipt-capture first |
-| Judges never reach the engine | Stage one decided on the first screen | Put a dry run on the homepage with a pre-filled example |
-| The replay is one window | Our own README says an earlier window had every strategy losing | Multi-window: run N windows, publish the distribution |
-| Over-building past judging | No deadline cuts both ways | Phases 0–2 change the score. Ship in order. |
-
----
-
-## 13. The pitch
-
-> 310,387 agents are registered on BNB Chain. 1,186 can be reached. We called
-> every one of them, we replay the survivors against the position you actually
-> hold, and we will tell you when the right answer is to hire nobody.
-
-Every rival can claim a number. Only one can show you what an agent would have
-done to your money — and none of them will tell you not to buy.
+Every phase below is judged against that, not against a deadline.

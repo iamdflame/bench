@@ -1,227 +1,213 @@
-# DRYRUN — Step-by-step build
+# CRUCIBLE — build steps
 
-Every step states: **what**, **why**, **files**, **exit test**. A step is done
-when its exit test passes, not when the code is written.
+Every step states **what**, **why**, and an **exit test**. A step is done when
+its exit test passes, not when the code is written.
 
-Ordered by what unblocks the most downstream work.
-
----
-
-# PHASE 0 — Make the machine run
-
-Nothing else matters until something executes on a schedule and the board is
-full. Four steps.
-
-## Step 0.1 — Full-registry cursor walk
-
-**What.** `packages/index/src/scan.ts` already talks to the correct host
-(`api.8004scan.io/api/v1`) and that host supports everything needed for a
-complete walk. It is only ever used for enrichment. Add a paginated walk.
-
-Verified against the live API on 2026-09-09:
-
-| Field | Value |
-|---|---|
-| `total` | `310,406` (chain 56) |
-| `next_cursor` | present, base64 |
-| `has_more` | boolean |
-| `limit` max | `100` |
-| Full walk | **3,105 requests** |
-| Rate limit | 500/min with key, 25/min without |
-
-**Why.** Turns `read: 257` into `read: 310,406`. This is the single highest-value
-change in the whole plan and everything in Phase 1 depends on it.
-
-**Files.** `packages/index/src/scan.ts` (new `walkAgents`), `worker/src/cli.ts`
-(new `index` command), `packages/index/src/index.ts` (export).
-
-**Exit test.** `npm run index -- --limit 500` writes 500 rows with distinct
-`token_id`, and a full run reports a count within 1% of `total`.
-
-## Step 0.2 — Persist the walk
-
-**What.** A resumable, append-only store for the walk so a run can be stopped and
-continued, and so a rate-limit does not lose an hour of work. Cursor checkpointed
-to disk after every page.
-
-**Why.** 3,105 requests is ~7 minutes at 500/min. It must survive a restart.
-
-**Files.** `worker/src/store.ts`, `apps/web/data/`.
-
-**Exit test.** Kill the walk halfway, restart it, and the row count continues from
-where it stopped rather than from zero.
-
-## Step 0.3 — Fix the scheduled runner
-
-**What.** The most recent commit reads *"GitHub Actions is locked on this account,
-so nothing scheduled has ever run."* Move the worker loop and the smoke suite to
-Railway, which is already configured in `railway.json`. Publish the last-run
-timestamp on `/data`.
-
-**Why.** Every gate and every freshness claim is decoration until something
-executes them on a clock.
-
-**Files.** `railway.json`, `worker/src/index.ts`, `apps/web/app/data/page.tsx`.
-
-**Exit test.** `/data` shows a last-run timestamp that advances without anyone
-running a command locally.
-
-## Step 0.4 — Keystore registration
-
-**What.** `findRegistrationTx` in `packages/rails/src/session.ts` filters logs by
-`address: account`. The Keystore is a separate contract at
-`0x6572427ED530BadcF7375Cf9A4709D8d2b0E7E0a` — confirmed live on BSC mainnet
-carrying 8,756 bytes of code. Try, in order:
-
-1. Query logs against the Keystore address rather than the account.
-2. Drive registration through the SDK's `grantSession` with registration enabled
-   and capture the receipt's logs directly rather than searching afterwards.
-
-**Why.** "Sessions registered in Keystore, so integration is read onchain" is an
-explicit Altana requirement, and it is the only one we fail.
-
-**Files.** `packages/rails/src/session.ts`.
-
-**Exit test.** A granted session reports `registered: true` with a transaction
-hash that resolves on BscScan.
+No step is sized against a deadline. Where a choice exists between the fast
+version and the right version, the right version is specified.
 
 ---
 
-# PHASE 1 — Turn 310,406 rows into a marketplace
+# PHASE A — The mechanism
 
-## Step 1.1 — Resolve every declared endpoint
+The market cannot exist until money can be bonded, claimed against, and taken.
+This is the part no competitor has and the part that takes longest, so it goes
+first.
 
-**What.** For each indexed row, resolve `tokenURI` → `data:` / `ipfs:` / `https:`
-and extract the declared endpoint and card. Record the URI kind.
+## A1 — `BondVault`
+Holds agent collateral. `deposit`, `lock(mandate)`, `release`, `slash`.
+Only `Settlement` may slash. Only an unlocked bond may be withdrawn.
 
-**Why.** Only ~1,186 of 310k declare a reachable endpoint. That ratio is the
-product's headline and we must compute it ourselves rather than trust a flag.
+**Exit test.** Foundry: a bond cannot be slashed twice for one mandate, a slash
+cannot exceed the bond, a locked bond cannot be withdrawn, and only `Settlement`
+can call `slash`. Fuzzed at 512 runs on the balance invariant.
 
-**Exit test.** Every row carries a `uriKind` of `onchain-json | https | ipfs |
-bare-label | empty`, and the counts sum to the total.
+## A2 — `ClaimRegistry`
+A bid is a signed claim plus the bond backing it. Records `(agent, mandate,
+metric, target, fee, bondId)` with the agent's EIP-191 signature over it.
 
-## Step 1.2 — Classify into the four jobs
+**Exit test.** A claim whose signature does not recover to the agent's ERC-8004
+owner is rejected. A claim referencing an unlocked bond is rejected.
 
-**What.** `packages/index/src/classify.ts` exists and has tests. Run it across the
-full set and store a rationale string with every verdict.
+## A3 — `Settlement`
+Reads the outcome at a pinned block, compares to the claim, pays or slashes.
 
-**Why.** 189 of 200 board rows currently carry `job: null`. Agent Diversity is the
-criterion we fail hardest and this is the fix.
+**Exit test.** Given a claim of "≥95% in range" and a measured 91%, the bond
+moves to the principal and the event carries both numbers. Given 97%, the fee
+moves to the agent and the bond returns.
 
-**Exit test.** `check:classified` passes — zero listed rows with `job: null` — and
-per-category counts are published.
+## A4 — Deploy and verify on BSC mainnet
+All three, verified on BscScan, addresses published on `/data`.
 
-## Step 1.3 — Publish the origin clustering
-
-**What.** `packages/index/src/origins.ts` already computes it and nothing shows
-it. Measured today: `evoevo.ai` 141, `example.com` 40, `*.theaslangroupllc.com`
-~200 across a dozen subdomains.
-
-**Why.** It is the most interesting finding in the dataset and the honest reason
-the hireable set is small. SMEAI ships clone detection; ours is better and hidden.
-
-**Exit test.** `/` and `/data` both show the top origins with counts and shares.
-
-## Step 1.4 — The funnel
-
-**What.** Compute and expose: registered → declares endpoint → responds → payable
-→ hireable → **never probed**. Expose at `/api/v1/funnel`.
-
-**Why.** Marque's best idea. Converts our shallow crawl into an honesty feature.
-
-**Exit test.** Stages sum correctly, each is clickable into the rows behind it,
-and the numbers reproduce from a command printed on `/data`.
-
-## Step 1.5 — Probe taxonomy with `degraded`
-
-**What.** Extend the probe result from alive/dead to alive / degraded / dead /
-never-probed, with latency.
-
-**Why.** agentcensus found 347 degraded against 125 alive. "Degraded" is the true
-state of most endpoints and we cannot currently express it.
-
-**Exit test.** All four states appear in the board data with counts on `/data`.
-
-## Step 1.6 — Provenance tags
-
-**What.** Every rendered fact carries `declared | observed | onchain | derived`.
-The `Measure` type already carries a method — widen it.
-
-**Why.** trust8004's best idea, and it is the literal wording of Data Quality.
-
-**Exit test.** `check:provenance` fails the build if any rendered figure lacks a tag.
-
-## Step 1.7 — Tighten the diversity gate
-
-**What.** `check:diversity` exists but passes on today's 5/18/16/8 spread. Make it
-fail unless the four categories are within a stated ratio.
-
-**Exit test.** The gate fails on today's data and passes after Step 1.2.
+**Exit test.** Every address resolves to verified source on BscScan and is
+listed on the site with its deployment transaction.
 
 ---
 
-# PHASE 2 — The moat, widened
+# PHASE B — The trial
 
-## Step 2.1 — Grid ladder replay
-Extend the replay engine to simulate ladder fills against real swap events.
-**Exit test.** A grid strategy replays over a real window and reports fills, fees and net.
+The counterfactual engine exists and is the moat. It now has to run as a
+tournament rather than a single replay, and cover all four jobs.
 
-## Step 2.2 — Yield rotation replay
-Walk Venus/Lista rate history, drive rotation, charge real gas, compare against
+## B1 — Multi-bid tournament
+Replay every bid on a mandate against the same real position, same window, same
+swaps. Rank by outcome against the claim, not against each other's marketing.
+
+**Exit test.** A mandate with five bids produces five replays over one window
+and a ranking that is stable when re-run.
+
+## B2 — Grid ladder replay
+Extend the engine to simulate ladder fills against real swap events.
+**Exit test.** A grid strategy reports fills, fees and net over a real window.
+
+## B3 — Yield rotation replay
+Walk Venus/Lista rate history, charge real gas per rotation, compare against
 sitting in the best pool at t=0.
-**Exit test.** A published run with a command that reproduces it.
+**Exit test.** A published run with a reproducing command. The finding is
+reported whichever way it points.
 
-## Step 2.3 — Health-factor replay
-Real Venus borrow position, walk the collateral price path, simulate top-ups at
-the declared threshold vs doing nothing.
-**Exit test.** Output states how close to liquidation each arm got and what defence cost.
+## B4 — Health-factor replay
+Walk a real collateral price path, simulate top-ups at the declared threshold
+against doing nothing.
+**Exit test.** Output states how close each arm came to liquidation and what the
+defence cost.
 
-## Step 2.4 — `/dryrun/[id]`
-One address in, a verdict out, for all four categories. Pre-filled example so it
-works before anyone types.
-**Exit test.** A stranger pastes an address and gets four categories of answer.
+## B5 — Distribution, not a point estimate
+Every claim trialled over N windows; the spread published.
+**Exit test.** No trial figure renders as a single number without its spread.
 
-## Step 2.5 — Multi-window distribution
-Run N windows and publish the distribution rather than one number.
-**Exit test.** Every replay figure carries a distribution, not a point estimate.
-
----
-
-# PHASE 3 — The rails, completed
-
-- **3.1** ERC-8183 escrow from testnet to mainnet, seller's submit-and-settle exercised
-- **3.2** Fund each reference agent on its own Altana mainnet wallet
-- **3.3** Seller-side x402 endpoint — be a merchant, not only a buyer
-- **3.4** Sign quotes EIP-191 and verify against the agent wallet; kill `signed: false`
-- **3.5** Offer `permit2-exact` alongside `eip3009` so USDT holders can pay
-- **3.6** EIP-5792 batching so a hire is one popup
-
-**Phase exit test.** Every category has ≥1 row with all three rails open
-(`check:hireable`), and one full hire completes on mainnet with a counterparty.
+## B6 — The no-lookahead guard covers money
+`check:no-lookahead` already corrupts the future and fails if a decision moves.
+Extend it to the three new engines.
+**Exit test.** All four strategies pass; a deliberately cheating strategy fails.
 
 ---
 
-# PHASE 4 — The face
+# PHASE C — The floor (frontend)
 
-- **4.1** Identity: ink ground `#0B1220`, mint signal `#5FE3C0`, Archivo + Source Serif 4, both themes
-- **4.2** Homepage rebuilt around the funnel and four equal doors
-- **4.3** The four `/j/[job]` templates made genuinely identical in depth
-- **4.4** `/standard` — the published listing test
-- **4.5** MCP surface with the four categories as a typed enum
-- **4.6** Screenshot every room at 1440 and 360; no room ships unlooked-at
+A full rebuild. Not a reskin, not a re-theme. The current site is a directory
+and the product is a market.
 
-**Phase exit test.** A thumbnail of the homepage is not mistakable for any of the
-twelve competitors.
+## C1 — Design system
+Tokens, type scale, both themes, the numeric grid. One stylesheet, no framework
+classes scattered through components.
+
+**Exit test.** Every colour in the app resolves to a token; light and dark both
+render every screen legibly; `check:motion` still passes.
+
+## C2 — `/` The floor
+Four markets, a live tape of bids/trials/settlements, total bonded, total
+slashed, open mandates. Every figure carries its block.
+
+**Exit test.** A thumbnail of the homepage beside the twelve competitor
+homepages is not mistakable for any of them. Server-rendered; works with
+JavaScript off; inside the JS budget.
+
+## C3 — `/m/[job]` One market, four times
+Bid depth, best claim, bonds at risk, leaderboard by settled record. One
+template, four markets, identical depth.
+
+**Exit test.** `check:diversity` passes including the supply assertion.
+
+## C4 — `/post` Post a mandate
+Paste an address, read the real position, set window and cap.
+**Exit test.** A stranger with a real V3 position can post a mandate without
+connecting a wallet, and nothing on the page can move their funds.
+
+## C5 — `/t/[id]` The trial
+Every bid replayed side by side, with the command that reproduces it.
+**Exit test.** Each row's command, run locally, reproduces the number shown.
+
+## C6 — `/a/[id]` The agent's file
+Bonds posted, claims made, met, missed, slashes taken. A record, not a rating.
+**Exit test.** An agent with a missed claim shows the miss above the fold.
+
+## C7 — `/settle/[id]` The settlement
+Claim vs outcome, the arithmetic, the transaction.
+**Exit test.** Every settled mandate has a page whose numbers reconcile to chain.
+
+## C8 — Brand
+Wordmark, the ascending three-bar rebuilt for the new palette, favicon, OG
+images, and the voice carried onto the site verbatim.
+
+**Exit test.** Every screen shot at 1440 and 360; no screen ships unlooked-at.
 
 ---
 
-# PHASE 5 — The submission
+# PHASE D — The studio (manufacturing supply)
 
-- **5.1** Agent Advantage Report: 3+ tasks both ways, outputs attached, ≥1 from trading/stock/security
-- **5.2** Altana: wallet addresses, explorer links to real session transactions, the revoke
-- **5.3** PancakeSwap: led by `RecipientBound.sol`
-- **5.4** A judge's route — one URL that walks the whole proof in order
-- **5.5** A recorded run of the full journey
+245 agents do the four jobs. The market ships the means to create more.
+
+## D1 — `npx crucible init`
+Scaffolds a competing agent: strategy interface, four job templates, ERC-8004
+registration, x402 seller endpoint, bond deposit, local replay harness.
+
+**Exit test.** From an empty directory, one command produces an agent that
+registers, bonds, and places a bid on testnet.
+
+## D2 — The local harness
+A builder can replay their strategy against real pool history before bidding.
+**Exit test.** The harness refuses to bid if the strategy fails no-lookahead.
+
+## D3 — Seed the market
+Reference agents in all four jobs, funded on their own mainnet wallets, bonded,
+bidding — and ranked by the same rule as everyone else.
+
+**Exit test.** 40 bonded agents across four markets, at least 20 not ours.
+`check:ranking` still fails the build if a house agent outranks a
+better-measured third party.
+
+## D4 — `/standard` The published test
+The versioned test every listed agent passes, with its own test vectors.
+**Exit test.** A third party can run the standard against their own agent and
+get the same verdict the site shows.
+
+---
+
+# PHASE E — The rails, completed
+
+## E1 — ERC-8183 escrow on mainnet, seller's submit-and-settle exercised
+## E2 — x402 seller endpoint: be a merchant, not only a buyer
+## E3 — Quotes signed EIP-191 and verified against the agent wallet
+## E4 — `permit2-exact` alongside `eip3009` so USDT holders can pay
+## E5 — EIP-5792 batching so a hire is one popup
+## E6 — Altana KeyStore registration confirmed by a log a stranger can find
+
+**Phase exit test.** Every market has at least one mandate that ran end to end
+on mainnet: bonded, bid, trialled, mandated, settled.
+
+---
+
+# PHASE F — The evidence
+
+## F1 — Agent Advantage Report, generated from the settlement ledger
+3+ tasks both ways, outputs attached, ≥1 from trading/stock/security.
+**Exit test.** Every row traces to a settled mandate with a transaction.
+
+## F2 — Altana submission
+Wallet addresses, explorer links to real session transactions, the revoke.
+
+## F3 — PancakeSwap submission
+Led by `RecipientBound`, with the market that runs on V3.
+
+## F4 — The judge's route
+One URL that walks the whole proof in order, and a recorded run of the journey.
+
+---
+
+# PHASE G — The gates
+
+Existing gates stay. New ones:
+
+| Gate | Enforces |
+|---|---|
+| `check:bond` | No listing without a bond; no slash outside `Settlement` |
+| `check:claim` | Every bid carries a signature that recovers to its ERC-8004 owner |
+| `check:trial` | Every published trial figure carries its window, its swaps and its command |
+| `check:settlement` | Every settled mandate reconciles to a transaction |
+| `check:classified` | No listed row carries `job: null` |
+| `check:provenance` | Every rendered fact carries declared / observed / onchain / derived |
+| `check:freshness` | The published snapshot is younger than a stated age, or the site says its age |
 
 ---
 
@@ -229,19 +215,18 @@ twelve competitors.
 
 | Step | State |
 |---|---|
-| 0.1 Full-registry cursor walk | **done** — `walkAgents`, 8 tests |
-| 0.2 Persist the walk | **done** — cohort walk, checkpointed, 4 tests |
-| 0.3 Fix the scheduled runner | in progress — needs a deploy we cannot do here |
-| 0.4 Keystore registration | **code done** — needs a live grant to confirm |
-| 1.4 The funnel | **done** — 6 requests, not a crawl |
-| 1.2 Classify into four jobs | **done** — 245 agents: 60/36/123/26 |
-| 1.3 Publish clustering | **done** — template clustering, 19 batches |
-| 1.7 Tighten the diversity gate | **done** — check 11 asserts real supply |
-| 1.1 Resolve endpoints | next |
-| 1.5 Probe taxonomy (degraded) | todo |
-| 1.6 Provenance tags | todo |
-| 1.1–1.7 | todo |
-| 2.1–2.5 | todo |
-| 3.1–3.6 | todo |
-| 4.1–4.6 | todo |
-| 5.1–5.5 | todo |
+| **A** The mechanism | not started — **next** |
+| **B** The trial | B6 partly (no-lookahead exists) |
+| **C** The floor | not started |
+| **D** The studio | not started |
+| **E** The rails | E6 code done, needs a live grant |
+| **F** The evidence | report exists, needs regenerating from the ledger |
+| **G** The gates | 6 of 13 |
+
+### Already banked and still useful
+- Registry read in full: 310,436 counted, 33,813 reachable, incremental pass 9 requests
+- Classification: 245 agents across the four jobs
+- Template clustering: 3,234 distinct descriptions behind 33,813 agents
+- Counterfactual replay with the no-lookahead proof — the trial engine
+- `RecipientBound.sol`, 18 tests, 512-run fuzz
+- Mainnet paid call settled; session scope and revocation proven on mainnet
