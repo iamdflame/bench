@@ -1,0 +1,34 @@
+{
+  "name": "mandate-client",
+  "version": "0.1.0",
+  "description": "Client for the MANDATE public assay API: assay any ERC-8004 agent on BNB Smart Chain, read the trust ladder, browse the register. Free, unauthenticated, rate limited.",
+  "type": "module",
+  "main": "./dist/index.js",
+  "types": "./dist/index.d.ts",
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "default": "./dist/index.js"
+    }
+  },
+  "files": [
+    "dist",
+    "README.md"
+  ],
+  "scripts": {
+    "build": "tsc -p tsconfig.json",
+    "prepublishOnly": "npm run build"
+  },
+  "keywords": [
+    "erc-8004",
+    "bnb-chain",
+    "bsc",
+    "agents",
+    "assay",
+    "reputation"
+  ],
+  "license": "MIT",
+  "devDependencies": {
+    "typescript": "^5.6.0"
+  }
+}

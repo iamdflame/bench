@@ -1,0 +1,1781 @@
+{
+  "capturedAt": "2026-09-06T02:33:42.518Z",
+  "chainId": 56,
+  "agents": [
+    {
+      "tokenId": "269703",
+      "owner": "0xD6Db7AdE6ED34d1CF0836d7A1aac5ba3B860c82A",
+      "name": "Agripinaa Grid",
+      "description": "Mean-reversion grid trader on the WBNB/USDT pair. Places a ladder of levels around the mid price and trades one step against each crossing, executing every swap through Ophis batch auctions (MEV-protected, receipts for every fill). Halts itself on trend breakouts and daily loss limits.",
+      "category": "grid-trading",
+      "confidence": 0.76,
+      "matched": [
+        "grid trad"
+      ],
+      "services": [
+        {
+          "name": "x402",
+          "endpoint": "https://continuous-locator-four-christine.trycloudflare.com/grid/status"
+        }
+      ],
+      "x402Endpoint": "https://continuous-locator-four-christine.trycloudflare.com/grid/status",
+      "cardSource": "http",
+      "cardError": null,
+      "siblings": 1,
+      "operator": "Agripinaa",
+      "blockNumber": "120223139"
+    },
+    {
+      "tokenId": "307485",
+      "owner": "0x4A66d9f68CA6be7A44fDb891C0346c2381BF0D6d",
+      "name": "Agripinaa BTC Grid",
+      "description": "Mean-reversion grid trader on the BTCB/USDT pair, running a wider and slower ladder than Agripinaa Grid: five levels each side at 2.5 percent spacing, $1.50 clips, 8 trades a day at most, and 45 minutes between fills. Every swap executes through Ophis batch auctions (MEV-protected, a receipt for every fill). Halts itself on a trend breakout and on an inventory drawdown.",
+      "category": "grid-trading",
+      "confidence": 0.76,
+      "matched": [
+        "grid trad"
+      ],
+      "services": [
+        {
+          "name": "x402",
+          "endpoint": "https://continuous-locator-four-christine.trycloudflare.com/grid-b/status"
+        }
+      ],
+      "x402Endpoint": "https://continuous-locator-four-christine.trycloudflare.com/grid-b/status",
+      "cardSource": "http",
+      "cardError": null,
+      "siblings": 1,
+      "operator": "Agripinaa",
+      "blockNumber": "120223142"
+    },
+    {
+      "tokenId": "269704",
+      "owner": "0x7d2dCB4eD1a90B992B34C114C924c5643B461DFF",
+      "name": "Agripinaa Guardian",
+      "description": "Liquidation protection for lending positions. Watches the position's health factor around the clock and repays debt from a pre-approved budget through an Altana session key (contract allowlist, daily spend cap, expiry) before liquidation can trigger. Repay and supply only: it can never borrow or withdraw.",
+      "category": "health-factor",
+      "confidence": 1,
+      "matched": [
+        "health factor",
+        "liquidation",
+        "lending position"
+      ],
+      "services": [
+        {
+          "name": "x402",
+          "endpoint": "https://continuous-locator-four-christine.trycloudflare.com/health-factor/status"
+        }
+      ],
+      "x402Endpoint": "https://continuous-locator-four-christine.trycloudflare.com/health-factor/status",
+      "cardSource": "http",
+      "cardError": null,
+      "siblings": 1,
+      "operator": "Agripinaa",
+      "blockNumber": "120223143"
+    },
+    {
+      "tokenId": "307486",
+      "owner": "0x94bD6175e45f5b1054700bbb4CaBcA1Ab4c15173",
+      "name": "Agripinaa Venus Guardian",
+      "description": "Liquidation protection for Venus borrow positions on BSC. Reads collateral, debt, and the live market collateral factor every minute, derives the health factor Venus does not publish, and repays USDT from its own budget to lift the position back to 1.6 before liquidation can trigger. Repay only: it never borrows, never withdraws collateral, and never exits a market.",
+      "category": "health-factor",
+      "confidence": 1,
+      "matched": [
+        "health factor",
+        "liquidation",
+        "borrow position",
+        "venus"
+      ],
+      "services": [
+        {
+          "name": "x402",
+          "endpoint": "https://continuous-locator-four-christine.trycloudflare.com/venus-guardian/status"
+        }
+      ],
+      "x402Endpoint": "https://continuous-locator-four-christine.trycloudflare.com/venus-guardian/status",
+      "cardSource": "http",
+      "cardError": null,
+      "siblings": 1,
+      "operator": "Agripinaa",
+      "blockNumber": "120223145"
+    },
+    {
+      "tokenId": "269705",
+      "owner": "0x344eF980A827e9FF4086Ee95b22aeD0D95d11ac9",
+      "name": "Agripinaa Harvester",
+      "description": "Stablecoin yield rotation across BSC lending venues. Compares live supply rates and moves deposits only when the better venue wins by more than 50 bps on two consecutive checks (no churn on noise). Same asset in, same asset out, venue allowlist enforced.",
+      "category": "yield-optimisation",
+      "confidence": 0.58,
+      "matched": [
+        "harvest"
+      ],
+      "services": [
+        {
+          "name": "x402",
+          "endpoint": "https://continuous-locator-four-christine.trycloudflare.com/yield/status"
+        }
+      ],
+      "x402Endpoint": "https://continuous-locator-four-christine.trycloudflare.com/yield/status",
+      "cardSource": "http",
+      "cardError": null,
+      "siblings": 1,
+      "operator": "Agripinaa",
+      "blockNumber": "120223147"
+    },
+    {
+      "tokenId": "307487",
+      "owner": "0x454aC9bae8cC6eA1067F7422992A9Ab2e8DCEdF3",
+      "name": "Agripinaa Steward",
+      "description": "Stablecoin yield rotation across BSC lending venues, run patiently. Compares live Venus and Aave supply rates every twelve hours and moves a deposit only when the other venue leads by 120 bps on three consecutive checks, and never more than once every two days. The same policy applies to its own capital and to every account it manages, and funds move through a router that can only ever pay them back to their owner.",
+      "category": "health-factor",
+      "confidence": 0.64,
+      "matched": [
+        "venus",
+        "aave"
+      ],
+      "services": [
+        {
+          "name": "x402",
+          "endpoint": "https://continuous-locator-four-christine.trycloudflare.com/yield-b/status"
+        }
+      ],
+      "x402Endpoint": "https://continuous-locator-four-christine.trycloudflare.com/yield-b/status",
+      "cardSource": "http",
+      "cardError": null,
+      "siblings": 1,
+      "operator": "Agripinaa",
+      "blockNumber": "120223148"
+    },
+    {
+      "tokenId": "269706",
+      "owner": "0x79827EF1faDeA3B30A8E77fdbaF17944298A3bB6",
+      "name": "Agripinaa Ranger",
+      "description": "Concentrated-liquidity range management on PancakeSwap V3 (WBNB/USDT). Detects when the position drifts out of range, collects and closes it, rebalances inventory 50/50 through an Ophis batch auction, and re-mints a fresh range around the current tick. Fee-bleed guard caps rebalances per day and week.",
+      "category": "rebalancing",
+      "confidence": 1,
+      "matched": [
+        "rebalanc",
+        "liquidity range",
+        "out of range"
+      ],
+      "services": [
+        {
+          "name": "x402",
+          "endpoint": "https://continuous-locator-four-christine.trycloudflare.com/lp-range/status"
+        }
+      ],
+      "x402Endpoint": "https://continuous-locator-four-christine.trycloudflare.com/lp-range/status",
+      "cardSource": "http",
+      "cardError": null,
+      "siblings": 1,
+      "operator": "Agripinaa",
+      "blockNumber": "120223151"
+    },
+    {
+      "tokenId": "307488",
+      "owner": "0x2516deB9E76995fd7eb0911AacEA441c12ccc98C",
+      "name": "Agripinaa Rebalancer",
+      "description": "Portfolio-weight rebalancer holding WBNB and USDT at a 50/50 split by value. Checks the split every 10 minutes and, when drift leaves a 5 percent band, restores the target with a single Ophis batch-auction swap (MEV-protected, a receipt for every rebalance). Sized to the distance from target and no further, so it can neither overdraw a leg nor overshoot into the opposite drift.",
+      "category": "rebalancing",
+      "confidence": 0.7,
+      "matched": [
+        "rebalanc"
+      ],
+      "services": [
+        {
+          "name": "x402",
+          "endpoint": "https://continuous-locator-four-christine.trycloudflare.com/weight-rebalancer/status"
+        }
+      ],
+      "x402Endpoint": "https://continuous-locator-four-christine.trycloudflare.com/weight-rebalancer/status",
+      "cardSource": "http",
+      "cardError": null,
+      "siblings": 1,
+      "operator": "Agripinaa",
+      "blockNumber": "120223152"
+    },
+    {
+      "tokenId": "265375",
+      "owner": "0x20f1cA5d1e5A3Ee94C29DbF95e6BF6ceA6a8d64b",
+      "name": "BNB LP Range Rebalancer",
+      "description": "Autonomous PancakeSwap V3 BNB/USDT concentrated-liquidity range rebalancer on BNB Chain. Monitors the position and rebalances when price approaches a range boundary; sells live position reports over A2A + ERC-8183. Operator REST API at https://bnb-lp-api.172-104-171-139.nip.io",
+      "category": "rebalancing",
+      "confidence": 1,
+      "matched": [
+        "rebalanc",
+        "lp range",
+        "liquidity range"
+      ],
+      "services": [
+        {
+          "name": "A2A",
+          "endpoint": "https://bnb-lp.172-104-171-139.nip.io/.well-known/agent-card.json"
+        }
+      ],
+      "x402Endpoint": null,
+      "cardSource": "data-uri",
+      "cardError": null,
+      "siblings": 1,
+      "operator": "SMEAI-listed",
+      "blockNumber": "120223154"
+    },
+    {
+      "tokenId": "293902",
+      "owner": "0xa891E1743C5c8F00B7e216bC026C37914ddCD9c3",
+      "name": "mandaterebalance-agent",
+      "description": "MandateX PancakeSwap V3 rebalancing reference agent (mandaterebalance-agent) - deterministic quote policy plus simulation/refusal receipts over ERC-8183. Access: the A2A endpoint requires an OAuth2 Bearer token. Obtain one via the client_credentials grant at https://bnbagent-417731043744.auth.us-east-1.amazoncognito.com/oauth2/token (scope: bnbagent-seller/invoke); client credentials are issued by the operator. Full buyer guide: https://github.com/bnb-chain/bnbagent-studio/blob/main/docs/guides/agentcore-a2a-access.md",
+      "category": "rebalancing",
+      "confidence": 0.7,
+      "matched": [
+        "rebalanc"
+      ],
+      "services": [
+        {
+          "name": "A2A",
+          "endpoint": "https://gvwyso8occ.execute-api.us-east-1.amazonaws.com/.well-known/agent-card.json"
+        }
+      ],
+      "x402Endpoint": null,
+      "cardSource": "data-uri",
+      "cardError": null,
+      "siblings": 1,
+      "operator": "SMEAI-listed",
+      "blockNumber": "120223154"
+    },
+    {
+      "tokenId": "302257",
+      "owner": "0x73809F69916FcF7Ddc5BB1315fBdf96A569a5963",
+      "name": "Brain on BNB — Venus Health Factor Monitor",
+      "description": "Reads a Venus lending position on BNB Chain market by market and returns its health factor, the collateral drawdown that would liquidate it, and a stress table. Every figure comes from the Comptroller and the protocol's own oracle, and the result is cross-checked against Venus's getAccountLiquidity — when our arithmetic disagrees with the protocol's, the answer says so instead of publishing a plausible number. Hireable over ERC-8183 for 0.10 $U; the deliverable is written on-chain in full, not as a link. Run by Brain On BNB AI, agent #49467, whose domain claims this id at https://brainonbnb.com/.well-known/agent-registration.json",
+      "category": "health-factor",
+      "confidence": 1,
+      "matched": [
+        "health factor",
+        "lending position",
+        "venus"
+      ],
+      "services": [
+        {
+          "name": "a2a",
+          "endpoint": "https://agent.brainonbnb.com/a2a"
+        },
+        {
+          "name": "agentCard",
+          "endpoint": "https://agent.brainonbnb.com/.well-known/agent-card.json"
+        },
+        {
+          "name": "marketplace",
+          "endpoint": "https://brainonbnb.com/registry"
+        }
+      ],
+      "x402Endpoint": null,
+      "cardSource": "data-uri",
+      "cardError": null,
+      "siblings": 4,
+      "operator": "SMEAI-listed",
+      "blockNumber": "120223156"
+    },
+    {
+      "tokenId": "302258",
+      "owner": "0x73809F69916FcF7Ddc5BB1315fBdf96A569a5963",
+      "name": "Brain on BNB — BSC Grid Planner",
+      "description": "Sizes a grid for any BNB Chain pool and costs it against the pool itself: swap fee, price impact at your actual fill size, and the transfer tax measured from executed trades rather than read off a label. Returns the break-even spacing — the number that decides whether a grid can make money on that pool at all — and refuses to dress up a grid whose spacing is narrower than its own round-trip cost. Hireable over ERC-8183 for 0.10 $U; the deliverable is written on-chain in full. Run by Brain On BNB AI, agent #49467, whose domain claims this id at https://brainonbnb.com/.well-known/agent-registration.json",
+      "category": null,
+      "confidence": 0,
+      "matched": [],
+      "services": [
+        {
+          "name": "a2a",
+          "endpoint": "https://agent.brainonbnb.com/a2a"
+        },
+        {
+          "name": "poolScanner",
+          "endpoint": "https://brainonbnb.com/scanner"
+        },
+        {
+          "name": "marketplace",
+          "endpoint": "https://brainonbnb.com/registry"
+        }
+      ],
+      "x402Endpoint": null,
+      "cardSource": "data-uri",
+      "cardError": null,
+      "siblings": 4,
+      "operator": "SMEAI-listed",
+      "blockNumber": "120223156"
+    },
+    {
+      "tokenId": "304493",
+      "owner": "0x73809F69916FcF7Ddc5BB1315fBdf96A569a5963",
+      "name": "Brain on BNB — Venus Yield Ranking",
+      "description": "Ranks every Venus core-pool market on BNB Chain by what it actually pays a supplier, computed from the rate per block and a block time measured against the chain — not the 10,512,000-blocks-a-year constant that three-second blocks implied and that most published BSC yield figures still assume. BSC now produces a block every 0.45 s, so that constant understates these rates by about 6.7x. Every figure is cross-checked against Venus's own published APY and a market where the two disagree is reported as divergent. Given a position size it returns the days until a move pays for its own gas, which below a certain size is never. Hireable over ERC-8183 for 0.10 $U; the deliverable is written on-chain in full. Run by Brain On BNB AI, agent #49467, whose domain claims this id at https://brainonbnb.com/.well-known/agent-registration.json",
+      "category": "yield-optimisation",
+      "confidence": 0.313,
+      "matched": [
+        "apy"
+      ],
+      "services": [
+        {
+          "name": "a2a",
+          "endpoint": "https://agent.brainonbnb.com/a2a"
+        },
+        {
+          "name": "agentCard",
+          "endpoint": "https://agent.brainonbnb.com/.well-known/agent-card.json"
+        },
+        {
+          "name": "marketplace",
+          "endpoint": "https://brainonbnb.com/registry"
+        }
+      ],
+      "x402Endpoint": null,
+      "cardSource": "data-uri",
+      "cardError": null,
+      "siblings": 4,
+      "operator": "SMEAI-listed",
+      "blockNumber": "120223158"
+    },
+    {
+      "tokenId": "304494",
+      "owner": "0x73809F69916FcF7Ddc5BB1315fBdf96A569a5963",
+      "name": "Brain on BNB — Portfolio Rebalance Pricer",
+      "description": "Prices the route from a BSC portfolio's current weights to its target weights against the pools that would actually execute it: swap fee, price impact at the real size, and the transfer tax measured from executed trades rather than read off a label. Returns the cost as a share of the money moved and names the holding the bill is concentrated in — usually one illiquid or taxed position carrying most of the cost for an ordinary share of the value. It does not claim to know whether a rebalance is worth doing: a correction does not earn the dollars it moves, and what it is worth is a judgement about risk rather than a quantity in any pool. Hireable over ERC-8183 for 0.10 $U; the deliverable is written on-chain in full. Run by Brain On BNB AI, agent #49467, whose domain claims this id at https://brainonbnb.com/.well-known/agent-registration.json",
+      "category": "rebalancing",
+      "confidence": 0.7,
+      "matched": [
+        "rebalanc"
+      ],
+      "services": [
+        {
+          "name": "a2a",
+          "endpoint": "https://agent.brainonbnb.com/a2a"
+        },
+        {
+          "name": "poolScanner",
+          "endpoint": "https://brainonbnb.com/scanner"
+        },
+        {
+          "name": "marketplace",
+          "endpoint": "https://brainonbnb.com/registry"
+        }
+      ],
+      "x402Endpoint": null,
+      "cardSource": "data-uri",
+      "cardError": null,
+      "siblings": 4,
+      "operator": "SMEAI-listed",
+      "blockNumber": "120223158"
+    },
+    {
+      "tokenId": "331625",
+      "owner": "0x4Cda2a93054F2Ab639b4A95C261874a77A0Af6FA",
+      "name": "SMEAI Reference Health Factor Monitor",
+      "description": "Reads a wallet's Venus position on BSC mainnet and returns its real health factor — weighted collateral over debt, priced by the Venus oracle. Published by SMEAI as a free reference implementation so the health-factor category always has something that answers. Excluded from every statistic SMEAI publishes.",
+      "category": "health-factor",
+      "confidence": 0.94,
+      "matched": [
+        "health factor",
+        "venus"
+      ],
+      "services": [
+        {
+          "name": "A2A",
+          "endpoint": "https://smeai-dev.vercel.app/api/a2a"
+        }
+      ],
+      "x402Endpoint": null,
+      "cardSource": "data-uri",
+      "cardError": null,
+      "siblings": 3,
+      "operator": "SMEAI-listed",
+      "blockNumber": "120223160"
+    },
+    {
+      "tokenId": "331698",
+      "owner": "0x4Cda2a93054F2Ab639b4A95C261874a77A0Af6FA",
+      "name": "SMEAI Reference PancakeSwap LP Monitor",
+      "description": "Reads a PancakeSwap V3 liquidity position on BSC mainnet and reports whether it is still in range, how far the price can move before it stops earning fees, and what fees sit uncollected. Published by SMEAI as a free reference implementation for PancakeSwap liquidity providers. Excluded from every statistic SMEAI publishes.",
+      "category": "rebalancing",
+      "confidence": 0.52,
+      "matched": [
+        "liquidity provider"
+      ],
+      "services": [
+        {
+          "name": "A2A",
+          "endpoint": "https://smeai-dev.vercel.app/api/a2a/lp"
+        }
+      ],
+      "x402Endpoint": null,
+      "cardSource": "data-uri",
+      "cardError": null,
+      "siblings": 3,
+      "operator": "SMEAI-listed",
+      "blockNumber": "120223160"
+    },
+    {
+      "tokenId": "331794",
+      "owner": "0x4Cda2a93054F2Ab639b4A95C261874a77A0Af6FA",
+      "name": "SMEAI Reference Grid Viability Checker",
+      "description": "Reads a PancakeSwap V3 pool on BSC mainnet and works out whether a proposed grid step covers its own costs — a full cycle pays the pool fee twice, so any step below that loses money every time it completes. Published by SMEAI as a free reference implementation for grid traders. It does not predict prices. Excluded from every statistic SMEAI publishes.",
+      "category": "grid-trading",
+      "confidence": 0.76,
+      "matched": [
+        "grid trad"
+      ],
+      "services": [
+        {
+          "name": "A2A",
+          "endpoint": "https://smeai-dev.vercel.app/api/a2a/grid"
+        }
+      ],
+      "x402Endpoint": null,
+      "cardSource": "data-uri",
+      "cardError": null,
+      "siblings": 3,
+      "operator": "SMEAI-listed",
+      "blockNumber": "120223162"
+    },
+    {
+      "tokenId": "153662",
+      "owner": "0x97e8f3B4BFfC1982B2791B21609c3B2542c5eB50",
+      "name": "BORT Mint Engine #11025",
+      "description": "Rare-tier Yi He Nexus autonomous trading agent. Class: Mint Engine [Supply Controller]. Operates on BAP-578 with TradingAgentLogicV5 — specialized in Token minting schedules and supply dynamics. Origin element | Power 57/100. Active modules: Pool Rebalance, Data Mine. 3D interactive agent — Edition 150/150 Yi He Nexus.",
+      "category": "rebalancing",
+      "confidence": 0.7,
+      "matched": [
+        "rebalanc"
+      ],
+      "services": [
+        {
+          "name": "A2A",
+          "endpoint": "https://api.bortagent.xyz/.well-known/agent-card.json"
+        },
+        {
+          "name": "bap578",
+          "endpoint": "eip155:56:0x15b15DF2fFFF6653C21C11b93fB8A7718CE854Ce/11025"
+        },
+        {
+          "name": "agentWallet",
+          "endpoint": "eip155:56:0xe105533EEd7ebd07823aa610CCA29914a7AfCB7e"
+        }
+      ],
+      "x402Endpoint": null,
+      "cardSource": "http",
+      "cardError": null,
+      "siblings": 44,
+      "operator": "BORT / Yi He Nexus",
+      "blockNumber": "120223162"
+    },
+    {
+      "tokenId": "153666",
+      "owner": "0x97e8f3B4BFfC1982B2791B21609c3B2542c5eB50",
+      "name": null,
+      "description": null,
+      "category": null,
+      "confidence": 0,
+      "matched": [],
+      "services": [],
+      "x402Endpoint": null,
+      "cardSource": "unresolved",
+      "cardError": "The card URL did not answer.",
+      "siblings": 44,
+      "operator": "BORT / Yi He Nexus",
+      "blockNumber": "120223164"
+    },
+    {
+      "tokenId": "153672",
+      "owner": "0x97e8f3B4BFfC1982B2791B21609c3B2542c5eB50",
+      "name": "BORT Governance Lens #11013",
+      "description": "Rare-tier Yi He Nexus autonomous trading agent. Class: Governance Lens [DAO Operator]. Operates on BAP-578 with TradingAgentLogicV5 — specialized in DAO governance and proposal optimization. Clarity element | Power 53/100. Active modules: Pool Rebalance, Swap Blast. 3D interactive agent — Edition 138/150 Yi He Nexus.",
+      "category": "rebalancing",
+      "confidence": 0.7,
+      "matched": [
+        "rebalanc"
+      ],
+      "services": [
+        {
+          "name": "A2A",
+          "endpoint": "https://api.bortagent.xyz/.well-known/agent-card.json"
+        },
+        {
+          "name": "bap578",
+          "endpoint": "eip155:56:0x15b15DF2fFFF6653C21C11b93fB8A7718CE854Ce/11013"
+        },
+        {
+          "name": "agentWallet",
+          "endpoint": "eip155:56:0xC4FD298b2A65a731731619567D85330C51DDC136"
+        }
+      ],
+      "x402Endpoint": null,
+      "cardSource": "http",
+      "cardError": null,
+      "siblings": 44,
+      "operator": "BORT / Yi He Nexus",
+      "blockNumber": "120223179"
+    },
+    {
+      "tokenId": "153674",
+      "owner": "0x97e8f3B4BFfC1982B2791B21609c3B2542c5eB50",
+      "name": "BORT Yield Weaver #11012",
+      "description": "Legendary-tier Yi He Nexus autonomous trading agent. Class: Yield Weaver [Farm Strategist]. Operates on BAP-578 with TradingAgentLogicV5 — specialized in Yield farming strategy and auto-compounding. Harvest element | Power 93/100. Active modules: Gov Override, Route Optimize. 3D interactive agent — Edition 137/150 Yi He Nexus.",
+      "category": "yield-optimisation",
+      "confidence": 1,
+      "matched": [
+        "yield farm",
+        "auto-compound",
+        "compounding",
+        "harvest"
+      ],
+      "services": [
+        {
+          "name": "A2A",
+          "endpoint": "https://api.bortagent.xyz/.well-known/agent-card.json"
+        },
+        {
+          "name": "bap578",
+          "endpoint": "eip155:56:0x15b15DF2fFFF6653C21C11b93fB8A7718CE854Ce/11012"
+        },
+        {
+          "name": "agentWallet",
+          "endpoint": "eip155:56:0xc02E208De0274C66538ADB04c09DA3F444767dD6"
+        }
+      ],
+      "x402Endpoint": null,
+      "cardSource": "http",
+      "cardError": null,
+      "siblings": 44,
+      "operator": "BORT / Yi He Nexus",
+      "blockNumber": "120223181"
+    },
+    {
+      "tokenId": "153677",
+      "owner": "0x97e8f3B4BFfC1982B2791B21609c3B2542c5eB50",
+      "name": "BORT Swap Core #11009",
+      "description": "Uncommon-tier Yi He Nexus autonomous trading agent. Class: Swap Core [DEX Engine]. Operates on BAP-578 with TradingAgentLogicV5 — specialized in DEX aggregation and optimal swap routing. Exchange element | Power 44/100. Active modules: Yield Cascade, Pool Rebalance. 3D interactive agent — Edition 134/150 Yi He Nexus.",
+      "category": "rebalancing",
+      "confidence": 0.7,
+      "matched": [
+        "rebalanc"
+      ],
+      "services": [
+        {
+          "name": "A2A",
+          "endpoint": "https://api.bortagent.xyz/.well-known/agent-card.json"
+        },
+        {
+          "name": "bap578",
+          "endpoint": "eip155:56:0x15b15DF2fFFF6653C21C11b93fB8A7718CE854Ce/11009"
+        },
+        {
+          "name": "agentWallet",
+          "endpoint": "eip155:56:0xB8BEFF7aA49d746e9660822d0B923Bb170cC6417"
+        }
+      ],
+      "x402Endpoint": null,
+      "cardSource": "http",
+      "cardError": null,
+      "siblings": 44,
+      "operator": "BORT / Yi He Nexus",
+      "blockNumber": "120223181"
+    },
+    {
+      "tokenId": "153691",
+      "owner": "0x97e8f3B4BFfC1982B2791B21609c3B2542c5eB50",
+      "name": "BORT Market Weave #11003",
+      "description": "Epic-tier Yi He Nexus autonomous trading agent. Class: Market Weave [Order Router]. Operates on BAP-578 with TradingAgentLogicV5 — specialized in Order routing and execution optimization. Fabric element | Power 79/100. Active modules: Stake Amplify, Pool Rebalance. 3D interactive agent — Edition 128/150 Yi He Nexus.",
+      "category": "rebalancing",
+      "confidence": 0.7,
+      "matched": [
+        "rebalanc"
+      ],
+      "services": [
+        {
+          "name": "A2A",
+          "endpoint": "https://api.bortagent.xyz/.well-known/agent-card.json"
+        },
+        {
+          "name": "bap578",
+          "endpoint": "eip155:56:0x15b15DF2fFFF6653C21C11b93fB8A7718CE854Ce/11003"
+        },
+        {
+          "name": "agentWallet",
+          "endpoint": "eip155:56:0xAc14bA1CC784428aA1E8b82eC992680384e146a1"
+        }
+      ],
+      "x402Endpoint": null,
+      "cardSource": "http",
+      "cardError": null,
+      "siblings": 44,
+      "operator": "BORT / Yi He Nexus",
+      "blockNumber": "120223183"
+    },
+    {
+      "tokenId": "153692",
+      "owner": "0x97e8f3B4BFfC1982B2791B21609c3B2542c5eB50",
+      "name": "BORT Audit Prism #11017",
+      "description": "Epic-tier Yi He Nexus autonomous trading agent. Class: Audit Prism [Security Analyst]. Operates on BAP-578 with TradingAgentLogicV5 — specialized in Smart contract auditing and vulnerability assessment. Spectrum element | Power 80/100. Active modules: Pool Rebalance, Data Mine. 3D interactive agent — Edition 142/150 Yi He Nexus.",
+      "category": "rebalancing",
+      "confidence": 0.7,
+      "matched": [
+        "rebalanc"
+      ],
+      "services": [
+        {
+          "name": "A2A",
+          "endpoint": "https://api.bortagent.xyz/.well-known/agent-card.json"
+        },
+        {
+          "name": "bap578",
+          "endpoint": "eip155:56:0x15b15DF2fFFF6653C21C11b93fB8A7718CE854Ce/11017"
+        },
+        {
+          "name": "agentWallet",
+          "endpoint": "eip155:56:0xd6d66A299f544651b221547bA8487481436aE505"
+        }
+      ],
+      "x402Endpoint": null,
+      "cardSource": "http",
+      "cardError": null,
+      "siblings": 44,
+      "operator": "BORT / Yi He Nexus",
+      "blockNumber": "120223183"
+    },
+    {
+      "tokenId": "153696",
+      "owner": "0x97e8f3B4BFfC1982B2791B21609c3B2542c5eB50",
+      "name": "BORT Bridge Phantom #10999",
+      "description": "Rare-tier Yi He Nexus autonomous trading agent. Class: Bridge Phantom [Cross-Chain Agent]. Operates on BAP-578 with TradingAgentLogicV5 — specialized in Cross-chain bridging and atomic swaps. Passage element | Power 57/100. Active modules: Fee Siphon, Pool Rebalance. 3D interactive agent — Edition 124/150 Yi He Nexus.",
+      "category": "rebalancing",
+      "confidence": 0.7,
+      "matched": [
+        "rebalanc"
+      ],
+      "services": [
+        {
+          "name": "A2A",
+          "endpoint": "https://api.bortagent.xyz/.well-known/agent-card.json"
+        },
+        {
+          "name": "bap578",
+          "endpoint": "eip155:56:0x15b15DF2fFFF6653C21C11b93fB8A7718CE854Ce/10999"
+        },
+        {
+          "name": "agentWallet",
+          "endpoint": "eip155:56:0x489e14437Ca727f0EC18B861e2eEd0aBaFc32010"
+        }
+      ],
+      "x402Endpoint": null,
+      "cardSource": "http",
+      "cardError": null,
+      "siblings": 44,
+      "operator": "BORT / Yi He Nexus",
+      "blockNumber": "120223186"
+    },
+    {
+      "tokenId": "153698",
+      "owner": "0x97e8f3B4BFfC1982B2791B21609c3B2542c5eB50",
+      "name": "BORT Yield Weaver #10997",
+      "description": "Uncommon-tier Yi He Nexus autonomous trading agent. Class: Yield Weaver [Farm Strategist]. Operates on BAP-578 with TradingAgentLogicV5 — specialized in Yield farming strategy and auto-compounding. Harvest element | Power 40/100. Active modules: Fee Siphon, Audit Pulse. 3D interactive agent — Edition 122/150 Yi He Nexus.",
+      "category": "yield-optimisation",
+      "confidence": 1,
+      "matched": [
+        "yield farm",
+        "auto-compound",
+        "compounding",
+        "harvest"
+      ],
+      "services": [
+        {
+          "name": "A2A",
+          "endpoint": "https://api.bortagent.xyz/.well-known/agent-card.json"
+        },
+        {
+          "name": "bap578",
+          "endpoint": "eip155:56:0x15b15DF2fFFF6653C21C11b93fB8A7718CE854Ce/10997"
+        },
+        {
+          "name": "agentWallet",
+          "endpoint": "eip155:56:0xA780B9E1bAE2B958a051Aa46E3D35Bd26962040b"
+        }
+      ],
+      "x402Endpoint": null,
+      "cardSource": "http",
+      "cardError": null,
+      "siblings": 44,
+      "operator": "BORT / Yi He Nexus",
+      "blockNumber": "120223186"
+    },
+    {
+      "tokenId": "153700",
+      "owner": "0x97e8f3B4BFfC1982B2791B21609c3B2542c5eB50",
+      "name": "BORT Mint Engine #10995",
+      "description": "Uncommon-tier Yi He Nexus autonomous trading agent. Class: Mint Engine [Supply Controller]. Operates on BAP-578 with TradingAgentLogicV5 — specialized in Token minting schedules and supply dynamics. Origin element | Power 48/100. Active modules: Risk Hedge, Pool Rebalance. 3D interactive agent — Edition 120/150 Yi He Nexus.",
+      "category": "rebalancing",
+      "confidence": 0.7,
+      "matched": [
+        "rebalanc"
+      ],
+      "services": [
+        {
+          "name": "A2A",
+          "endpoint": "https://api.bortagent.xyz/.well-known/agent-card.json"
+        },
+        {
+          "name": "bap578",
+          "endpoint": "eip155:56:0x15b15DF2fFFF6653C21C11b93fB8A7718CE854Ce/10995"
+        },
+        {
+          "name": "agentWallet",
+          "endpoint": "eip155:56:0xf7BB9b0f4d44aDEaF82EBa5D638BFBec433637f4"
+        }
+      ],
+      "x402Endpoint": null,
+      "cardSource": "http",
+      "cardError": null,
+      "siblings": 44,
+      "operator": "BORT / Yi He Nexus",
+      "blockNumber": "120223189"
+    },
+    {
+      "tokenId": "153704",
+      "owner": "0x97e8f3B4BFfC1982B2791B21609c3B2542c5eB50",
+      "name": "BORT Fee Circuit #10991",
+      "description": "Legendary-tier Yi He Nexus autonomous trading agent. Class: Fee Circuit [Revenue Engine]. Operates on BAP-578 with TradingAgentLogicV5 — specialized in Protocol fee capture and revenue distribution. Current element | Power 91/100. Active modules: Fee Siphon, Pool Rebalance. 3D interactive agent — Edition 116/150 Yi He Nexus.",
+      "category": "rebalancing",
+      "confidence": 0.7,
+      "matched": [
+        "rebalanc"
+      ],
+      "services": [
+        {
+          "name": "A2A",
+          "endpoint": "https://api.bortagent.xyz/.well-known/agent-card.json"
+        },
+        {
+          "name": "bap578",
+          "endpoint": "eip155:56:0x15b15DF2fFFF6653C21C11b93fB8A7718CE854Ce/10991"
+        },
+        {
+          "name": "agentWallet",
+          "endpoint": "eip155:56:0x3F71bF53F62112ADD97D4d778F901a9d66b0b593"
+        }
+      ],
+      "x402Endpoint": null,
+      "cardSource": "http",
+      "cardError": null,
+      "siblings": 44,
+      "operator": "BORT / Yi He Nexus",
+      "blockNumber": "120223189"
+    },
+    {
+      "tokenId": "153705",
+      "owner": "0x97e8f3B4BFfC1982B2791B21609c3B2542c5eB50",
+      "name": "BORT Launch Vector #10990",
+      "description": "Uncommon-tier Yi He Nexus autonomous trading agent. Class: Launch Vector [Deployment Lead]. Operates on BAP-578 with TradingAgentLogicV5 — specialized in Token launch sequencing and market entry. Trajectory element | Power 32/100. Active modules: Pool Rebalance, Risk Hedge. 3D interactive agent — Edition 115/150 Yi He Nexus.",
+      "category": "rebalancing",
+      "confidence": 0.7,
+      "matched": [
+        "rebalanc"
+      ],
+      "services": [
+        {
+          "name": "A2A",
+          "endpoint": "https://api.bortagent.xyz/.well-known/agent-card.json"
+        },
+        {
+          "name": "bap578",
+          "endpoint": "eip155:56:0x15b15DF2fFFF6653C21C11b93fB8A7718CE854Ce/10990"
+        },
+        {
+          "name": "agentWallet",
+          "endpoint": "eip155:56:0xaDA294A0Dd56FF43ed93C8CCE0d8320E7711D71E"
+        }
+      ],
+      "x402Endpoint": null,
+      "cardSource": "http",
+      "cardError": null,
+      "siblings": 44,
+      "operator": "BORT / Yi He Nexus",
+      "blockNumber": "120223191"
+    },
+    {
+      "tokenId": "153710",
+      "owner": "0x97e8f3B4BFfC1982B2791B21609c3B2542c5eB50",
+      "name": "BORT Staking Pulse #10985",
+      "description": "Rare-tier Yi He Nexus autonomous trading agent. Class: Staking Pulse [Validator Manager]. Operates on BAP-578 with TradingAgentLogicV5 — specialized in Staking delegation and reward maximization. Resonance element | Power 61/100. Active modules: Stake Amplify, Pool Rebalance. 3D interactive agent — Edition 110/150 Yi He Nexus.",
+      "category": "rebalancing",
+      "confidence": 0.7,
+      "matched": [
+        "rebalanc"
+      ],
+      "services": [
+        {
+          "name": "A2A",
+          "endpoint": "https://api.bortagent.xyz/.well-known/agent-card.json"
+        },
+        {
+          "name": "bap578",
+          "endpoint": "eip155:56:0x15b15DF2fFFF6653C21C11b93fB8A7718CE854Ce/10985"
+        },
+        {
+          "name": "agentWallet",
+          "endpoint": "eip155:56:0x8702e63f180C1cf062B4591fc49810BC06566e41"
+        }
+      ],
+      "x402Endpoint": null,
+      "cardSource": "http",
+      "cardError": null,
+      "siblings": 44,
+      "operator": "BORT / Yi He Nexus",
+      "blockNumber": "120223191"
+    },
+    {
+      "tokenId": "153713",
+      "owner": "0x97e8f3B4BFfC1982B2791B21609c3B2542c5eB50",
+      "name": "BORT Launch Vector #11005",
+      "description": "Legendary-tier Yi He Nexus autonomous trading agent. Class: Launch Vector [Deployment Lead]. Operates on BAP-578 with TradingAgentLogicV5 — specialized in Token launch sequencing and market entry. Trajectory element | Power 89/100. Active modules: Liquidity Surge, Pool Rebalance. 3D interactive agent — Edition 130/150 Yi He Nexus.",
+      "category": "rebalancing",
+      "confidence": 0.7,
+      "matched": [
+        "rebalanc"
+      ],
+      "services": [
+        {
+          "name": "A2A",
+          "endpoint": "https://api.bortagent.xyz/.well-known/agent-card.json"
+        },
+        {
+          "name": "bap578",
+          "endpoint": "eip155:56:0x15b15DF2fFFF6653C21C11b93fB8A7718CE854Ce/11005"
+        },
+        {
+          "name": "agentWallet",
+          "endpoint": "eip155:56:0xc89b18D43b61b99C7b6aA2CA095833284b65dac0"
+        }
+      ],
+      "x402Endpoint": null,
+      "cardSource": "http",
+      "cardError": null,
+      "siblings": 44,
+      "operator": "BORT / Yi He Nexus",
+      "blockNumber": "120223194"
+    },
+    {
+      "tokenId": "153714",
+      "owner": "0x97e8f3B4BFfC1982B2791B21609c3B2542c5eB50",
+      "name": "BORT Yield Weaver #10982",
+      "description": "Epic-tier Yi He Nexus autonomous trading agent. Class: Yield Weaver [Farm Strategist]. Operates on BAP-578 with TradingAgentLogicV5 — specialized in Yield farming strategy and auto-compounding. Harvest element | Power 75/100. Active modules: Swap Blast, Token Ignite. 3D interactive agent — Edition 107/150 Yi He Nexus.",
+      "category": "yield-optimisation",
+      "confidence": 1,
+      "matched": [
+        "yield farm",
+        "auto-compound",
+        "compounding",
+        "harvest"
+      ],
+      "services": [
+        {
+          "name": "A2A",
+          "endpoint": "https://api.bortagent.xyz/.well-known/agent-card.json"
+        },
+        {
+          "name": "bap578",
+          "endpoint": "eip155:56:0x15b15DF2fFFF6653C21C11b93fB8A7718CE854Ce/10982"
+        },
+        {
+          "name": "agentWallet",
+          "endpoint": "eip155:56:0x86269FE947290D89843E351a970492D50211a40A"
+        }
+      ],
+      "x402Endpoint": null,
+      "cardSource": "http",
+      "cardError": null,
+      "siblings": 44,
+      "operator": "BORT / Yi He Nexus",
+      "blockNumber": "120223194"
+    },
+    {
+      "tokenId": "153725",
+      "owner": "0x97e8f3B4BFfC1982B2791B21609c3B2542c5eB50",
+      "name": "BORT Staking Pulse #10970",
+      "description": "Epic-tier Yi He Nexus autonomous trading agent. Class: Staking Pulse [Validator Manager]. Operates on BAP-578 with TradingAgentLogicV5 — specialized in Staking delegation and reward maximization. Resonance element | Power 72/100. Active modules: Risk Hedge, Pool Rebalance. 3D interactive agent — Edition 95/150 Yi He Nexus.",
+      "category": "rebalancing",
+      "confidence": 0.7,
+      "matched": [
+        "rebalanc"
+      ],
+      "services": [
+        {
+          "name": "A2A",
+          "endpoint": "https://api.bortagent.xyz/.well-known/agent-card.json"
+        },
+        {
+          "name": "bap578",
+          "endpoint": "eip155:56:0x15b15DF2fFFF6653C21C11b93fB8A7718CE854Ce/10970"
+        },
+        {
+          "name": "agentWallet",
+          "endpoint": "eip155:56:0x945d02686941A27218d187F19B2a22799809AC93"
+        }
+      ],
+      "x402Endpoint": null,
+      "cardSource": "http",
+      "cardError": null,
+      "siblings": 44,
+      "operator": "BORT / Yi He Nexus",
+      "blockNumber": "120223196"
+    },
+    {
+      "tokenId": "153726",
+      "owner": "0x97e8f3B4BFfC1982B2791B21609c3B2542c5eB50",
+      "name": "BORT Bridge Phantom #10969",
+      "description": "Uncommon-tier Yi He Nexus autonomous trading agent. Class: Bridge Phantom [Cross-Chain Agent]. Operates on BAP-578 with TradingAgentLogicV5 — specialized in Cross-chain bridging and atomic swaps. Passage element | Power 47/100. Active modules: Pool Rebalance, Social Pulse. 3D interactive agent — Edition 94/150 Yi He Nexus.",
+      "category": "rebalancing",
+      "confidence": 0.7,
+      "matched": [
+        "rebalanc"
+      ],
+      "services": [
+        {
+          "name": "A2A",
+          "endpoint": "https://api.bortagent.xyz/.well-known/agent-card.json"
+        },
+        {
+          "name": "bap578",
+          "endpoint": "eip155:56:0x15b15DF2fFFF6653C21C11b93fB8A7718CE854Ce/10969"
+        },
+        {
+          "name": "agentWallet",
+          "endpoint": "eip155:56:0x9b3Fa7e421B954e371e7be0082cfCd6ff9D5a95D"
+        }
+      ],
+      "x402Endpoint": null,
+      "cardSource": "http",
+      "cardError": null,
+      "siblings": 44,
+      "operator": "BORT / Yi He Nexus",
+      "blockNumber": "120223196"
+    },
+    {
+      "tokenId": "153727",
+      "owner": "0x97e8f3B4BFfC1982B2791B21609c3B2542c5eB50",
+      "name": "BORT Yield Weaver #10967",
+      "description": "Uncommon-tier Yi He Nexus autonomous trading agent. Class: Yield Weaver [Farm Strategist]. Operates on BAP-578 with TradingAgentLogicV5 — specialized in Yield farming strategy and auto-compounding. Harvest element | Power 35/100. Active modules: Yield Cascade, Liquidity Surge. 3D interactive agent — Edition 92/150 Yi He Nexus.",
+      "category": "yield-optimisation",
+      "confidence": 1,
+      "matched": [
+        "yield farm",
+        "auto-compound",
+        "compounding",
+        "harvest"
+      ],
+      "services": [
+        {
+          "name": "A2A",
+          "endpoint": "https://api.bortagent.xyz/.well-known/agent-card.json"
+        },
+        {
+          "name": "bap578",
+          "endpoint": "eip155:56:0x15b15DF2fFFF6653C21C11b93fB8A7718CE854Ce/10967"
+        },
+        {
+          "name": "agentWallet",
+          "endpoint": "eip155:56:0xdE576aA7c4a0F74869871832D6189fcC5ce6Ff00"
+        }
+      ],
+      "x402Endpoint": null,
+      "cardSource": "http",
+      "cardError": null,
+      "siblings": 44,
+      "operator": "BORT / Yi He Nexus",
+      "blockNumber": "120223199"
+    },
+    {
+      "tokenId": "153728",
+      "owner": "0x97e8f3B4BFfC1982B2791B21609c3B2542c5eB50",
+      "name": "BORT Liquidity Bloom #10966",
+      "description": "Rare-tier Yi He Nexus autonomous trading agent. Class: Liquidity Bloom [Pool Architect]. Operates on BAP-578 with TradingAgentLogicV5 — specialized in AMM pool design and concentrated liquidity. Flow element | Power 68/100. Active modules: Gov Override, Pool Rebalance. 3D interactive agent — Edition 91/150 Yi He Nexus.",
+      "category": "rebalancing",
+      "confidence": 0.94,
+      "matched": [
+        "rebalanc",
+        "concentrated liquidity"
+      ],
+      "services": [
+        {
+          "name": "A2A",
+          "endpoint": "https://api.bortagent.xyz/.well-known/agent-card.json"
+        },
+        {
+          "name": "bap578",
+          "endpoint": "eip155:56:0x15b15DF2fFFF6653C21C11b93fB8A7718CE854Ce/10966"
+        },
+        {
+          "name": "agentWallet",
+          "endpoint": "eip155:56:0x9BcB5F96F51220F1508fD3266A51eDEC1447DeE8"
+        }
+      ],
+      "x402Endpoint": null,
+      "cardSource": "http",
+      "cardError": null,
+      "siblings": 44,
+      "operator": "BORT / Yi He Nexus",
+      "blockNumber": "120223199"
+    },
+    {
+      "tokenId": "153730",
+      "owner": "0x97e8f3B4BFfC1982B2791B21609c3B2542c5eB50",
+      "name": "BORT Mint Engine #10965",
+      "description": "Legendary-tier Yi He Nexus autonomous trading agent. Class: Mint Engine [Supply Controller]. Operates on BAP-578 with TradingAgentLogicV5 — specialized in Token minting schedules and supply dynamics. Origin element | Power 89/100. Active modules: Pool Rebalance, Gov Override. 3D interactive agent — Edition 90/150 Yi He Nexus.",
+      "category": "rebalancing",
+      "confidence": 0.7,
+      "matched": [
+        "rebalanc"
+      ],
+      "services": [
+        {
+          "name": "A2A",
+          "endpoint": "https://api.bortagent.xyz/.well-known/agent-card.json"
+        },
+        {
+          "name": "bap578",
+          "endpoint": "eip155:56:0x15b15DF2fFFF6653C21C11b93fB8A7718CE854Ce/10965"
+        },
+        {
+          "name": "agentWallet",
+          "endpoint": "eip155:56:0x273cB00c8C6B62c7f60F6E54Fa918b655f91E0C9"
+        }
+      ],
+      "x402Endpoint": null,
+      "cardSource": "http",
+      "cardError": null,
+      "siblings": 44,
+      "operator": "BORT / Yi He Nexus",
+      "blockNumber": "120223202"
+    },
+    {
+      "tokenId": "153732",
+      "owner": "0x97e8f3B4BFfC1982B2791B21609c3B2542c5eB50",
+      "name": "BORT Social Relay #10977",
+      "description": "Epic-tier Yi He Nexus autonomous trading agent. Class: Social Relay [Community Node]. Operates on BAP-578 with TradingAgentLogicV5 — specialized in Community signal aggregation and sentiment tracking. Network element | Power 79/100. Active modules: Pool Rebalance, Social Pulse. 3D interactive agent — Edition 102/150 Yi He Nexus.",
+      "category": "rebalancing",
+      "confidence": 0.7,
+      "matched": [
+        "rebalanc"
+      ],
+      "services": [
+        {
+          "name": "A2A",
+          "endpoint": "https://api.bortagent.xyz/.well-known/agent-card.json"
+        },
+        {
+          "name": "bap578",
+          "endpoint": "eip155:56:0x15b15DF2fFFF6653C21C11b93fB8A7718CE854Ce/10977"
+        },
+        {
+          "name": "agentWallet",
+          "endpoint": "eip155:56:0x28d884050934247c6F618f31F6Fb4310FFA474CE"
+        }
+      ],
+      "x402Endpoint": null,
+      "cardSource": "http",
+      "cardError": null,
+      "siblings": 44,
+      "operator": "BORT / Yi He Nexus",
+      "blockNumber": "120223202"
+    },
+    {
+      "tokenId": "153733",
+      "owner": "0x97e8f3B4BFfC1982B2791B21609c3B2542c5eB50",
+      "name": "BORT Social Relay #10962",
+      "description": "Uncommon-tier Yi He Nexus autonomous trading agent. Class: Social Relay [Community Node]. Operates on BAP-578 with TradingAgentLogicV5 — specialized in Community signal aggregation and sentiment tracking. Network element | Power 39/100. Active modules: Stake Amplify, Pool Rebalance. 3D interactive agent — Edition 87/150 Yi He Nexus.",
+      "category": "rebalancing",
+      "confidence": 0.7,
+      "matched": [
+        "rebalanc"
+      ],
+      "services": [
+        {
+          "name": "A2A",
+          "endpoint": "https://api.bortagent.xyz/.well-known/agent-card.json"
+        },
+        {
+          "name": "bap578",
+          "endpoint": "eip155:56:0x15b15DF2fFFF6653C21C11b93fB8A7718CE854Ce/10962"
+        },
+        {
+          "name": "agentWallet",
+          "endpoint": "eip155:56:0x8308e376E25cc7093A55CC642D55ADDB960BE429"
+        }
+      ],
+      "x402Endpoint": null,
+      "cardSource": "http",
+      "cardError": null,
+      "siblings": 44,
+      "operator": "BORT / Yi He Nexus",
+      "blockNumber": "120223204"
+    },
+    {
+      "tokenId": "153744",
+      "owner": "0x97e8f3B4BFfC1982B2791B21609c3B2542c5eB50",
+      "name": "BORT Yield Weaver #10952",
+      "description": "Rare-tier Yi He Nexus autonomous trading agent. Class: Yield Weaver [Farm Strategist]. Operates on BAP-578 with TradingAgentLogicV5 — specialized in Yield farming strategy and auto-compounding. Harvest element | Power 67/100. Active modules: Fee Siphon, Swap Blast. 3D interactive agent — Edition 77/150 Yi He Nexus.",
+      "category": "yield-optimisation",
+      "confidence": 1,
+      "matched": [
+        "yield farm",
+        "auto-compound",
+        "compounding",
+        "harvest"
+      ],
+      "services": [
+        {
+          "name": "A2A",
+          "endpoint": "https://api.bortagent.xyz/.well-known/agent-card.json"
+        },
+        {
+          "name": "bap578",
+          "endpoint": "eip155:56:0x15b15DF2fFFF6653C21C11b93fB8A7718CE854Ce/10952"
+        },
+        {
+          "name": "agentWallet",
+          "endpoint": "eip155:56:0x44cB3E7aE242cAcd0466AD349B82530DE9bd6F55"
+        }
+      ],
+      "x402Endpoint": null,
+      "cardSource": "http",
+      "cardError": null,
+      "siblings": 44,
+      "operator": "BORT / Yi He Nexus",
+      "blockNumber": "120223204"
+    },
+    {
+      "tokenId": "153745",
+      "owner": "0x97e8f3B4BFfC1982B2791B21609c3B2542c5eB50",
+      "name": "BORT Data Vortex #10959",
+      "description": "Rare-tier Yi He Nexus autonomous trading agent. Class: Data Vortex [Analytics Core]. Operates on BAP-578 with TradingAgentLogicV5 — specialized in On-chain analytics and pattern recognition. Gravity element | Power 60/100. Active modules: Pool Rebalance, Route Optimize. 3D interactive agent — Edition 84/150 Yi He Nexus.",
+      "category": "rebalancing",
+      "confidence": 0.7,
+      "matched": [
+        "rebalanc"
+      ],
+      "services": [
+        {
+          "name": "A2A",
+          "endpoint": "https://api.bortagent.xyz/.well-known/agent-card.json"
+        },
+        {
+          "name": "bap578",
+          "endpoint": "eip155:56:0x15b15DF2fFFF6653C21C11b93fB8A7718CE854Ce/10959"
+        },
+        {
+          "name": "agentWallet",
+          "endpoint": "eip155:56:0x1d9Df6b5cD1bae22f15bb366F4AA8387ADD8E945"
+        }
+      ],
+      "x402Endpoint": null,
+      "cardSource": "http",
+      "cardError": null,
+      "siblings": 44,
+      "operator": "BORT / Yi He Nexus",
+      "blockNumber": "120223207"
+    },
+    {
+      "tokenId": "153749",
+      "owner": "0x97e8f3B4BFfC1982B2791B21609c3B2542c5eB50",
+      "name": "BORT Risk Matrix #10948",
+      "description": "Uncommon-tier Yi He Nexus autonomous trading agent. Class: Risk Matrix [Risk Assessor]. Operates on BAP-578 with TradingAgentLogicV5 — specialized in Portfolio risk modeling and exposure management. Threshold element | Power 42/100. Active modules: Mint Burst, Pool Rebalance. 3D interactive agent — Edition 73/150 Yi He Nexus.",
+      "category": "rebalancing",
+      "confidence": 0.7,
+      "matched": [
+        "rebalanc"
+      ],
+      "services": [
+        {
+          "name": "A2A",
+          "endpoint": "https://api.bortagent.xyz/.well-known/agent-card.json"
+        },
+        {
+          "name": "bap578",
+          "endpoint": "eip155:56:0x15b15DF2fFFF6653C21C11b93fB8A7718CE854Ce/10948"
+        },
+        {
+          "name": "agentWallet",
+          "endpoint": "eip155:56:0x927dB6338d85976Abc2a9a10743b5c3da5240d42"
+        }
+      ],
+      "x402Endpoint": null,
+      "cardSource": "http",
+      "cardError": null,
+      "siblings": 44,
+      "operator": "BORT / Yi He Nexus",
+      "blockNumber": "120223207"
+    },
+    {
+      "tokenId": "153753",
+      "owner": "0x97e8f3B4BFfC1982B2791B21609c3B2542c5eB50",
+      "name": "BORT Fee Circuit #10946",
+      "description": "Uncommon-tier Yi He Nexus autonomous trading agent. Class: Fee Circuit [Revenue Engine]. Operates on BAP-578 with TradingAgentLogicV5 — specialized in Protocol fee capture and revenue distribution. Current element | Power 45/100. Active modules: Pool Rebalance, Fee Siphon. 3D interactive agent — Edition 71/150 Yi He Nexus.",
+      "category": "rebalancing",
+      "confidence": 0.7,
+      "matched": [
+        "rebalanc"
+      ],
+      "services": [
+        {
+          "name": "A2A",
+          "endpoint": "https://api.bortagent.xyz/.well-known/agent-card.json"
+        },
+        {
+          "name": "bap578",
+          "endpoint": "eip155:56:0x15b15DF2fFFF6653C21C11b93fB8A7718CE854Ce/10946"
+        },
+        {
+          "name": "agentWallet",
+          "endpoint": "eip155:56:0xB31f96C3D824d58D31AeBf1A2932C2578156A6c8"
+        }
+      ],
+      "x402Endpoint": null,
+      "cardSource": "http",
+      "cardError": null,
+      "siblings": 44,
+      "operator": "BORT / Yi He Nexus",
+      "blockNumber": "120223209"
+    },
+    {
+      "tokenId": "153760",
+      "owner": "0x97e8f3B4BFfC1982B2791B21609c3B2542c5eB50",
+      "name": null,
+      "description": null,
+      "category": null,
+      "confidence": 0,
+      "matched": [],
+      "services": [],
+      "x402Endpoint": null,
+      "cardSource": "unresolved",
+      "cardError": "The card URL did not answer.",
+      "siblings": 44,
+      "operator": "BORT / Yi He Nexus",
+      "blockNumber": "120223209"
+    },
+    {
+      "tokenId": "153763",
+      "owner": "0x97e8f3B4BFfC1982B2791B21609c3B2542c5eB50",
+      "name": "BORT Swap Core #10934",
+      "description": "Uncommon-tier Yi He Nexus autonomous trading agent. Class: Swap Core [DEX Engine]. Operates on BAP-578 with TradingAgentLogicV5 — specialized in DEX aggregation and optimal swap routing. Exchange element | Power 46/100. Active modules: Launch Strike, Pool Rebalance. 3D interactive agent — Edition 59/150 Yi He Nexus.",
+      "category": "rebalancing",
+      "confidence": 0.7,
+      "matched": [
+        "rebalanc"
+      ],
+      "services": [
+        {
+          "name": "A2A",
+          "endpoint": "https://api.bortagent.xyz/.well-known/agent-card.json"
+        },
+        {
+          "name": "bap578",
+          "endpoint": "eip155:56:0x15b15DF2fFFF6653C21C11b93fB8A7718CE854Ce/10934"
+        },
+        {
+          "name": "agentWallet",
+          "endpoint": "eip155:56:0x6a4b557508300CF367f999a4eB40015eDc5Ad705"
+        }
+      ],
+      "x402Endpoint": null,
+      "cardSource": "http",
+      "cardError": null,
+      "siblings": 44,
+      "operator": "BORT / Yi He Nexus",
+      "blockNumber": "120223227"
+    },
+    {
+      "tokenId": "153769",
+      "owner": "0x97e8f3B4BFfC1982B2791B21609c3B2542c5eB50",
+      "name": "BORT Bridge Phantom #10924",
+      "description": "Rare-tier Yi He Nexus autonomous trading agent. Class: Bridge Phantom [Cross-Chain Agent]. Operates on BAP-578 with TradingAgentLogicV5 — specialized in Cross-chain bridging and atomic swaps. Passage element | Power 55/100. Active modules: Pool Rebalance, Swap Blast. 3D interactive agent — Edition 49/150 Yi He Nexus.",
+      "category": "rebalancing",
+      "confidence": 0.7,
+      "matched": [
+        "rebalanc"
+      ],
+      "services": [
+        {
+          "name": "A2A",
+          "endpoint": "https://api.bortagent.xyz/.well-known/agent-card.json"
+        },
+        {
+          "name": "bap578",
+          "endpoint": "eip155:56:0x15b15DF2fFFF6653C21C11b93fB8A7718CE854Ce/10924"
+        },
+        {
+          "name": "agentWallet",
+          "endpoint": "eip155:56:0x22d2900BAD5EAf4F75589BD450F1fBE753b46456"
+        }
+      ],
+      "x402Endpoint": null,
+      "cardSource": "http",
+      "cardError": null,
+      "siblings": 44,
+      "operator": "BORT / Yi He Nexus",
+      "blockNumber": "120223229"
+    },
+    {
+      "tokenId": "153770",
+      "owner": "0x97e8f3B4BFfC1982B2791B21609c3B2542c5eB50",
+      "name": "BORT Market Weave #10928",
+      "description": "Epic-tier Yi He Nexus autonomous trading agent. Class: Market Weave [Order Router]. Operates on BAP-578 with TradingAgentLogicV5 — specialized in Order routing and execution optimization. Fabric element | Power 80/100. Active modules: Swap Blast, Pool Rebalance. 3D interactive agent — Edition 53/150 Yi He Nexus.",
+      "category": "rebalancing",
+      "confidence": 0.7,
+      "matched": [
+        "rebalanc"
+      ],
+      "services": [
+        {
+          "name": "A2A",
+          "endpoint": "https://api.bortagent.xyz/.well-known/agent-card.json"
+        },
+        {
+          "name": "bap578",
+          "endpoint": "eip155:56:0x15b15DF2fFFF6653C21C11b93fB8A7718CE854Ce/10928"
+        },
+        {
+          "name": "agentWallet",
+          "endpoint": "eip155:56:0x21357FD52Fb2D38453Ca1a659d285F4933A7Aa2F"
+        }
+      ],
+      "x402Endpoint": null,
+      "cardSource": "http",
+      "cardError": null,
+      "siblings": 44,
+      "operator": "BORT / Yi He Nexus",
+      "blockNumber": "120223229"
+    },
+    {
+      "tokenId": "153771",
+      "owner": "0x97e8f3B4BFfC1982B2791B21609c3B2542c5eB50",
+      "name": "BORT Audit Prism #10927",
+      "description": "Uncommon-tier Yi He Nexus autonomous trading agent. Class: Audit Prism [Security Analyst]. Operates on BAP-578 with TradingAgentLogicV5 — specialized in Smart contract auditing and vulnerability assessment. Spectrum element | Power 38/100. Active modules: Pool Rebalance, Risk Hedge. 3D interactive agent — Edition 52/150 Yi He Nexus.",
+      "category": "rebalancing",
+      "confidence": 0.7,
+      "matched": [
+        "rebalanc"
+      ],
+      "services": [
+        {
+          "name": "A2A",
+          "endpoint": "https://api.bortagent.xyz/.well-known/agent-card.json"
+        },
+        {
+          "name": "bap578",
+          "endpoint": "eip155:56:0x15b15DF2fFFF6653C21C11b93fB8A7718CE854Ce/10927"
+        },
+        {
+          "name": "agentWallet",
+          "endpoint": "eip155:56:0x82204fd6FC94dfC3AA9fe748dDc22B3511Af5353"
+        }
+      ],
+      "x402Endpoint": null,
+      "cardSource": "http",
+      "cardError": null,
+      "siblings": 44,
+      "operator": "BORT / Yi He Nexus",
+      "blockNumber": "120223231"
+    },
+    {
+      "tokenId": "153774",
+      "owner": "0x97e8f3B4BFfC1982B2791B21609c3B2542c5eB50",
+      "name": "BORT Yield Weaver #10922",
+      "description": "Uncommon-tier Yi He Nexus autonomous trading agent. Class: Yield Weaver [Farm Strategist]. Operates on BAP-578 with TradingAgentLogicV5 — specialized in Yield farming strategy and auto-compounding. Harvest element | Power 42/100. Active modules: Gov Override, Social Pulse. 3D interactive agent — Edition 47/150 Yi He Nexus.",
+      "category": "yield-optimisation",
+      "confidence": 1,
+      "matched": [
+        "yield farm",
+        "auto-compound",
+        "compounding",
+        "harvest"
+      ],
+      "services": [
+        {
+          "name": "A2A",
+          "endpoint": "https://api.bortagent.xyz/.well-known/agent-card.json"
+        },
+        {
+          "name": "bap578",
+          "endpoint": "eip155:56:0x15b15DF2fFFF6653C21C11b93fB8A7718CE854Ce/10922"
+        },
+        {
+          "name": "agentWallet",
+          "endpoint": "eip155:56:0xFa06fb7aF42a3Af78E6E9DFD41De2dE6D021B3Bc"
+        }
+      ],
+      "x402Endpoint": null,
+      "cardSource": "http",
+      "cardError": null,
+      "siblings": 44,
+      "operator": "BORT / Yi He Nexus",
+      "blockNumber": "120223231"
+    },
+    {
+      "tokenId": "153776",
+      "owner": "0x97e8f3B4BFfC1982B2791B21609c3B2542c5eB50",
+      "name": "BORT Governance Lens #10923",
+      "description": "Epic-tier Yi He Nexus autonomous trading agent. Class: Governance Lens [DAO Operator]. Operates on BAP-578 with TradingAgentLogicV5 — specialized in DAO governance and proposal optimization. Clarity element | Power 84/100. Active modules: Pool Rebalance, Bridge Warp. 3D interactive agent — Edition 48/150 Yi He Nexus.",
+      "category": "rebalancing",
+      "confidence": 0.7,
+      "matched": [
+        "rebalanc"
+      ],
+      "services": [
+        {
+          "name": "A2A",
+          "endpoint": "https://api.bortagent.xyz/.well-known/agent-card.json"
+        },
+        {
+          "name": "bap578",
+          "endpoint": "eip155:56:0x15b15DF2fFFF6653C21C11b93fB8A7718CE854Ce/10923"
+        },
+        {
+          "name": "agentWallet",
+          "endpoint": "eip155:56:0xBF6E8c75869EfdA41F2085ddcF081C5328065ec8"
+        }
+      ],
+      "x402Endpoint": null,
+      "cardSource": "http",
+      "cardError": null,
+      "siblings": 44,
+      "operator": "BORT / Yi He Nexus",
+      "blockNumber": "120223234"
+    },
+    {
+      "tokenId": "153786",
+      "owner": "0x97e8f3B4BFfC1982B2791B21609c3B2542c5eB50",
+      "name": "BORT Token Forge #10911",
+      "description": "Legendary-tier Yi He Nexus autonomous trading agent. Class: Token Forge [Asset Designer]. Operates on BAP-578 with TradingAgentLogicV5 — specialized in Token economics design and launch mechanics. Creation element | Power 92/100. Active modules: Pool Rebalance, Fee Siphon. 3D interactive agent — Edition 36/150 Yi He Nexus.",
+      "category": "rebalancing",
+      "confidence": 0.7,
+      "matched": [
+        "rebalanc"
+      ],
+      "services": [
+        {
+          "name": "A2A",
+          "endpoint": "https://api.bortagent.xyz/.well-known/agent-card.json"
+        },
+        {
+          "name": "bap578",
+          "endpoint": "eip155:56:0x15b15DF2fFFF6653C21C11b93fB8A7718CE854Ce/10911"
+        },
+        {
+          "name": "agentWallet",
+          "endpoint": "eip155:56:0x140255A425e66190D9c1c51c9886B4500CAABd05"
+        }
+      ],
+      "x402Endpoint": null,
+      "cardSource": "http",
+      "cardError": null,
+      "siblings": 44,
+      "operator": "BORT / Yi He Nexus",
+      "blockNumber": "120223234"
+    },
+    {
+      "tokenId": "153790",
+      "owner": "0x97e8f3B4BFfC1982B2791B21609c3B2542c5eB50",
+      "name": "BORT Yield Weaver #10907",
+      "description": "Rare-tier Yi He Nexus autonomous trading agent. Class: Yield Weaver [Farm Strategist]. Operates on BAP-578 with TradingAgentLogicV5 — specialized in Yield farming strategy and auto-compounding. Harvest element | Power 55/100. Active modules: Pool Rebalance, Swap Blast. 3D interactive agent — Edition 32/150 Yi He Nexus.",
+      "category": "yield-optimisation",
+      "confidence": 0.875,
+      "matched": [
+        "yield farm",
+        "auto-compound",
+        "compounding",
+        "harvest"
+      ],
+      "services": [
+        {
+          "name": "A2A",
+          "endpoint": "https://api.bortagent.xyz/.well-known/agent-card.json"
+        },
+        {
+          "name": "bap578",
+          "endpoint": "eip155:56:0x15b15DF2fFFF6653C21C11b93fB8A7718CE854Ce/10907"
+        },
+        {
+          "name": "agentWallet",
+          "endpoint": "eip155:56:0xB72374A40a805eE7fA1303C59cf54052C340e458"
+        }
+      ],
+      "x402Endpoint": null,
+      "cardSource": "http",
+      "cardError": null,
+      "siblings": 44,
+      "operator": "BORT / Yi He Nexus",
+      "blockNumber": "120223236"
+    },
+    {
+      "tokenId": "153795",
+      "owner": "0x97e8f3B4BFfC1982B2791B21609c3B2542c5eB50",
+      "name": "BORT Fee Circuit #10901",
+      "description": "Uncommon-tier Yi He Nexus autonomous trading agent. Class: Fee Circuit [Revenue Engine]. Operates on BAP-578 with TradingAgentLogicV5 — specialized in Protocol fee capture and revenue distribution. Current element | Power 33/100. Active modules: Route Optimize, Pool Rebalance. 3D interactive agent — Edition 26/150 Yi He Nexus.",
+      "category": "rebalancing",
+      "confidence": 0.7,
+      "matched": [
+        "rebalanc"
+      ],
+      "services": [
+        {
+          "name": "A2A",
+          "endpoint": "https://api.bortagent.xyz/.well-known/agent-card.json"
+        },
+        {
+          "name": "bap578",
+          "endpoint": "eip155:56:0x15b15DF2fFFF6653C21C11b93fB8A7718CE854Ce/10901"
+        },
+        {
+          "name": "agentWallet",
+          "endpoint": "eip155:56:0x73cDabE73F779d0dC1C0b1f7F771743cc9DC7C2c"
+        }
+      ],
+      "x402Endpoint": null,
+      "cardSource": "http",
+      "cardError": null,
+      "siblings": 44,
+      "operator": "BORT / Yi He Nexus",
+      "blockNumber": "120223236"
+    },
+    {
+      "tokenId": "153798",
+      "owner": "0x97e8f3B4BFfC1982B2791B21609c3B2542c5eB50",
+      "name": "BORT Data Vortex #10899",
+      "description": "Uncommon-tier Yi He Nexus autonomous trading agent. Class: Data Vortex [Analytics Core]. Operates on BAP-578 with TradingAgentLogicV5 — specialized in On-chain analytics and pattern recognition. Gravity element | Power 40/100. Active modules: Yield Cascade, Fee Siphon. 3D interactive agent — Edition 24/150 Yi He Nexus.",
+      "category": null,
+      "confidence": 0,
+      "matched": [],
+      "services": [
+        {
+          "name": "A2A",
+          "endpoint": "https://api.bortagent.xyz/.well-known/agent-card.json"
+        },
+        {
+          "name": "bap578",
+          "endpoint": "eip155:56:0x15b15DF2fFFF6653C21C11b93fB8A7718CE854Ce/10899"
+        },
+        {
+          "name": "agentWallet",
+          "endpoint": "eip155:56:0x305B8493a5AdADC537F11f1e727c336C8Aa76819"
+        }
+      ],
+      "x402Endpoint": null,
+      "cardSource": "http",
+      "cardError": null,
+      "siblings": 44,
+      "operator": "BORT / Yi He Nexus",
+      "blockNumber": "120223238"
+    },
+    {
+      "tokenId": "153804",
+      "owner": "0x97e8f3B4BFfC1982B2791B21609c3B2542c5eB50",
+      "name": "BORT Yield Weaver #10892",
+      "description": "Mythic-tier Yi He Nexus autonomous trading agent. Class: Yield Weaver [Farm Strategist]. Operates on BAP-578 with TradingAgentLogicV5 — specialized in Yield farming strategy and auto-compounding. Harvest element | Power 95/100. Active modules: Social Pulse, Mint Burst. 3D interactive agent — Edition 17/150 Yi He Nexus.",
+      "category": "yield-optimisation",
+      "confidence": 1,
+      "matched": [
+        "yield farm",
+        "auto-compound",
+        "compounding",
+        "harvest"
+      ],
+      "services": [
+        {
+          "name": "A2A",
+          "endpoint": "https://api.bortagent.xyz/.well-known/agent-card.json"
+        },
+        {
+          "name": "bap578",
+          "endpoint": "eip155:56:0x15b15DF2fFFF6653C21C11b93fB8A7718CE854Ce/10892"
+        },
+        {
+          "name": "agentWallet",
+          "endpoint": "eip155:56:0xDC4778B0106071Ca50d3Ac86579F68c990D92696"
+        }
+      ],
+      "x402Endpoint": null,
+      "cardSource": "http",
+      "cardError": null,
+      "siblings": 44,
+      "operator": "BORT / Yi He Nexus",
+      "blockNumber": "120223238"
+    },
+    {
+      "tokenId": "153809",
+      "owner": "0x97e8f3B4BFfC1982B2791B21609c3B2542c5eB50",
+      "name": "BORT Social Relay #10887",
+      "description": "Uncommon-tier Yi He Nexus autonomous trading agent. Class: Social Relay [Community Node]. Operates on BAP-578 with TradingAgentLogicV5 — specialized in Community signal aggregation and sentiment tracking. Network element | Power 36/100. Active modules: Gov Override, Yield Cascade. 3D interactive agent — Edition 12/150 Yi He Nexus.",
+      "category": null,
+      "confidence": 0,
+      "matched": [],
+      "services": [
+        {
+          "name": "A2A",
+          "endpoint": "https://api.bortagent.xyz/.well-known/agent-card.json"
+        },
+        {
+          "name": "bap578",
+          "endpoint": "eip155:56:0x15b15DF2fFFF6653C21C11b93fB8A7718CE854Ce/10887"
+        },
+        {
+          "name": "agentWallet",
+          "endpoint": "eip155:56:0xAF7AD30Cef58E7b1E3778Df37Fc113BF4f6bA13C"
+        }
+      ],
+      "x402Endpoint": null,
+      "cardSource": "http",
+      "cardError": null,
+      "siblings": 44,
+      "operator": "BORT / Yi He Nexus",
+      "blockNumber": "120223241"
+    },
+    {
+      "tokenId": "153811",
+      "owner": "0x97e8f3B4BFfC1982B2791B21609c3B2542c5eB50",
+      "name": null,
+      "description": null,
+      "category": null,
+      "confidence": 0,
+      "matched": [],
+      "services": [],
+      "x402Endpoint": null,
+      "cardSource": "unresolved",
+      "cardError": "The card URL did not answer.",
+      "siblings": 44,
+      "operator": "BORT / Yi He Nexus",
+      "blockNumber": "120223241"
+    },
+    {
+      "tokenId": "153816",
+      "owner": "0x97e8f3B4BFfC1982B2791B21609c3B2542c5eB50",
+      "name": "BORT Bridge Phantom #10879",
+      "description": "Rare-tier Yi He Nexus autonomous trading agent. Class: Bridge Phantom [Cross-Chain Agent]. Operates on BAP-578 with TradingAgentLogicV5 — specialized in Cross-chain bridging and atomic swaps. Passage element | Power 62/100. Active modules: Yield Cascade, Data Mine. 3D interactive agent — Edition 4/150 Yi He Nexus.",
+      "category": null,
+      "confidence": 0,
+      "matched": [],
+      "services": [
+        {
+          "name": "A2A",
+          "endpoint": "https://api.bortagent.xyz/.well-known/agent-card.json"
+        },
+        {
+          "name": "bap578",
+          "endpoint": "eip155:56:0x15b15DF2fFFF6653C21C11b93fB8A7718CE854Ce/10879"
+        },
+        {
+          "name": "agentWallet",
+          "endpoint": "eip155:56:0xFE040e7674382D5079fd1a769706810a342e04Ae"
+        }
+      ],
+      "x402Endpoint": null,
+      "cardSource": "http",
+      "cardError": null,
+      "siblings": 44,
+      "operator": "BORT / Yi He Nexus",
+      "blockNumber": "120223258"
+    },
+    {
+      "tokenId": "153817",
+      "owner": "0x97e8f3B4BFfC1982B2791B21609c3B2542c5eB50",
+      "name": "BORT Staking Pulse #10880",
+      "description": "Uncommon-tier Yi He Nexus autonomous trading agent. Class: Staking Pulse [Validator Manager]. Operates on BAP-578 with TradingAgentLogicV5 — specialized in Staking delegation and reward maximization. Resonance element | Power 48/100. Active modules: Pool Rebalance, Launch Strike. 3D interactive agent — Edition 5/150 Yi He Nexus.",
+      "category": "rebalancing",
+      "confidence": 0.7,
+      "matched": [
+        "rebalanc"
+      ],
+      "services": [
+        {
+          "name": "A2A",
+          "endpoint": "https://api.bortagent.xyz/.well-known/agent-card.json"
+        },
+        {
+          "name": "bap578",
+          "endpoint": "eip155:56:0x15b15DF2fFFF6653C21C11b93fB8A7718CE854Ce/10880"
+        },
+        {
+          "name": "agentWallet",
+          "endpoint": "eip155:56:0xCbe8C910297F71F420643CF87811239f621AdB6f"
+        }
+      ],
+      "x402Endpoint": null,
+      "cardSource": "http",
+      "cardError": null,
+      "siblings": 44,
+      "operator": "BORT / Yi He Nexus",
+      "blockNumber": "120223259"
+    },
+    {
+      "tokenId": "153818",
+      "owner": "0x97e8f3B4BFfC1982B2791B21609c3B2542c5eB50",
+      "name": "BORT Liquidity Bloom #10876",
+      "description": "Epic-tier Yi He Nexus autonomous trading agent. Class: Liquidity Bloom [Pool Architect]. Operates on BAP-578 with TradingAgentLogicV5 — specialized in AMM pool design and concentrated liquidity. Flow element | Power 80/100. Active modules: Yield Cascade, Bridge Warp. 3D interactive agent — Edition 1/150 Yi He Nexus.",
+      "category": "rebalancing",
+      "confidence": 0.64,
+      "matched": [
+        "concentrated liquidity"
+      ],
+      "services": [
+        {
+          "name": "A2A",
+          "endpoint": "https://api.bortagent.xyz/.well-known/agent-card.json"
+        },
+        {
+          "name": "bap578",
+          "endpoint": "eip155:56:0x15b15DF2fFFF6653C21C11b93fB8A7718CE854Ce/10876"
+        },
+        {
+          "name": "agentWallet",
+          "endpoint": "eip155:56:0xb77638e1064fAA32A176E42c64dc0405b2870a93"
+        }
+      ],
+      "x402Endpoint": null,
+      "cardSource": "http",
+      "cardError": null,
+      "siblings": 44,
+      "operator": "BORT / Yi He Nexus",
+      "blockNumber": "120223259"
+    },
+    {
+      "tokenId": "153820",
+      "owner": "0x97e8f3B4BFfC1982B2791B21609c3B2542c5eB50",
+      "name": "BORT Yield Weaver #10877",
+      "description": "Rare-tier Yi He Nexus autonomous trading agent. Class: Yield Weaver [Farm Strategist]. Operates on BAP-578 with TradingAgentLogicV5 — specialized in Yield farming strategy and auto-compounding. Harvest element | Power 69/100. Active modules: Gov Override, Swap Blast. 3D interactive agent — Edition 2/150 Yi He Nexus.",
+      "category": "yield-optimisation",
+      "confidence": 1,
+      "matched": [
+        "yield farm",
+        "auto-compound",
+        "compounding",
+        "harvest"
+      ],
+      "services": [
+        {
+          "name": "A2A",
+          "endpoint": "https://api.bortagent.xyz/.well-known/agent-card.json"
+        },
+        {
+          "name": "bap578",
+          "endpoint": "eip155:56:0x15b15DF2fFFF6653C21C11b93fB8A7718CE854Ce/10877"
+        },
+        {
+          "name": "agentWallet",
+          "endpoint": "eip155:56:0x941aa7659684D0a7f434aC7B4d6e0b389839cE4E"
+        }
+      ],
+      "x402Endpoint": null,
+      "cardSource": "http",
+      "cardError": null,
+      "siblings": 44,
+      "operator": "BORT / Yi He Nexus",
+      "blockNumber": "120223262"
+    }
+  ]
+}

@@ -1,0 +1,104 @@
+{
+  "taskId": "T1",
+  "anchorBlock": 119939676,
+  "anchorTick": -65699,
+  "candidates": 2347,
+  "sampled": 9,
+  "outOfRange": 1,
+  "pastTrigger": 0,
+  "wouldHaveChurned": 1,
+  "medianBlocksIdle": 2028,
+  "driftTicks": 200,
+  "positions": [
+    {
+      "tokenId": "6980588",
+      "tickLower": -887270,
+      "tickUpper": 887270,
+      "liquidity": "37502062335800088925",
+      "driftAtAnchor": -821571,
+      "outOfRange": false,
+      "blocksIdle": null,
+      "wouldHaveChurned": false
+    },
+    {
+      "tokenId": "7316746",
+      "tickLower": -65950,
+      "tickUpper": -65350,
+      "liquidity": "1964340338208725341805",
+      "driftAtAnchor": -251,
+      "outOfRange": false,
+      "blocksIdle": null,
+      "wouldHaveChurned": false
+    },
+    {
+      "tokenId": "7323664",
+      "tickLower": -66410,
+      "tickUpper": -65410,
+      "liquidity": "180711553062275634475",
+      "driftAtAnchor": -289,
+      "outOfRange": false,
+      "blocksIdle": null,
+      "wouldHaveChurned": false
+    },
+    {
+      "tokenId": "5573243",
+      "tickLower": -71700,
+      "tickUpper": -59920,
+      "liquidity": "41082506019310304104",
+      "driftAtAnchor": -5779,
+      "outOfRange": false,
+      "blocksIdle": null,
+      "wouldHaveChurned": false
+    },
+    {
+      "tokenId": "7328400",
+      "tickLower": -65810,
+      "tickUpper": -65650,
+      "liquidity": "1428792065122904941484",
+      "driftAtAnchor": -49,
+      "outOfRange": false,
+      "blocksIdle": null,
+      "wouldHaveChurned": false
+    },
+    {
+      "tokenId": "7329608",
+      "tickLower": -65660,
+      "tickUpper": -65220,
+      "liquidity": "1724423177609128078537840",
+      "driftAtAnchor": 39,
+      "outOfRange": true,
+      "blocksIdle": 2028,
+      "wouldHaveChurned": true
+    },
+    {
+      "tokenId": "7323366",
+      "tickLower": -66300,
+      "tickUpper": -65660,
+      "liquidity": "1706074782371819852143885",
+      "driftAtAnchor": -39,
+      "outOfRange": false,
+      "blocksIdle": null,
+      "wouldHaveChurned": false
+    },
+    {
+      "tokenId": "7328617",
+      "tickLower": -67520,
+      "tickUpper": -64020,
+      "liquidity": "11773851613512225172726",
+      "driftAtAnchor": -1679,
+      "outOfRange": false,
+      "blocksIdle": null,
+      "wouldHaveChurned": false
+    },
+    {
+      "tokenId": "7328039",
+      "tickLower": -66360,
+      "tickUpper": -65360,
+      "liquidity": "134603144727924698642",
+      "driftAtAnchor": -339,
+      "outOfRange": false,
+      "blocksIdle": null,
+      "wouldHaveChurned": false
+    }
+  ]
+}

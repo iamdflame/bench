@@ -1,0 +1,660 @@
+@import "tailwindcss";
+
+/**
+ * MANDATE, "The Instrument"
+ *
+ * The subject is the measurement of precious things applied to autonomous
+ * agents that handle money. The feeling is a precision instrument: calm, exact,
+ * high-signal, a little clinical. Light and cool, not antique, not crypto-gold.
+ *
+ * One number leads every surface. Boldness is spent on the hallmark and
+ * nowhere else, at most one struck, brass mark per viewport. Everything else
+ * is disciplined and quiet. Absence is designed: "not assayed" and "couldn't
+ * read" are different, visible states, never a zero and never a blank.
+ */
+
+/* ------------------------------------------------------------------ tokens */
+
+@theme {
+  /* --- ground & metal --------------------------------------------------- */
+  --color-paper: #f7f8fa;       /* base surface, cool near-white */
+  --color-paper-2: #eef1f5;     /* recessed surface */
+  --color-panel: #ffffff;       /* raised panel */
+  --color-pewter: #dfe3e8;      /* the metal being assayed */
+  --color-pewter-2: #cdd4dc;    /* deeper pewter, edges */
+
+  /* --- ink -------------------------------------------------------------- */
+  --color-touchstone: #12151a;  /* primary ink / the strike */
+  --color-ink: #12151a;
+  --color-ink-2: #49515b;       /* secondary text, ~7:1 on paper */
+  --color-ink-3: #6a727c;       /* tertiary / meta, ~4.6:1 */
+  --color-line: #d7dce2;        /* hairline substitute, soft, never 1px black */
+  --color-line-2: #c2c9d2;      /* stronger divider */
+
+  /* --- signal (used almost never) --------------------------------------- */
+  --color-assay: #2b6cf6;       /* the one interactive / live accent */
+  --color-assay-ink: #1f52c9;   /* darker, for accent text on light */
+  --color-assay-wash: #eaf0fe;  /* faint accent fill */
+  --color-struck: #9a7b3f;      /* brass, a passed hallmark, once per view */
+  --color-struck-hi: #b8933f;   /* brighter brass, the instant of the strike */
+  --color-struck-wash: #f4eede; /* faint brass fill behind a mark */
+  --color-pass: #2f7d5b;        /* muted green, verified, never neon */
+  --color-fail: #b23a3a;        /* inconclusive / fail, sparingly */
+  --color-fail-wash: #fbeeee;
+
+  /* --- type ------------------------------------------------------------- */
+  --font-sans: var(--font-sans-loaded), "IBM Plex Sans", system-ui, -apple-system, sans-serif;
+  --font-mono: var(--font-mono-loaded), "IBM Plex Mono", ui-monospace, "SF Mono", Menlo, monospace;
+
+  /* One modular scale, ~1.25: 12 / 15 / 19 / 24 / 30 / 38 / 48 */
+  --text-2xs: 0.75rem;      /* 12, chips, meta */
+  --text-xs: 0.8125rem;     /* 13 */
+  --text-sm: 0.9375rem;     /* 15, small body */
+  --text-base: 1rem;        /* 16, body */
+  --text-lg: 1.1875rem;     /* 19 */
+  --text-xl: 1.5rem;        /* 24 */
+  --text-2xl: 1.875rem;     /* 30 */
+  --text-3xl: 2.375rem;     /* 38, hero */
+  --text-4xl: 3rem;         /* 48 */
+
+  /* --- geometry --------------------------------------------------------- */
+  --radius-chip: 4px;       /* data chips */
+  --radius-ui: 10px;        /* interactive: buttons, inputs, cards */
+  --radius-panel: 14px;     /* large panels */
+
+  --shadow-card: 0 1px 2px rgba(18, 21, 26, 0.04), 0 2px 8px rgba(18, 21, 26, 0.05);
+  --shadow-lift: 0 2px 4px rgba(18, 21, 26, 0.06), 0 8px 24px rgba(18, 21, 26, 0.08);
+
+  --width-shell: 72rem;     /* page gutter width */
+  --width-read: 42rem;      /* ≤ ~72ch reading measure */
+
+  /* --- motion ------------------------------------------------------------
+     Easing and duration are tokens, never literals, so nothing can animate
+     off-system and nothing escapes the reduced-motion switch. Curves are the
+     standard penner approximations: ease-out for anything entering (fast in,
+     settles slow, which reads as confident), ease-in-out for movement already
+     on screen. One spring exists and it belongs to the hallmark alone.        */
+  --ease-out: cubic-bezier(0.23, 1, 0.32, 1);          /* quint */
+  --ease-out-soft: cubic-bezier(0.215, 0.61, 0.355, 1); /* cubic */
+  --ease-in-out: cubic-bezier(0.645, 0.045, 0.355, 1);
+  --ease-strike: cubic-bezier(0.34, 1.56, 0.64, 1);     /* the one spring */
+
+  --d-micro: 120ms;   /* hover, press, chips: feedback you feel, not see */
+  --d-ui: 200ms;      /* standard interface transitions */
+  --d-panel: 280ms;   /* panels and reveals, the ceiling for UI */
+  --d-strike: 460ms;  /* the hallmark strike, the single exception */
+  --d-stagger: 45ms;  /* gap between staggered siblings */
+}
+
+/* ------------------------------------------------------------------- reset */
+
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+}
+
+html {
+  -webkit-text-size-adjust: 100%;
+  text-rendering: optimizeLegibility;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+body {
+  margin: 0;
+  background: var(--color-paper);
+  color: var(--color-ink);
+  font-family: var(--font-sans);
+  font-size: var(--text-base);
+  line-height: 1.55;
+  font-feature-settings: "ss01", "cv05";
+}
+
+h1, h2, h3, h4, p, figure, blockquote, dl, dd, ol, ul {
+  margin: 0;
+  padding: 0;
+}
+
+ol, ul { list-style: none; }
+img, svg { display: block; max-width: 100%; }
+a { color: inherit; text-decoration: none; }
+table { border-collapse: collapse; border-spacing: 0; }
+[hidden] { display: none !important; }
+
+/*
+  The control reset belongs in a layer, and the reason is not tidiness.
+
+  An unlayered rule beats every layered one, whatever the specificity: that is
+  the cascade, not a quirk. So `button { background: none; border: none }`
+  written out here silently overrode `.btn--primary` inside `@layer components`,
+  and every <button> in the product rendered as bare text while every <a> with
+  the identical class rendered correctly. It survived a screenshot review
+  because most of the buttons that mattered were links.
+
+  What it cost: the Grant control on the hire ticket, which is the one
+  irreversible action in the whole product, had no fill at all.
+
+  In `base` it does what a reset should, and loses to the components that come
+  after it.
+*/
+@layer base {
+  button, input, select, textarea { font: inherit; color: inherit; }
+  button { background: none; border: none; cursor: pointer; }
+}
+
+/* Tabular numerals everywhere a figure appears; digits must not jitter. */
+.num, .mono {
+  font-family: var(--font-mono);
+  font-feature-settings: "tnum", "zero";
+  font-variant-numeric: tabular-nums;
+  letter-spacing: -0.01em;
+}
+
+/* Visible keyboard focus, one ring, the accent. */
+:focus-visible {
+  outline: 2px solid var(--color-assay);
+  outline-offset: 2px;
+  border-radius: 3px;
+}
+
+::selection {
+  background: var(--color-assay);
+  color: #fff;
+}
+
+/* --------------------------------------------------------------- typography */
+
+@layer components {
+  .shell {
+    width: 100%;
+    max-width: var(--width-shell);
+    margin-inline: auto;
+    padding-inline: clamp(1rem, 4vw, 2rem);
+  }
+
+  .read { max-width: var(--width-read); }
+
+  /* Sentence-case section title. No tracked all-caps anywhere in the system. */
+  .hd-hero {
+    font-size: clamp(1.75rem, 4.4vw, var(--text-3xl));
+    line-height: 1.1;
+    letter-spacing: -0.02em;
+    font-weight: 500;
+    color: var(--color-touchstone);
+    text-wrap: balance;
+  }
+  .hd-2 {
+    font-size: var(--text-xl);
+    line-height: 1.2;
+    letter-spacing: -0.01em;
+    font-weight: 500;
+    color: var(--color-touchstone);
+  }
+  .hd-3 {
+    font-size: var(--text-lg);
+    line-height: 1.25;
+    font-weight: 500;
+    color: var(--color-touchstone);
+  }
+  .lede {
+    font-size: var(--text-lg);
+    line-height: 1.5;
+    color: var(--color-ink-2);
+  }
+  .sub { color: var(--color-ink-2); }
+  /* A measured absence in a dense figure column: present, quiet, never a blank. */
+  .dim { color: var(--color-ink-3); }
+  .meta {
+    font-size: var(--text-2xs);
+    line-height: 1.4;
+    color: var(--color-ink-3);
+  }
+
+  /* --- buttons: the name is the action, and it keeps its name ----------- */
+  .btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+    padding: 0.6rem 1rem;
+    border-radius: var(--radius-ui);
+    border: 1px solid var(--color-line-2);
+    background-color: var(--color-panel);
+    color: var(--color-ink);
+    /*
+      Buttons and links must render identically.
+
+      Tailwind's preflight resets `background-color` on form controls, and a
+      `background` shorthand carrying a var() lost to it on <button> while
+      winning on <a>. The primary action of the whole product is a <button>, so
+      it rendered as bare text on the one screen where a signature happens.
+      Longhands settle it, and `appearance: none` stops a UA control style
+      creeping back in.
+    */
+    appearance: none;
+    font-size: var(--text-sm);
+    font-weight: 500;
+    line-height: 1;
+    transition: border-color var(--d-micro) var(--ease-out),
+                background var(--d-micro) var(--ease-out),
+                box-shadow var(--d-micro) var(--ease-out),
+                transform var(--d-micro) var(--ease-out);
+  }
+  .btn--primary {
+    background-color: var(--color-assay);
+    border-color: var(--color-assay);
+    color: #fff;
+  }
+  .btn--ghost { background-color: transparent; border-color: transparent; color: var(--color-assay-ink); }
+  .btn--sm { padding: 0.4rem 0.7rem; font-size: var(--text-2xs); }
+  .btn[disabled] { opacity: 0.5; cursor: not-allowed; }
+
+  /* --- panels & cards: differentiated by role, not one radius everywhere - */
+  .panel {
+    background: var(--color-panel);
+    border: 1px solid var(--color-line);
+    border-radius: var(--radius-panel);
+    box-shadow: var(--shadow-card);
+  }
+  .card {
+    background: var(--color-panel);
+    border: 1px solid var(--color-line);
+    border-radius: var(--radius-ui);
+  }
+
+  /* --- the ticket ------------------------------------------------------- */
+  /*
+    One dark surface in a light instrument, and it is the page where authority
+    is granted.
+
+    Everywhere else this product reads: pale paper, quiet ink, nothing shouting.
+    The ticket is the one screen where a signature happens and money starts
+    moving, so it stops looking like a document and starts looking like an
+    instrument panel. The inversion is the warning. It is used on exactly one
+    route, and a second dark surface anywhere else would spend the signal.
+  */
+  .ticket {
+    background: var(--color-touchstone);
+    color: #eef1f5;
+    border: 1px solid #2a2f38;
+    border-radius: var(--radius-panel);
+  }
+  .ticket .hd-2,
+  .ticket .hd-3,
+  .ticket .hd-hero { color: #f7f8fa; }
+  .ticket .sub { color: #b6bdc7; }
+  .ticket .meta { color: #8d95a1; }
+  .ticket .num { color: #eef1f5; }
+  .ticket hr,
+  .ticket .rule { border-color: #2a2f38; }
+  /* A clause of the leash: what may happen, or what may not. */
+  .clause {
+    display: flex;
+    gap: 0.6rem;
+    align-items: baseline;
+    padding: 0.4rem 0;
+    border-bottom: 1px solid #232830;
+    font-size: var(--text-sm);
+  }
+  .clause:last-child { border-bottom: 0; }
+  .clause__mark {
+    flex: none;
+    width: 1.15rem;
+    font-variant-numeric: tabular-nums;
+  }
+  .clause--may .clause__mark { color: #6fbf95; }
+  .clause--not .clause__mark { color: #e08585; }
+  .ticket .chip {
+    background: #1b2027;
+    border-color: #2f3540;
+    color: #b6bdc7;
+  }
+  .ticket .btn {
+    background-color: #1b2027;
+    border-color: #333a45;
+    color: #eef1f5;
+  }
+  .ticket .btn--primary {
+    background-color: var(--color-assay);
+    border-color: var(--color-assay);
+    color: #fff;
+  }
+  .ticket .link-accent { color: #7ea8ff; }
+  /* The one figure on the ticket a reader must not misread: the cap. */
+  .ticket-figure {
+    font-size: var(--text-xl);
+    font-variant-numeric: tabular-nums;
+    color: #f7f8fa;
+  }
+
+  /* --- the comparison --------------------------------------------------- */
+  /*
+    Three columns on a desk, one column on a phone.
+
+    A comparison collapses badly: two values under one label become four
+    unlabelled values in a stack. So on a narrow viewport the row keeps its
+    label and the two cells sit under it, indented, rather than the grid
+    reflowing into a column of orphans.
+  */
+  .compare-head,
+  .compare-row {
+    display: grid;
+    grid-template-columns: 11rem 1fr 1fr;
+    gap: 0.75rem 1rem;
+    align-items: start;
+  }
+  .compare-head { padding: 0 1.25rem 0.5rem; }
+  .compare-row {
+    padding: 0.7rem 0;
+    border-bottom: 1px solid var(--color-line);
+  }
+  .compare-row:last-child { border-bottom: 0; }
+  .compare-row__label { padding-top: 0.1rem; }
+  @media (max-width: 40rem) {
+    .compare-head,
+    .compare-row { grid-template-columns: 1fr; gap: 0.3rem; }
+    .compare-row > *:not(.compare-row__label) { padding-left: 0.9rem; }
+  }
+
+  /* --- data chip -------------------------------------------------------- */
+  .chip {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.35rem;
+    padding: 0.15rem 0.45rem;
+    border-radius: var(--radius-chip);
+    background: var(--color-paper-2);
+    border: 1px solid var(--color-line);
+    font-size: var(--text-2xs);
+    color: var(--color-ink-2);
+    white-space: nowrap;
+  }
+  .chip--pass { background: color-mix(in srgb, var(--color-pass) 10%, white); border-color: color-mix(in srgb, var(--color-pass) 25%, white); color: var(--color-pass); }
+  .chip--fail { background: var(--color-fail-wash); border-color: color-mix(in srgb, var(--color-fail) 25%, white); color: var(--color-fail); }
+  .chip--live { background: var(--color-assay-wash); border-color: color-mix(in srgb, var(--color-assay) 25%, white); color: var(--color-assay-ink); }
+  .chip--struck { background: var(--color-struck-wash); border-color: color-mix(in srgb, var(--color-struck) 30%, white); color: var(--color-struck); }
+
+  /* A live dot that pulses, respectfully. */
+  .dot {
+    width: 7px; height: 7px; border-radius: 50%;
+    background: var(--color-ink-3); flex: none;
+  }
+  .dot--live { background: var(--color-assay); animation: dot-pulse 2.4s ease-in-out infinite; }
+  .dot--pass { background: var(--color-pass); }
+  .dot--fail { background: var(--color-fail); }
+
+  /* Soft divider that reads as an edge, not a broadsheet rule. */
+  .rule { height: 1px; background: var(--color-line); border: 0; }
+
+  /* --- links ------------------------------------------------------------ */
+  .link-accent {
+    color: var(--color-assay-ink);
+    font-weight: 500;
+    box-shadow: inset 0 -1px 0 color-mix(in srgb, var(--color-assay) 35%, transparent);
+    transition: box-shadow var(--d-micro) var(--ease-out);
+  }
+  .link-accent:hover { box-shadow: inset 0 -2px 0 var(--color-assay); }
+  /* --- the one bar ------------------------------------------------------ */
+  .site-header {
+    position: sticky;
+    top: 0;
+    z-index: 40;
+    border-bottom: 1px solid var(--color-line);
+    background: color-mix(in srgb, var(--color-paper) 85%, transparent);
+    backdrop-filter: saturate(1.1) blur(6px);
+  }
+  .site-header__inner {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+    height: 3.5rem;
+  }
+  .site-word {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+    flex: none;
+  }
+  /* The nav takes the remaining width, aligns right, and, on a phone, shrinks
+     below its content and scrolls, so the page body never widens. */
+  .site-nav {
+    display: flex;
+    align-items: center;
+    gap: 1.1rem;
+    margin-left: auto;
+    min-width: 0;
+    overflow-x: auto;
+    scrollbar-width: none;
+    -webkit-overflow-scrolling: touch;
+    justify-content: flex-end;
+  }
+  .site-nav::-webkit-scrollbar { display: none; }
+  .nav-link {
+    transition: color var(--d-micro) var(--ease-out);
+    font-size: var(--text-sm);
+    color: var(--color-ink-2);
+    white-space: nowrap;
+    padding-bottom: 2px;
+    border-bottom: 2px solid transparent;
+    flex: none;
+  }
+  .nav-link:hover { color: var(--color-touchstone); }
+  .nav-link[data-active] {
+    color: var(--color-touchstone);
+    font-weight: 500;
+    border-bottom-color: var(--color-assay);
+  }
+  @media (max-width: 560px) {
+    .site-nav { gap: 0.85rem; }
+    .nav-link { font-size: var(--text-xs); }
+  }
+
+  /* --- responsive grids ------------------------------------------------- */
+  .doors-grid {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 0.85rem;
+  }
+  .steps-grid {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 1.5rem;
+  }
+  @media (max-width: 900px) {
+    .doors-grid { grid-template-columns: repeat(2, 1fr); }
+    .steps-grid { grid-template-columns: repeat(2, 1fr); }
+  }
+  @media (max-width: 520px) {
+    .doors-grid { grid-template-columns: 1fr; }
+    .steps-grid { grid-template-columns: 1fr; }
+  }
+
+  /* Two-column layouts that must collapse on a phone. Defined here rather than
+     inline so the media query can win, an inline grid-template-columns would
+     override it and pin the layout to two columns at 360px. */
+  .scope-grid, .work-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 1rem;
+  }
+  .work-grid { gap: 0.85rem; }
+  @media (max-width: 640px) {
+    .scope-grid, .work-grid { grid-template-columns: 1fr; }
+  }
+  .agent-row {
+    transition: border-color var(--d-ui) var(--ease-out),
+                box-shadow var(--d-ui) var(--ease-out),
+                transform var(--d-ui) var(--ease-out);
+  }
+
+  /* --- hover lifts, reserved for genuinely clickable cards --------------- */
+  .jobdoor {
+    transition: border-color var(--d-ui) var(--ease-out),
+                box-shadow var(--d-ui) var(--ease-out),
+                transform var(--d-ui) var(--ease-out);
+  }
+  /* The way through. Parked at the right edge, it slides on hover and is the
+     only moving part of a door. */
+  .jobdoor__go {
+    margin-left: auto;
+    color: var(--color-assay);
+    font-size: var(--text-sm);
+    opacity: 0;
+    transform: translateX(-4px);
+    transition: opacity var(--d-ui) var(--ease-out),
+                transform var(--d-ui) var(--ease-out);
+  }
+  .proof-card {
+    transition: border-color var(--d-ui) var(--ease-out),
+                box-shadow var(--d-ui) var(--ease-out),
+                transform var(--d-ui) var(--ease-out);
+  }
+}
+
+/* ---------------------------------------------------------------- motion */
+
+/*
+  Motion here is evidence, not decoration.
+
+  Only `transform` and `opacity` are ever animated: both are composited, so
+  they skip layout and paint and hold 60fps on a phone. Nothing animates
+  `height`, `width`, `margin` or `padding`, because those reflow the document
+  and drop frames on exactly the cheap hardware this has to work on.
+
+  Durations are capped at the panel token. Anything an interface does to
+  itself should be over before a person can wonder whether it is stuck; only
+  the hallmark strike is allowed to be slower, because it is the one moment
+  the product is asking to be watched.
+*/
+
+@keyframes dot-pulse {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.35; }
+}
+
+/*
+  The orchestrated moment: the hallmark is struck.
+
+  It drops, overshoots by a hair on the spring, and settles, while the brass
+  brightens once and cools. This is the only spring in the system and the only
+  animation over 300ms. Everything else on the page is quiet so that this
+  reads as an event.
+*/
+@keyframes strike-drop {
+  0%   { transform: translateY(-10px) scale(0.92); opacity: 0; }
+  100% { transform: translateY(0) scale(1); opacity: 1; }
+}
+@keyframes strike-heat {
+  0%   { filter: brightness(1.55) saturate(1.3); }
+  100% { filter: brightness(1) saturate(1); }
+}
+.strike {
+  animation: strike-drop var(--d-strike) var(--ease-strike) both;
+  will-change: transform, opacity;
+}
+.strike > * {
+  animation: strike-heat var(--d-strike) var(--ease-out) both;
+}
+
+/*
+  The entrance: content rises a few pixels into place.
+
+  Staggered by an index the markup sets on each child, so a row of doors or a
+  list of agents arrives in sequence rather than all at once. Eight items is
+  the cap; past that the last one waits too long to feel responsive.
+*/
+@keyframes rise {
+  from { opacity: 0; transform: translateY(10px) scale(0.985); }
+  to   { opacity: 1; transform: none; }
+}
+.reveal {
+  animation: rise var(--d-panel) var(--ease-out) both;
+  animation-delay: calc(var(--i, 0) * var(--d-stagger));
+  will-change: transform, opacity;
+}
+
+/*
+  Reveal on scroll, with no JavaScript at all.
+
+  `animation-timeline: view()` drives the same keyframes from the element's
+  own position in the viewport, so a long board reveals as you read it. Where
+  the browser has not shipped it the rule simply does not apply and the
+  content is there immediately, which is the correct fallback: never hide
+  content behind an effect that might not run.
+*/
+@supports (animation-timeline: view()) {
+  @media (prefers-reduced-motion: no-preference) {
+    .reveal-scroll {
+      animation: rise var(--d-panel) var(--ease-out) both;
+      animation-timeline: view();
+      animation-range: entry 0% cover 18%;
+    }
+  }
+}
+
+/*
+  The gauge sweeps to its reading.
+
+  `stroke-dashoffset` is the one property outside transform and opacity that
+  this system animates, and only here. It is what draws a line: there is no
+  transform that reveals an arc from its start without distorting it, and on an
+  SVG path it costs a repaint of the path alone, never a reflow. The arc is
+  normalised with pathLength="1" so the sweep takes the same time whether the
+  reading is 155 or 812.
+*/
+@keyframes dial-sweep {
+  from { stroke-dashoffset: 1; }
+  to   { stroke-dashoffset: 0; }
+}
+.dial-sweep {
+  stroke-dasharray: 1;
+  animation: dial-sweep var(--d-strike) var(--ease-out) both;
+}
+
+/* A figure that has just changed settles into place rather than swapping. */
+@keyframes count-in {
+  from { opacity: 0; transform: translateY(3px); }
+  to   { opacity: 1; transform: none; }
+}
+.count-in { animation: count-in var(--d-ui) var(--ease-out) both; }
+
+/*
+  Hover is a pointer affordance, so it is gated to devices that actually have
+  one. On a touch screen these rules never apply, which stops the sticky
+  hover state phones leave behind after a tap.
+*/
+@media (hover: hover) and (pointer: fine) {
+  .jobdoor:hover,
+  .agent-row:hover {
+    transform: translateY(-2px);
+    border-color: var(--color-pewter-2);
+    box-shadow: var(--shadow-card);
+  }
+  .proof-card:hover {
+    transform: translateY(-2px);
+    border-color: color-mix(in srgb, var(--color-struck) 45%, var(--color-line));
+    box-shadow: var(--shadow-lift);
+  }
+  .jobdoor:hover .jobdoor__go { opacity: 1; transform: none; }
+  .btn:hover { border-color: var(--color-ink-3); background-color: var(--color-paper); }
+}
+
+/* Press is universal: every pointer and every finger gets the same feedback. */
+.jobdoor:focus-visible .jobdoor__go { opacity: 1; transform: none; }
+.btn:active { transform: scale(0.97); }
+.jobdoor:active, .agent-row:active, .proof-card:active { transform: translateY(0) scale(0.995); }
+
+/*
+  Reduced motion is honoured completely, with no exceptions.
+
+  Not damped, not shortened: off. A vestibular trigger is not a preference to
+  negotiate with, and a product whose whole argument is that it does what it
+  says cannot make an exception for its own favourite animation.
+*/
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after {
+    animation: none !important;
+    transition: none !important;
+    scroll-behavior: auto !important;
+  }
+}

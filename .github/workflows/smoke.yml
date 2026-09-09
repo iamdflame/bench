@@ -1,0 +1,32 @@
+name: smoke
+
+# Eligibility requires the submission to be functional and publicly accessible
+# through the judging window. A build that passed once says nothing about
+# whether the site is up on day twelve, so this asks the deployment itself,
+# every fifteen minutes.
+
+on:
+  schedule:
+    - cron: "*/15 * * * *"
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+jobs:
+  smoke:
+    name: production
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+
+      - run: npm ci --ignore-scripts
+
+      - name: Every route, the funnel, the sessions, the market
+        env:
+          SMOKE_BASE: ${{ vars.SMOKE_BASE || 'https://mandate-coral.vercel.app' }}
+        run: npm run smoke

@@ -1,13 +1,15 @@
 [profile.default]
 src = "src"
+test = "test"
 out = "out"
 libs = ["lib"]
 solc = "0.8.28"
 optimizer = true
 optimizer_runs = 200
-via_ir = false
-# Invariants are the point of the suite, so they get more than the default.
-fuzz = { runs = 512 }
+via_ir = true
+evm_version = "cancun"
 
-[rpc_endpoints]
-bsc = "${BSC_RPC_URL}"
+[fmt]
+line_length = 100
+tab_width = 4
+bracket_spacing = false

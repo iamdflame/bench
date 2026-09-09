@@ -1,0 +1,27 @@
+{
+  "scope": "exploratory, outside the input lock",
+  "anchorBlock": 119939676,
+  "positionsRead": 2347,
+  "live": 1102,
+  "pools": 141,
+  "outOfRange": 267,
+  "pastTrigger": 209,
+  "byFee": {
+    "100": {
+      "live": 88,
+      "out": 15
+    },
+    "500": {
+      "live": 114,
+      "out": 19
+    },
+    "2500": {
+      "live": 404,
+      "out": 67
+    },
+    "10000": {
+      "live": 496,
+      "out": 166
+    }
+  }
+}

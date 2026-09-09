@@ -1,0 +1,242 @@
+{
+  "taskId": "T3",
+  "anchorBlock": 119939676,
+  "bnbUsd": 712.9982354575646,
+  "markets": [
+    {
+      "vToken": "0x78366446547D062f45b4C0f320cDaa6d710D87bb",
+      "symbol": "vUST",
+      "supplyRatePerBlock": "395019717923",
+      "supplyApyPct": 2491.4683648839455,
+      "cashUsd": 0
+    },
+    {
+      "vToken": "0x689E0daB47Ab16bcae87Ec18491692BF621Dc6Ab",
+      "symbol": "vlisUSD",
+      "supplyRatePerBlock": "403400910",
+      "supplyApyPct": 2.544330219552,
+      "cashUsd": 156513.035549
+    },
+    {
+      "vToken": "0xfD5840Cd36d94D7229439859C0112a4185BC0255",
+      "symbol": "vUSDT",
+      "supplyRatePerBlock": "395287811",
+      "supplyApyPct": 2.4931592815392,
+      "cashUsd": 60853381.070236
+    },
+    {
+      "vToken": "0xecA88125a5ADbe82614ffC12D0DB554E2e2867C8",
+      "symbol": "vUSDC",
+      "supplyRatePerBlock": "356187129",
+      "supplyApyPct": 2.2465434600288,
+      "cashUsd": 15641472.145638
+    },
+    {
+      "vToken": "0xC4eF4229FEc74Ccfe17B2bdeF7715fAC740BA0ba",
+      "symbol": "vFDUSD",
+      "supplyRatePerBlock": "318047356",
+      "supplyApyPct": 2.0059882837632,
+      "cashUsd": 3296826.012319
+    },
+    {
+      "vToken": "0x74ca6930108F775CC667894EEa33843e691680d7",
+      "symbol": "vUSDe",
+      "supplyRatePerBlock": "277026846",
+      "supplyApyPct": 1.7472637230911996,
+      "cashUsd": 15380.638137
+    },
+    {
+      "vToken": "0x334b3eCB4DCa3593BCCC3c7EBD1A1C1d1780FBF1",
+      "symbol": "vDAI",
+      "supplyRatePerBlock": "258937358",
+      "supplyApyPct": 1.6331697043776003,
+      "cashUsd": 1016924.768358
+    },
+    {
+      "vToken": "0x3d5E269787d562b74aCC55F18Bd26C5D09Fa245E",
+      "symbol": "vU",
+      "supplyRatePerBlock": "231860671",
+      "supplyApyPct": 1.4623916241311998,
+      "cashUsd": 12401229.570707
+    },
+    {
+      "vToken": "0x0C1DA220D301155b87318B90692Da8dc43B67340",
+      "symbol": "vUSD1",
+      "supplyRatePerBlock": "198726114",
+      "supplyApyPct": 1.2534053462208,
+      "cashUsd": 547078.254421
+    },
+    {
+      "vToken": "0xBf515bA4D1b52FFdCeaBF20d31D705Ce789F2cEC",
+      "symbol": "vSOL",
+      "supplyRatePerBlock": "94903098",
+      "supplyApyPct": 0.5985728197056001,
+      "cashUsd": 1639720.357283
+    },
+    {
+      "vToken": "0xf508fCD89b8bd15579dc79A6827cB4686A3592c8",
+      "symbol": "vETH",
+      "supplyRatePerBlock": "93155672",
+      "supplyApyPct": 0.5875514544384,
+      "cashUsd": 22171890.172948
+    },
+    {
+      "vToken": "0xB248a295732e0225acd3337607cc01068e3b9c10",
+      "symbol": "vXRP",
+      "supplyRatePerBlock": "73801244",
+      "supplyApyPct": 0.46547920615680005,
+      "cashUsd": 6084059.159653
+    },
+    {
+      "vToken": "0xC5D3466aA484B040eE977073fcF337f2c00071c1",
+      "symbol": "vTRX",
+      "supplyRatePerBlock": "51958112",
+      "supplyApyPct": 0.32771020400640005,
+      "cashUsd": 709401.701841
+    },
+    {
+      "vToken": "0xeBD0070237a0713E8D94fEf1B728d3d993d290ef",
+      "symbol": "vCAN",
+      "supplyRatePerBlock": "49831816",
+      "supplyApyPct": 0.3142992298752,
+      "cashUsd": 0
+    },
+    {
+      "vToken": "0x5F0388EBc2B94FA8E123F404b79cCF5f40b29176",
+      "symbol": "vBCH",
+      "supplyRatePerBlock": "32761644",
+      "supplyApyPct": 0.20663424103679998,
+      "cashUsd": 404436.721569
+    },
+    {
+      "vToken": "0x882C173bC7Ff3b7786CA16dfeD3DFFfb9Ee7847B",
+      "symbol": "vBTC",
+      "supplyRatePerBlock": "25163848",
+      "supplyApyPct": 0.1587134221056,
+      "cashUsd": 361192657.239971
+    },
+    {
+      "vToken": "0xA07c5b74C9B40447a954e1466938b865b6BBea36",
+      "symbol": "vBNB",
+      "supplyRatePerBlock": "24108183",
+      "supplyApyPct": 0.1520551318176,
+      "cashUsd": 294231681.044291
+    },
+    {
+      "vToken": "0x6bCa74586218dB34cdB402295796b79663d816e9",
+      "symbol": "vWBNB",
+      "supplyRatePerBlock": "17771084",
+      "supplyApyPct": 0.11208578100479999,
+      "cashUsd": 64165216.47581
+    },
+    {
+      "vToken": "0x57A5297F2cB2c0AaC9D554660acd6D385Ab50c6B",
+      "symbol": "vLTC",
+      "supplyRatePerBlock": "6846062",
+      "supplyApyPct": 0.0431794822464,
+      "cashUsd": 2164560.370435
+    },
+    {
+      "vToken": "0x650b940a1033B8A1b1873f78730FcFC73ec11f1f",
+      "symbol": "vLINK",
+      "supplyRatePerBlock": "5922221",
+      "supplyApyPct": 0.0373526322912,
+      "cashUsd": 1657753.207087
+    },
+    {
+      "vToken": "0x9A0AF7FDb2065Ce470D72664DE73cAE409dA28Ec",
+      "symbol": "vADA",
+      "supplyRatePerBlock": "5899072",
+      "supplyApyPct": 0.0372066269184,
+      "cashUsd": 982152.449379
+    },
+    {
+      "vToken": "0x86aC3974e2BD0d60825230fa6F355fF11409df5c",
+      "symbol": "vCAKE",
+      "supplyRatePerBlock": "2827284",
+      "supplyApyPct": 0.017832245644799998,
+      "cashUsd": 24826157.264998
+    },
+    {
+      "vToken": "0x26DA28954763B92139ED49283625ceCAf52C6f94",
+      "symbol": "vAAVE",
+      "supplyRatePerBlock": "1176919",
+      "supplyApyPct": 0.007423063516799999,
+      "cashUsd": 624969.493566
+    },
+    {
+      "vToken": "0x6CFdEc747f37DAf3b87a35a1D9c8AD3063A1A8A0",
+      "symbol": "vWBETH",
+      "supplyRatePerBlock": "617203",
+      "supplyApyPct": 0.0038928227616,
+      "cashUsd": 24865517.051381
+    },
+    {
+      "vToken": "0xec3422Ef92B2fb59e84c8B02Ba73F1fE84Ed8D71",
+      "symbol": "vDOGE",
+      "supplyRatePerBlock": "313356",
+      "supplyApyPct": 0.0019763989631999997,
+      "cashUsd": 6533696.719518
+    },
+    {
+      "vToken": "0x4d41a36D04D97785bcEA57b057C412b278e6Edcc",
+      "symbol": "vTWT",
+      "supplyRatePerBlock": "189722",
+      "supplyApyPct": 0.0011966145984,
+      "cashUsd": 745194.682647
+    },
+    {
+      "vToken": "0x27FF564707786720C71A2e5c1490A63266683612",
+      "symbol": "vUNI",
+      "supplyRatePerBlock": "47460",
+      "supplyApyPct": 0.000299339712,
+      "cashUsd": 12049796.362108
+    },
+    {
+      "vToken": "0xf841cb62c19fCd4fF5CD0AaB5939f3140BaaC3Ea",
+      "symbol": "vSolvBTC",
+      "supplyRatePerBlock": "495",
+      "supplyApyPct": 0.0000031220639999999996,
+      "cashUsd": 203430457.727601
+    }
+  ],
+  "best": {
+    "vToken": "0x78366446547D062f45b4C0f320cDaa6d710D87bb",
+    "symbol": "vUST",
+    "supplyRatePerBlock": "395019717923",
+    "supplyApyPct": 2491.4683648839455,
+    "cashUsd": 0
+  },
+  "worst": {
+    "vToken": "0xf841cb62c19fCd4fF5CD0AaB5939f3140BaaC3Ea",
+    "symbol": "vSolvBTC",
+    "supplyRatePerBlock": "495",
+    "supplyApyPct": 0.0000031220639999999996,
+    "cashUsd": 203430457.727601
+  },
+  "spreadPct": 2491.4683617618816,
+  "liquid": {
+    "best": {
+      "vToken": "0xfD5840Cd36d94D7229439859C0112a4185BC0255",
+      "symbol": "vUSDT",
+      "supplyRatePerBlock": "395287811",
+      "supplyApyPct": 2.4931592815392,
+      "cashUsd": 60853381.070236
+    },
+    "worst": {
+      "vToken": "0xf841cb62c19fCd4fF5CD0AaB5939f3140BaaC3Ea",
+      "symbol": "vSolvBTC",
+      "supplyRatePerBlock": "495",
+      "supplyApyPct": 0.0000031220639999999996,
+      "cashUsd": 203430457.727601
+    },
+    "spreadPct": 2.4931561594751996,
+    "minCashUsd": 1000000,
+    "count": 18
+  },
+  "blocksPerYear": 63072000,
+  "breakEvenUsd": 8.030379635691478,
+  "gasCostUsd": 0.016684158709707013,
+  "capitalUsd": 1000,
+  "gainPerMonthUsd": 2.0776301328959996
+}

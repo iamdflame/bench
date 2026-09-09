@@ -1,0 +1,19 @@
+{
+  "taskId": "T4",
+  "anchorBlock": 119939676,
+  "bnbUsd": 712.9982354575646,
+  "incentiveSource": "Unitroller storage slot 6; layout confirmed by slot 5 matching closeFactorMantissa()",
+  "layoutVerified": true,
+  "liquidationIncentiveMantissa": "1100000000000000000",
+  "closeFactorMantissa": "500000000000000000",
+  "penaltyPct": 10.000000000000009,
+  "closeFactorPct": 50,
+  "repayGasUsd": 0.00926897706094834,
+  "exampleBorrowUsd": 10000,
+  "penaltyUsd": 500.00000000000045,
+  "ratio": 53943.38519906142,
+  "liquidations": {
+    "count": 0,
+    "window": 24000
+  }
+}

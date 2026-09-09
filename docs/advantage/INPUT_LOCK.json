@@ -1,0 +1,127 @@
+{
+  "anchor": {
+    "specHash": "0xf9c33aa8c73879a1347ccb902d522c7a0a4b7038806557580531b963baf6c8a6",
+    "txHash": "0x00b0e484c69fc3f149f437e0d05ae19cad019bb9b69875a66eaec9fbbbe370e4",
+    "anchorBlock": 119939676,
+    "anchorTimestamp": 1788534369,
+    "fromBlock": 119915676,
+    "gasPriceWei": "50000000",
+    "lockedAt": "2026-09-04T15:06:09.000Z"
+  },
+  "specification": {
+    "version": 1,
+    "chainId": 56,
+    "windowBlocks": 24000,
+    "anchorRule": "Every task measures the WINDOW_BLOCKS blocks ending at the block containing this lock's own transaction.",
+    "tasks": [
+      {
+        "id": "T1",
+        "title": "Keep a PancakeSwap V3 position in range",
+        "category": "Rebalancing",
+        "humanArm": "Do nothing until you happen to look. Measured on real BSC positions: of the live positions in this pool, how many sit outside their range at the anchor block, and how long they have been there.",
+        "agentArm": "src/agents/rebalance.ts, evaluated against each sampled position at the anchor block.",
+        "inputs": {
+          "pool": "0x36696169C63e42cd08ce11f5deeBbCeBae652050",
+          "positionManager": "0x46A15B0b27311cedF172AB29E4f4766fbE7F4364",
+          "poolFeeBps": 5,
+          "sampleSize": 120,
+          "windowBlocks": 24000
+        },
+        "metric": "Share of sampled live positions out of range at the anchor block, and blocks elapsed since each left its range. A position out of range earns no fees, so this is idle capital measured directly rather than modelled.",
+        "win": "A materially large share of real positions are idle, and rebalance.ts flags each of them at the anchor block.",
+        "loss": "Positions that left their range and returned to it inside the window without their owner acting. For those, a re-centre would have paid gas and crystallised impermanent loss to no purpose, and the agent is worse than doing nothing. Counted and published.",
+        "inconclusive": "If no provider serves eth_getLogs over the window, the sample cannot be drawn and the task reports inconclusive rather than a smaller convenient sample."
+      },
+      {
+        "id": "T2",
+        "title": "Run a grid ladder through the observed price path",
+        "category": "Grid",
+        "humanArm": "Buy and hold. This is not a stand-in for a human — it is the benchmark MandateMarket already settles every grid mandate against, so the agent is judged here exactly as it is judged in production.",
+        "agentArm": "src/agents/grid.ts, evaluated over the same path, gas charged at the measured price.",
+        "inputs": {
+          "pool": "0x36696169C63e42cd08ce11f5deeBbCeBae652050",
+          "windowBlocks": 24000,
+          "capitalBnb": 1,
+          "priceSource": "pool Swap events"
+        },
+        "metric": "Net BNB-denominated return over the window, gas included, against holding.",
+        "win": "The grid ends the window ahead of holding after gas.",
+        "loss": "A trending window. A grid sells into strength and buys into weakness, so a directional move beats it and it should be published when it does.",
+        "inconclusive": "Fewer than 200 swaps recovered from the window; too thin a path to run a ladder over."
+      },
+      {
+        "id": "T3",
+        "title": "Move stablecoin capital to the best Venus market",
+        "category": "Yield",
+        "humanArm": "Leave capital where it is. Definitional, not estimated: the no-agent arm of a rotation strategy is the absence of rotation.",
+        "agentArm": "src/agents/yield.ts, against live Venus supply rates at the anchor block.",
+        "inputs": {
+          "comptroller": "0xfD36E2c2a6789Db23113685031d7F16329158384",
+          "blocksPerYear": 63072000,
+          "capitalUsd": 1000
+        },
+        "metric": "Spread between the best and worst supply APY among listed Venus markets at the anchor block, and the capital at which one rotation's gas is repaid inside 30 days.",
+        "win": "A spread wide enough that rotation repays its gas well inside a month at ordinary capital.",
+        "loss": "A break-even capital high enough that at the sizes this market actually runs, the correct action is to do nothing. If so the agent's advantage here is zero and the report says zero.",
+        "inconclusive": "Venus markets unreadable at the anchor block."
+      },
+      {
+        "id": "T4",
+        "title": "Repair a Venus position before it is liquidated",
+        "category": "Health Factor",
+        "humanArm": "The liquidation that actually happened. Venus publishes its own liquidation incentive on chain, so the cost of not acting is not an estimate — it is a protocol parameter, paid by every borrower who was too slow.",
+        "agentArm": "src/agents/health.ts, which triggers on headroom falling below a share of the borrow — strictly before a shortfall exists.",
+        "inputs": {
+          "comptroller": "0xfD36E2c2a6789Db23113685031d7F16329158384",
+          "windowBlocks": 24000,
+          "markets": "vBNB, vUSDT, vBUSD"
+        },
+        "metric": "Venus liquidationIncentiveMantissa and closeFactorMantissa at the anchor block, against the gas cost of one pre-emptive repayBorrow. Plus a count of real liquidations in the window where the logs can be read.",
+        "win": "The penalty for being late exceeds the cost of being early by a wide multiple.",
+        "loss": "Gas cost of pre-emptive repayment approaching the liquidation penalty, or a false-positive rate high enough that repeated repairs cost more than the one liquidation they avoid.",
+        "inconclusive": "Comptroller parameters unreadable; liquidation counts separately marked inconclusive if logs are refused."
+      },
+      {
+        "id": "T5",
+        "title": "Decide which of 20 registry agents are safe to hire",
+        "category": "Security",
+        "humanArm": "Read the agent card and believe it. This is what the directory actually offers a person: a name, a description, a declared skill set, no evidence.",
+        "agentArm": "src/lib/assay — endpoint resolution, custody separation, transaction history, protocol contact.",
+        "inputs": {
+          "registry": "0x8004a169fb4a3325136eb29fa0ceb6d2e539a432",
+          "chainId": 56,
+          "sampleSize": 20,
+          "selection": "lowest 20 token ids returned for chain 56, recorded in the lock"
+        },
+        "metric": "Count of sampled agents whose card claims a capability the chain contradicts, and wall-clock seconds for the assay arm.",
+        "win": "The assay contradicts a material number of cards — meaning a person trusting the directory would have hired something that cannot do the job.",
+        "loss": "Every inconclusive verdict. Where a provider refuses a log scan the assay cannot answer and a person with an explorer open can. Counted as a loss, not omitted.",
+        "inconclusive": "Registry unreachable, in which case no sample exists."
+      },
+      {
+        "id": "T6",
+        "title": "Detect coordinated reputation on a registry agent",
+        "category": "Security",
+        "humanArm": "The reputation score the official explorer displays. Not a proxy for a human — it is the number a human is shown.",
+        "agentArm": "src/lib/sybil/detect — reviewer profiling, pairwise similarity, connected components.",
+        "inputs": {
+          "chainId": 56,
+          "feedbackPages": 30,
+          "pageSize": 100
+        },
+        "metric": "Displayed score against the score surviving de-duplication, plus the concentration behind it.",
+        "win": "The displayed score is materially inflated by a small number of wallets, and the agent arm says so with the evidence attached.",
+        "loss": "Flagging a wallet whose behaviour has an innocent reading, or a de-duplicated score that moves under a small change of threshold. Threshold sensitivity is published.",
+        "inconclusive": "8004scan rate limits below the page count above; a partial corpus is reported as partial."
+      }
+    ],
+    "rubric": {
+      "time": "Wall-clock seconds for the agent arm, measured. The no-agent arm is never given an invented duration — where it has no natural duration the comparison is made on correctness or on cost, and the report says which.",
+      "cost": "Gas in BNB at the gas price read at the anchor block, plus API calls made. Reported per task.",
+      "quality": "A per-task criterion, fixed above in `metric`. No score is aggregated across tasks: a single headline number would hide exactly the losses this report exists to publish.",
+      "reporting": "Every task reports win, loss or inconclusive against the criteria declared above. Losses are set in bold. An all-wins report is evidence of a badly chosen task set, not of a good agent."
+    },
+    "baselineDefinition": "The no-agent arm is never a guess at how long a person would take.\n\nEvery submission can assert \"a human needs 45 minutes\". None can show it. So\nthis report only uses baselines that are themselves observable:\n\n  - what people on BSC demonstrably did, or did not do, with their own capital\n    (T1, T4);\n  - the benchmark the contract already settles against (T2);\n  - the definitional absence of the action (T3);\n  - the artifact a person is actually shown and would actually act on (T5, T6).\n\nWhere a task has no observable human arm, it is not in the report.",
+    "stoppingRule": "One run, against the anchor block fixed by the lock transaction.\n\n  - Inputs are exactly those above. No task is re-run with a different window,\n    a different sample or a different threshold after its result is known.\n  - A task that cannot be measured reports inconclusive. It is not dropped, and\n    it is not retried until it produces a number.\n  - A task that loses is published as a loss. The report is not re-cut to\n    exclude it.\n  - Nothing is added to the task set after the anchor block is known."
+  }
+}

@@ -1,0 +1,85 @@
+{
+  "taskId": "T6",
+  "feedbacksAnalysed": 3000,
+  "pagesRequested": 30,
+  "pagesReturned": 30,
+  "distinctReviewers": 32,
+  "flaggedReviewers": 14,
+  "cleanReviewers": 18,
+  "flaggedShareOfFeedback": 99.03333333333333,
+  "topReviewers": [
+    {
+      "address": "0x397558e5d63a894934362e5c3c33ab5d0170c228",
+      "feedbacks": 265,
+      "agents": 254,
+      "maxPerAgent": 4
+    },
+    {
+      "address": "0x96443aec84183d799cf67ad0268459e527a1a602",
+      "feedbacks": 241,
+      "agents": 100,
+      "maxPerAgent": 8
+    },
+    {
+      "address": "0xff1fca025c2635a5c3f1275f8c9b21a03b84c232",
+      "feedbacks": 239,
+      "agents": 104,
+      "maxPerAgent": 8
+    },
+    {
+      "address": "0x13749fb015d63831e196097e07135f254bb6dc6b",
+      "feedbacks": 231,
+      "agents": 101,
+      "maxPerAgent": 6
+    },
+    {
+      "address": "0x01b26144bf5ca969ad9e2e06f0e48aa016accf75",
+      "feedbacks": 228,
+      "agents": 91,
+      "maxPerAgent": 6
+    }
+  ],
+  "sensitivity": [
+    {
+      "jaccard": 0.3,
+      "flagged": 14,
+      "clean": 18
+    },
+    {
+      "jaccard": 0.4,
+      "flagged": 14,
+      "clean": 18
+    },
+    {
+      "jaccard": 0.5,
+      "flagged": 14,
+      "clean": 18
+    },
+    {
+      "jaccard": 0.6,
+      "flagged": 14,
+      "clean": 18
+    },
+    {
+      "jaccard": 0.7,
+      "flagged": 14,
+      "clean": 18
+    },
+    {
+      "jaccard": 0.8,
+      "flagged": 14,
+      "clean": 18
+    },
+    {
+      "jaccard": 0.9,
+      "flagged": 14,
+      "clean": 18
+    }
+  ],
+  "defaults": {
+    "jaccard": 0.6,
+    "cardinalityTolerance": 0.12,
+    "cohortMin": 3
+  },
+  "partial": false
+}
