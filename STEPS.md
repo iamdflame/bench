@@ -229,10 +229,11 @@ twelve competitors.
 
 | Step | State |
 |---|---|
-| 0.1 Full-registry cursor walk | in progress |
-| 0.2 Persist the walk | todo |
-| 0.3 Fix the scheduled runner | todo |
-| 0.4 Keystore registration | todo |
+| 0.1 Full-registry cursor walk | **done** — `walkAgents`, 8 tests |
+| 0.2 Persist the walk | **done** — cohort walk, checkpointed, 4 tests |
+| 0.3 Fix the scheduled runner | in progress — needs a deploy we cannot do here |
+| 0.4 Keystore registration | **code done** — needs a live grant to confirm |
+| 1.4 The funnel | **done early** — it turned out to cost 6 requests |
 | 1.1–1.7 | todo |
 | 2.1–2.5 | todo |
 | 3.1–3.6 | todo |
