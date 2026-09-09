@@ -287,7 +287,17 @@ export interface Row {
   href: string;
   job: JobSlug | null;
   jobReason: string | null;
-  rails: Record<RailName, { open: boolean; reason: string | null; detail: string | null; price: string | null }>;
+  rails: Record<
+    RailName,
+    {
+      open: boolean;
+      reason: string | null;
+      detail: string | null;
+      price: string | null;
+      /** Open, but the check behind it is older than the freshness window. */
+      unverified?: boolean;
+    }
+  >;
   /** The headline measurement, pre-formatted, or the reason there is none. */
   track: { label: string; value: string; basis: string | null; provenance: string } | null;
   trackMissing: string | null;
@@ -331,12 +341,29 @@ function freshnessOf(at: string | null): Row["freshness"] {
 }
 
 /**
- * A rail decays with its probe.
+ * A rail carries the age of its evidence. It does not lie about the evidence.
  *
- * An open rail whose evidence is stale is reported closed, with the reason
- * naming staleness rather than the agent. That is the safe direction: the cost
- * of decaying early is a row saying "not checked recently"; the cost of
- * decaying late is selling a hire on an endpoint that died an hour ago.
+ * This used to report a stale-but-open rail as **closed**, on the reasoning
+ * that decaying early costs a row saying "not checked recently" while decaying
+ * late costs selling a hire on an endpoint that died an hour ago.
+ *
+ * That reasoning was wrong, and wrong in the one way this codebase exists to
+ * prevent. "We have not looked in eighty-seven minutes" is an **unknown**.
+ * Rendering it as `open: false` converts it into a negative claim about the
+ * agent — the same sin as rendering an unmeasured value as a zero, committed by
+ * the one function `check:absence` does not read. The visible result was a
+ * marketplace whose funnel said *0 callable, 0 hireable* over a board file that
+ * said 19 and 8.
+ *
+ * The safety argument does not need it either, because **every path that spends
+ * money re-verifies before it spends**. `/api/rails/call` fetches the endpoint's
+ * 402 live and refuses on what it finds; `planFor` calls `probeQuote` live and
+ * refuses on what comes back. A dead endpoint is caught at the moment of
+ * action, with the real reason, which is strictly better for the reader than a
+ * row that quietly vanished an hour earlier.
+ *
+ * So an open rail stays open and says when it was last checked. `unverified`
+ * carries that to the badge; `freshness` on the row carries the age.
  */
 function railView(
   state: Agent["rails"][RailName],
@@ -352,9 +379,11 @@ function railView(
   }
   if (fresh === "stale") {
     return {
-      open: false,
-      reason: "not-probed",
-      detail: "This was open when we last checked, and that check is now too old to sell on. It is re-probed every fifteen minutes.",
+      open: true,
+      unverified: true,
+      reason: null,
+      detail:
+        "This was open when we last checked, and that check is older than our freshness window. Acting on it re-checks the endpoint first and refuses on whatever it finds.",
       price: priceText(state.price),
     };
   }

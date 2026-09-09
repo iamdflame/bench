@@ -1688,3 +1688,17 @@ td.num,
 @media (max-width: 800px) {
   .task__arms { grid-template-columns: 1fr; }
 }
+
+/*
+  A rail that was open when we last looked, and has not been re-checked since.
+
+  Hollow rather than filled, and no halo: the halo says "verified open right
+  now" and this is not that. It is emphatically not the dim treatment either —
+  dim means closed, and a row we simply have not revisited has not refused
+  anything. The middle state exists because collapsing it into "closed" turned
+  nineteen callable agents into nineteen dead rows.
+*/
+.rail[data-unverified] { background: transparent !important; box-shadow: none !important; }
+.rail[data-on="call"][data-unverified] { border: 1.5px solid var(--color-rail-call); }
+.rail[data-on="hire"][data-unverified] { border: 1.5px solid var(--color-rail-hire); }
+.rail[data-on="mandate"][data-unverified] { border: 1.5px solid var(--color-rail-mandate); }

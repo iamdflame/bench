@@ -4,9 +4,15 @@ import type { Row } from "@/lib/board";
 /**
  * Three squares in the leading column, and the only place colour is spent.
  *
- * Lit means the rail is open on this row; dim means it is not. Eight pixels,
- * because a badge that needs a legend has failed and one that shouts is
- * decoration rather than information.
+ * Filled means the rail is open and the check behind it is recent. Hollow means
+ * it was open when we last looked and that look is older than the freshness
+ * window — an unknown, not a refusal. Dim means it is closed and the row says
+ * which condition closed it.
+ *
+ * Three states rather than two, because collapsing the middle one is what made
+ * a board of nineteen callable agents render as nineteen dead rows: "we have
+ * not checked recently" was being drawn as "not available", which is a claim
+ * about the agent rather than about us.
  *
  * The colour is never the only carrier: the badge has a text label for a
  * screen reader and a title for a pointer, and the row's own cells repeat the
@@ -20,6 +26,9 @@ const LABEL: Record<RailName, string> = {
 };
 
 function describe(rail: RailName, state: Row["rails"][RailName]): string {
+  if (state.open && state.unverified) {
+    return `${LABEL[rail]}: available when last checked${state.price ? `, ${state.price}` : ""}. ${state.detail ?? ""}`.trim();
+  }
   if (state.open) return `${LABEL[rail]}: available${state.price ? `, ${state.price}` : ""}`;
   const reason = state.reason as RailRefusal | null;
   const text = state.detail ?? (reason ? REFUSAL_TEXT[reason] : "Not available.");
@@ -45,6 +54,7 @@ export default function RailBadge({ row, revoked }: { row: Row; revoked?: boolea
           data-live-kind="rail"
           data-live-value={`${state}:${r}`}
           {...(row.rails[r].open ? { "data-on": r } : {})}
+          {...(row.rails[r].unverified ? { "data-unverified": "" } : {})}
           {...(revoked ? { "data-revoked": "" } : {})}
         />
       ))}
