@@ -1,0 +1,80 @@
+name: probe
+
+# The re-probe the board's decay has always assumed, and which never existed.
+#
+# `railView` closes an open rail whose probe is older than 45 minutes, on the
+# reasoning that the cost of decaying early is a row saying "not checked
+# recently" and the cost of decaying late is selling a hire on an endpoint that
+# died an hour ago. That reasoning is right, and it was calibrated to a
+# fifteen-minute cadence that was never built — so the deployed board decayed to
+# nothing between manual probes, and every rail on every row read as closed
+# while the funnel above it still claimed inventory.
+#
+# There is nowhere else for this to live. The web app is on Vercel, whose
+# filesystem is read-only at runtime, so a route cannot write a board. The
+# worker is not deployed anywhere. A scheduled job that probes, commits and
+# pushes is the whole loop: Vercel redeploys on push, and the site is never more
+# than one interval stale.
+#
+# It commits only when something moved, so a quiet market produces no commits.
+
+on:
+  schedule:
+    # Every 20 minutes. Under the 45-minute staleness threshold with room for a
+    # slow run, and not so often that the history becomes unreadable.
+    - cron: "*/20 * * * *"
+  workflow_dispatch:
+
+concurrency:
+  # Never two probes at once: they would race on the same file and the loser's
+  # push would be rejected anyway.
+  group: probe
+  cancel-in-progress: false
+
+permissions:
+  contents: write
+
+jobs:
+  probe:
+    name: re-probe the board
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          # A shallow clone cannot rebase onto whatever landed while we probed.
+          fetch-depth: 0
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+
+      - run: npm ci
+
+      - name: Probe
+        # No secrets. Probing reads public RPC and calls public endpoints; it
+        # signs nothing and spends nothing, which is why this can run on a
+        # schedule without a key anywhere near it.
+        # 400, not a smaller number, because the prober rotates oldest-first and
+        # a partial rotation is worse than none: at --limit 120 the eight
+        # hireable rows were never in the batch, kept a 92-minute-old timestamp,
+        # and decayed to closed while the probe reported them open. A full pass
+        # over 257 agents and 979 services takes about 55 seconds.
+        run: npm run probe -- --limit 400
+
+      - name: Commit if the market moved
+        run: |
+          git config user.name  "bench-probe"
+          git config user.email "noreply@users.noreply.github.com"
+          if git diff --quiet -- apps/web/data; then
+            echo "nothing changed; no commit"
+            exit 0
+          fi
+          CALLABLE=$(node -e "const b=require('./apps/web/data/board-56.json');const t=b.snapshot.totals;console.log(\`\${t.callable} callable, \${t.hireable} hireable, \${t.mandatable} mandatable at block \${b.snapshot.cutoff.block}\`)")
+          git add apps/web/data
+          git commit -m "probe: $CALLABLE"
+          # Rebase rather than merge: the only thing that can conflict is a data
+          # file this job owns, and a merge commit per probe would bury the log.
+          git pull --rebase --autostash origin main
+          git push origin HEAD:main

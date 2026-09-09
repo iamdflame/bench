@@ -604,6 +604,13 @@ export function readBoardView(query: BoardQuery = {}): BoardView {
   const board = getBoard(chainId);
 
   let rows: Row[] = [...board.agents.map(agentRow), ...board.services.map(serviceRow)];
+  /*
+    The funnel counts the whole board, not the filtered view. A reader who has
+    clicked "Hire it for one job" is still owed the true callable count in the
+    doors above, or the filter would appear to change the market rather than the
+    view of it.
+  */
+  const allRows = rows;
 
   if (query.job) rows = rows.filter((r) => r.job === query.job);
   if (query.rail) rows = rows.filter((r) => r.rails[query.rail!].open);
@@ -642,9 +649,55 @@ export function readBoardView(query: BoardQuery = {}): BoardView {
       .map(([host, count]) => ({ host, count }))
       .sort((a, b) => b.count - a.count)
       .slice(0, 8),
-    snapshot: board.snapshot,
+    snapshot: decay(board.snapshot, allRows),
     generatedAt: board.generatedAt,
     chainId,
+  };
+}
+
+/**
+ * Make the funnel agree with the rows underneath it.
+ *
+ * `railView` closes an open rail whose probe has gone stale, on the reasoning
+ * that the cost of decaying early is a row saying "not checked recently" and
+ * the cost of decaying late is selling a hire on an endpoint that died an hour
+ * ago. That reasoning is right and the implementation was half done: the rows
+ * decayed and the snapshot did not.
+ *
+ * The visible result was a board whose four doors read "2 hireable" in gold
+ * over fifty rows every one of which said the rail was closed for want of a
+ * recent check. Both numbers were computed correctly. They described different
+ * moments, and nothing on the page said so, which is exactly the failure
+ * `Measurement` exists to prevent — a figure without the time it belongs to.
+ *
+ * So the counts a reader can act on are recomputed from the rows they can act
+ * on. `registered` and `probed` are left alone: they are cumulative facts about
+ * what has been read, not claims about what is reachable this minute, and they
+ * do not decay.
+ */
+function decay(snapshot: Snapshot, rows: Row[]): Snapshot {
+  const openOn = (rail: RailName) => rows.filter((r) => r.rails[rail].open).length;
+
+  const perJob = { ...snapshot.perJob };
+  for (const job of Object.keys(perJob) as (keyof typeof perJob)[]) {
+    const mine = rows.filter((r) => r.job === job);
+    perJob[job] = {
+      ...perJob[job],
+      callable: mine.filter((r) => r.rails.call.open).length,
+      hireable: mine.filter((r) => r.rails.hire.open).length,
+      mandatable: mine.filter((r) => r.rails.mandate.open).length,
+    };
+  }
+
+  return {
+    ...snapshot,
+    totals: {
+      ...snapshot.totals,
+      callable: openOn("call"),
+      hireable: openOn("hire"),
+      mandatable: openOn("mandate"),
+    },
+    perJob,
   };
 }
 
