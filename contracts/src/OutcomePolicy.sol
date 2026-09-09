@@ -63,65 +63,9 @@ pragma solidity 0.8.28;
  * somebody's money, and it does it silently.
  */
 
-/// The four things worth settling on, in the order the plan stages them.
-enum Metric {
-    /// Fraction of the window a V3 position's price sat inside its band, in bps.
-    TimeInRange,
-    /// The lowest health factor a lending account reached, scaled 1e18.
-    HealthFloor,
-    /// Net APY captured against the best passive rate available, in bps.
-    NetApyVsBest,
-    /// Realized profit and loss over the window, in the subject's quote token.
-    RealizedPnl
-}
+import {Metric, Verdict, Assertion, IOutcomeOracle, IVerdict, Measure} from "./Outcome.sol";
 
-/// What the policy concluded. `Pending` and `Unmeasurable` both withhold judgement.
-enum Verdict {
-    /// The window has not closed. Nothing to say yet.
-    Pending,
-    /// The assertion held. The escrow releases to the seller.
-    Met,
-    /// The assertion failed. The escrow returns to the buyer.
-    Failed,
-    /// The oracle could not see. Falls back to the optimistic path.
-    Unmeasurable
-}
-
-/**
- * What the buyer and seller agreed, fixed at hire time.
- *
- * `threshold` is signed because two of the metrics can legitimately be
- * negative — a job may assert that realized PnL will be no worse than −50 bps,
- * and an unsigned threshold would make that assertion unexpressible.
- */
-struct Assertion {
-    Metric metric;
-    /// The position or account being measured. Never the agent's own address.
-    address subject;
-    /// What the agent claimed it would achieve. Compared with `>=`.
-    int256 threshold;
-    uint64 windowStart;
-    uint64 windowEnd;
-    /// The measurement contract. Named at hire time so neither side picks it later.
-    address oracle;
-}
-
-/**
- * A measurement contract.
- *
- * `known` is the whole interface. An oracle that cannot see must say so rather
- * than return zero — the difference between "the position was never in range"
- * and "we could not read the position" is the difference between taking
- * somebody's money and admitting a gap.
- */
-interface IOutcomeOracle {
-    function measure(Assertion calldata a) external view returns (int256 value, bool known);
-
-    /// A human-readable name for the method, so a verdict can be explained.
-    function method() external view returns (string memory);
-}
-
-contract OutcomePolicy {
+contract OutcomePolicy is IVerdict {
     /// Emitted when an assertion is bound to a job. The terms, on chain, before the work.
     event AssertionBound(uint256 indexed jobId, Metric metric, address subject, int256 threshold, address oracle);
 
@@ -192,19 +136,8 @@ contract OutcomePolicy {
     function check(uint256 jobId) public view returns (Verdict verdict, int256 measured, int256 threshold) {
         if (!_bound[jobId]) revert NotBound(jobId);
         Assertion memory a = _assertions[jobId];
-        threshold = a.threshold;
-
-        if (block.timestamp < a.windowEnd) return (Verdict.Pending, 0, threshold);
-
-        (bool ok, bytes memory raw) = a.oracle.staticcall{gas: 500_000}(
-            abi.encodeWithSelector(IOutcomeOracle.measure.selector, a)
-        );
-        if (!ok || raw.length < 64) return (Verdict.Unmeasurable, 0, threshold);
-
-        (int256 value, bool known) = abi.decode(raw, (int256, bool));
-        if (!known) return (Verdict.Unmeasurable, 0, threshold);
-
-        return (value >= a.threshold ? Verdict.Met : Verdict.Failed, value, threshold);
+        (verdict, measured) = Measure.verdict(a);
+        return (verdict, measured, a.threshold);
     }
 
     /**

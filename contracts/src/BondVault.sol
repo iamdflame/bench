@@ -1,7 +1,8 @@
 // SPDX-License-Identifier: MIT
 pragma solidity 0.8.28;
 
-import {OutcomePolicy, Verdict} from "./OutcomePolicy.sol";
+import {Verdict, IVerdict} from "./Outcome.sol";
+import {ClaimRegistry} from "./ClaimRegistry.sol";
 
 /**
  * @title BondVault
@@ -84,8 +85,11 @@ struct Mandate {
 }
 
 contract BondVault {
-    /// The policy whose verdict is the only thing that moves a locked bond.
-    OutcomePolicy public immutable policy;
+    /// The registry holding the signed claim behind every mandate.
+    ClaimRegistry public immutable claims;
+
+    /// The verdict source. `claims` in every deployment that holds collateral.
+    IVerdict public immutable policy;
 
     /// Unlocked collateral, by agent and token. Withdrawable at any time.
     mapping(address => mapping(address => uint256)) public available;
@@ -112,8 +116,18 @@ contract BondVault {
     error ZeroPrincipal();
     error TransferFailed();
 
-    constructor(OutcomePolicy p) {
-        policy = p;
+    /**
+     * The registry is the verdict source, not merely a neighbour of it.
+     *
+     * Both are stored because the vault asks two different questions: what did
+     * the agent sign, and what did the chain conclude. Pointing them at one
+     * contract is what makes those answers impossible to disagree — a vault
+     * wired to a registry for terms and a different policy for verdicts could
+     * slash against an assertion nobody signed.
+     */
+    constructor(ClaimRegistry c) {
+        claims = c;
+        policy = IVerdict(address(c));
     }
 
     // -----------------------------------------------------------------------
@@ -171,9 +185,22 @@ contract BondVault {
      * Callable only by the agent itself. A bond somebody else placed on your
      * behalf is somebody else's promise.
      */
-    function bond(uint256 mandateId, address principal, address token, uint256 amount) external {
-        if (principal == address(0)) revert ZeroPrincipal();
+    function bond(uint256 mandateId) external {
         if (_mandates[mandateId].agent != address(0)) revert MandateExists(mandateId);
+
+        /*
+           The terms are not arguments. They are read from the claim the agent
+           signed, under the id that is the hash of that claim, so there is no
+           way to bond against one promise and be judged on another. A caller
+           that wants different terms has to get a different signature, which
+           produces a different id.
+        */
+        ClaimRegistry.Claim memory c = claims.claimOf(mandateId);
+        if (c.agent != msg.sender) revert NotTheAgent(msg.sender, c.agent);
+
+        address principal = c.principal;
+        address token = c.token;
+        uint256 amount = c.bond;
 
         uint256 held = available[msg.sender][token];
         if (amount == 0 || amount > held) revert InsufficientAvailable(amount, held);

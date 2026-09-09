@@ -3,20 +3,25 @@ pragma solidity 0.8.28;
 
 import {Test} from "forge-std/Test.sol";
 import {BondVault, Mandate, IERC20} from "../src/BondVault.sol";
-import {OutcomePolicy, Assertion, Metric, Verdict, IOutcomeOracle} from "../src/OutcomePolicy.sol";
+import {ClaimRegistry} from "../src/ClaimRegistry.sol";
+import {Metric, Verdict, Assertion, IOutcomeOracle} from "../src/Outcome.sol";
 
 /**
  * The claim under test is that an agent's collateral moves in exactly two
- * situations — the chain said the claim held, or the chain said it failed —
+ * situations — the chain said the promise held, or the chain said it failed —
  * and in no other situation whatsoever.
  *
  * So most of what follows is an attempt to move it in some other situation:
  * an oracle that cannot see, an oracle that reverts, a window that has not
- * closed, a settlement called twice, a token that lies about its transfer, a
- * principal that re-enters on receipt, and an agent trying to withdraw money
- * it has already put at risk. The tests that prove the happy path are the
- * short ones at the top; the rest of the file is the part that decides whether
- * anyone should put money in here.
+ * closed, a settlement called twice, an oracle flipped between settlements, a
+ * token that lies about its transfer, a token that re-enters during one, and
+ * an agent trying to withdraw money it has already put at risk. The tests
+ * proving the happy path are the two short ones at the top; the rest of the
+ * file is the part that decides whether anyone should put money in here.
+ *
+ * Every mandate begins with a signature. There is no way to bond in this
+ * system without one, which is what stops a stranger from writing terms
+ * against somebody else's collateral.
  */
 
 /* ------------------------------------------------------------------ tokens */
@@ -80,11 +85,10 @@ contract FeeToken is Token {
     }
 }
 
-
 /**
- * A token with a transfer hook, which is the only way into this contract
- * twice: the vault never calls a principal directly, so the callback has to
- * come from the asset itself.
+ * A token with a transfer hook, which is the only way into this vault twice:
+ * it never calls a principal directly, so a callback has to come from the
+ * asset itself.
  */
 contract ReentrantToken is Token {
     BondVault public vault;
@@ -146,20 +150,22 @@ contract RevertingOracle is IOutcomeOracle {
 
 contract BondVaultTest is Test {
     BondVault vault;
-    OutcomePolicy policy;
+    ClaimRegistry registry;
     Token token;
     Oracle oracle;
 
-    address agent = address(0xA1);
+    uint256 constant AGENT_PK = 0xA9E27;
+    address agent;
     address principal = address(0xB2);
     address stranger = address(0xC3);
 
-    uint256 constant MANDATE = 1;
     uint256 constant BOND = 100e18;
+    int256 constant THRESHOLD = 9_000;
 
     function setUp() public {
-        policy = new OutcomePolicy();
-        vault = new BondVault(policy);
+        agent = vm.addr(AGENT_PK);
+        registry = new ClaimRegistry();
+        vault = new BondVault(registry);
         token = new Token();
         oracle = new Oracle();
 
@@ -168,37 +174,55 @@ contract BondVaultTest is Test {
         token.approve(address(vault), type(uint256).max);
     }
 
-    /// Bind an assertion whose window has already closed, so a verdict exists.
-    function _bindClosed(uint256 id, int256 threshold) internal {
-        vm.warp(10_000);
-        policy.bind(
-            id,
-            Assertion({
-                metric: Metric.TimeInRange,
-                subject: address(0xDEAD),
-                threshold: threshold,
-                windowStart: 1,
-                windowEnd: 2,
-                oracle: address(oracle)
-            })
-        );
+    /* ------------------------------------------------------------- helpers */
+
+    function _claim(address tok, uint256 bondAmount)
+        internal
+        view
+        returns (ClaimRegistry.Claim memory)
+    {
+        return ClaimRegistry.Claim({
+            agent: agent,
+            principal: principal,
+            subject: address(0xDEAD),
+            metric: Metric.TimeInRange,
+            threshold: THRESHOLD,
+            windowStart: 1,
+            windowEnd: 2,
+            oracle: address(oracle),
+            token: tok,
+            bond: bondAmount,
+            feeBps: 500,
+            salt: bytes32(0)
+        });
     }
 
-    function _bondedAgent() internal {
+    function _sign(ClaimRegistry.Claim memory c) internal view returns (bytes memory) {
+        (uint8 v, bytes32 r, bytes32 s) = vm.sign(AGENT_PK, registry.hashClaim(c));
+        return abi.encodePacked(r, s, v);
+    }
+
+    /// Open a signed claim, bond against it, and move past the window.
+    function _open(ClaimRegistry.Claim memory c) internal returns (uint256 id) {
+        id = registry.open(c, _sign(c));
         vm.startPrank(agent);
-        vault.deposit(address(token), 500e18);
-        vault.bond(MANDATE, principal, address(token), BOND);
+        vault.deposit(c.token, 500e18);
+        vault.bond(id);
         vm.stopPrank();
+        vm.warp(10_000);
+    }
+
+    function _standardMandate() internal returns (uint256) {
+        return _open(_claim(address(token), BOND));
     }
 
     /* ------------------------------------------------------- the happy paths */
 
     function test_metClaimReturnsTheBondToTheAgent() public {
-        _bondedAgent();
-        _bindClosed(MANDATE, 9_000);
+        uint256 id = _standardMandate();
         oracle.set(9_500, true);
 
-        (Verdict v,) = vault.settle(MANDATE);
+        (Verdict v,) = vault.settle(id);
 
         assertEq(uint8(v), uint8(Verdict.Met));
         assertEq(vault.available(agent, address(token)), 500e18);
@@ -207,11 +231,10 @@ contract BondVaultTest is Test {
     }
 
     function test_failedClaimSendsTheBondToThePrincipal() public {
-        _bondedAgent();
-        _bindClosed(MANDATE, 9_000);
+        uint256 id = _standardMandate();
         oracle.set(8_000, true);
 
-        (Verdict v,) = vault.settle(MANDATE);
+        (Verdict v,) = vault.settle(id);
 
         assertEq(uint8(v), uint8(Verdict.Failed));
         assertEq(token.balanceOf(principal), BOND);
@@ -222,59 +245,39 @@ contract BondVaultTest is Test {
     /* ------------------------------- money must not move on a missing verdict */
 
     function test_anOracleThatCannotSeeTakesNothing() public {
-        _bondedAgent();
-        _bindClosed(MANDATE, 9_000);
+        uint256 id = _standardMandate();
         oracle.set(0, false);
 
-        vm.expectRevert(
-            abi.encodeWithSelector(BondVault.NotDecided.selector, MANDATE, Verdict.Unmeasurable)
-        );
-        vault.settle(MANDATE);
+        vm.expectRevert(abi.encodeWithSelector(BondVault.NotDecided.selector, id, Verdict.Unmeasurable));
+        vault.settle(id);
 
         assertEq(vault.locked(agent, address(token)), BOND);
         assertEq(token.balanceOf(principal), 0);
     }
 
     function test_anOracleThatRevertsTakesNothing() public {
-        _bondedAgent();
-        vm.warp(10_000);
-        policy.bind(
-            MANDATE,
-            Assertion({
-                metric: Metric.TimeInRange,
-                subject: address(0xDEAD),
-                threshold: 9_000,
-                windowStart: 1,
-                windowEnd: 2,
-                oracle: address(new RevertingOracle())
-            })
-        );
+        ClaimRegistry.Claim memory c = _claim(address(token), BOND);
+        c.oracle = address(new RevertingOracle());
+        uint256 id = _open(c);
 
-        vm.expectRevert(
-            abi.encodeWithSelector(BondVault.NotDecided.selector, MANDATE, Verdict.Unmeasurable)
-        );
-        vault.settle(MANDATE);
+        vm.expectRevert(abi.encodeWithSelector(BondVault.NotDecided.selector, id, Verdict.Unmeasurable));
+        vault.settle(id);
 
         assertEq(vault.locked(agent, address(token)), BOND);
     }
 
     function test_anOpenWindowTakesNothing() public {
-        _bondedAgent();
-        vm.warp(100);
-        policy.bind(
-            MANDATE,
-            Assertion({
-                metric: Metric.TimeInRange,
-                subject: address(0xDEAD),
-                threshold: 9_000,
-                windowStart: 1,
-                windowEnd: 1_000,
-                oracle: address(oracle)
-            })
-        );
+        ClaimRegistry.Claim memory c = _claim(address(token), BOND);
+        c.windowEnd = 50_000;
+        uint256 id = registry.open(c, _sign(c));
+        vm.startPrank(agent);
+        vault.deposit(address(token), 500e18);
+        vault.bond(id);
+        vm.stopPrank();
 
-        vm.expectRevert(abi.encodeWithSelector(BondVault.NotDecided.selector, MANDATE, Verdict.Pending));
-        vault.settle(MANDATE);
+        vm.warp(100);
+        vm.expectRevert(abi.encodeWithSelector(BondVault.NotDecided.selector, id, Verdict.Pending));
+        vault.settle(id);
 
         assertEq(vault.locked(agent, address(token)), BOND);
     }
@@ -282,28 +285,25 @@ contract BondVaultTest is Test {
     /* ------------------------------------------------- a bond moves only once */
 
     function test_aMandateCannotSettleTwice() public {
-        _bondedAgent();
-        _bindClosed(MANDATE, 9_000);
+        uint256 id = _standardMandate();
         oracle.set(8_000, true);
 
-        vault.settle(MANDATE);
-
-        vm.expectRevert(abi.encodeWithSelector(BondVault.AlreadySettled.selector, MANDATE));
-        vault.settle(MANDATE);
+        vault.settle(id);
+        vm.expectRevert(abi.encodeWithSelector(BondVault.AlreadySettled.selector, id));
+        vault.settle(id);
 
         assertEq(token.balanceOf(principal), BOND);
     }
 
     function test_aSecondSlashCannotBeStagedByFlippingTheOracle() public {
-        _bondedAgent();
-        _bindClosed(MANDATE, 9_000);
+        uint256 id = _standardMandate();
         oracle.set(8_000, true);
-        vault.settle(MANDATE);
+        vault.settle(id);
 
-        // The oracle now says the claim held. The mandate is closed regardless.
+        // The oracle now says the promise held. The mandate is closed regardless.
         oracle.set(9_900, true);
-        vm.expectRevert(abi.encodeWithSelector(BondVault.AlreadySettled.selector, MANDATE));
-        vault.settle(MANDATE);
+        vm.expectRevert(abi.encodeWithSelector(BondVault.AlreadySettled.selector, id));
+        vault.settle(id);
 
         assertEq(token.balanceOf(principal), BOND);
         assertEq(vault.available(agent, address(token)), 400e18);
@@ -312,7 +312,7 @@ contract BondVaultTest is Test {
     /* ------------------------------------------ locked money is not withdrawable */
 
     function test_lockedCollateralCannotBeWithdrawn() public {
-        _bondedAgent();
+        _standardMandate();
 
         vm.prank(agent);
         vm.expectRevert(abi.encodeWithSelector(BondVault.InsufficientAvailable.selector, 401e18, 400e18));
@@ -320,7 +320,7 @@ contract BondVaultTest is Test {
     }
 
     function test_unlockedCollateralCanBeWithdrawnAndOnlyByItsOwner() public {
-        _bondedAgent();
+        _standardMandate();
 
         vm.prank(stranger);
         vm.expectRevert(abi.encodeWithSelector(BondVault.InsufficientAvailable.selector, 1, 0));
@@ -332,34 +332,74 @@ contract BondVaultTest is Test {
     }
 
     function test_anAgentCannotBondMoreThanItHolds() public {
+        ClaimRegistry.Claim memory c = _claim(address(token), 600e18);
+        uint256 id = registry.open(c, _sign(c));
+
         vm.startPrank(agent);
-        vault.deposit(address(token), 10e18);
-        vm.expectRevert(abi.encodeWithSelector(BondVault.InsufficientAvailable.selector, 11e18, 10e18));
-        vault.bond(MANDATE, principal, address(token), 11e18);
+        vault.deposit(address(token), 500e18);
+        vm.expectRevert(abi.encodeWithSelector(BondVault.InsufficientAvailable.selector, 600e18, 500e18));
+        vault.bond(id);
         vm.stopPrank();
     }
 
-    function test_aMandateIdCannotBeReused() public {
-        _bondedAgent();
+    function test_aMandateCannotBeBondedTwice() public {
+        uint256 id = _standardMandate();
         vm.prank(agent);
-        vm.expectRevert(abi.encodeWithSelector(BondVault.MandateExists.selector, MANDATE));
-        vault.bond(MANDATE, principal, address(token), 1e18);
+        vm.expectRevert(abi.encodeWithSelector(BondVault.MandateExists.selector, id));
+        vault.bond(id);
+    }
+
+    /* ---------------------------------------- the terms are not the caller's */
+
+    function test_onlyTheSigningAgentCanBondItsOwnClaim() public {
+        ClaimRegistry.Claim memory c = _claim(address(token), BOND);
+        uint256 id = registry.open(c, _sign(c));
+
+        token.mint(stranger, 500e18);
+        vm.startPrank(stranger);
+        token.approve(address(vault), type(uint256).max);
+        vault.deposit(address(token), 500e18);
+        vm.expectRevert(abi.encodeWithSelector(BondVault.NotTheAgent.selector, stranger, agent));
+        vault.bond(id);
+        vm.stopPrank();
+    }
+
+    function test_bondingAMandateWithNoClaimBehindItReverts() public {
+        vm.prank(agent);
+        vm.expectRevert(abi.encodeWithSelector(ClaimRegistry.NotOpen.selector, uint256(99)));
+        vault.bond(99);
+    }
+
+    /**
+     * The amount at risk is the amount signed for. There is no argument for a
+     * caller to disagree with the promise through, which is the whole reason
+     * `bond` takes only an id.
+     */
+    function test_theBondIsTheOneTheAgentSignedFor() public {
+        ClaimRegistry.Claim memory c = _claim(address(token), 42e18);
+        uint256 id = registry.open(c, _sign(c));
+
+        vm.startPrank(agent);
+        vault.deposit(address(token), 500e18);
+        vault.bond(id);
+        vm.stopPrank();
+
+        assertEq(vault.locked(agent, address(token)), 42e18);
+        assertEq(vault.mandateOf(id).bonded, 42e18);
+        assertEq(vault.mandateOf(id).principal, principal);
     }
 
     /* ------------------------------------------------------- awkward tokens */
 
     function test_aTokenThatReturnsNothingStillWorks() public {
         NoReturnToken odd = new NoReturnToken();
-        odd.mint(agent, 100e18);
-        vm.startPrank(agent);
+        odd.mint(agent, 500e18);
+        vm.prank(agent);
         odd.approve(address(vault), type(uint256).max);
-        vault.deposit(address(odd), 100e18);
-        vault.bond(MANDATE, principal, address(odd), 100e18);
-        vm.stopPrank();
 
-        _bindClosed(MANDATE, 9_000);
+        uint256 id = _open(_claim(address(odd), 100e18));
         oracle.set(1, true);
-        vault.settle(MANDATE);
+        vault.settle(id);
 
         assertEq(odd.balanceOf(principal), 100e18);
     }
@@ -376,46 +416,56 @@ contract BondVaultTest is Test {
         assertEq(vault.available(agent, address(fee)), 90e18);
         assertEq(fee.balanceOf(address(vault)), 90e18);
 
+        ClaimRegistry.Claim memory c = _claim(address(fee), 100e18);
+        uint256 id = registry.open(c, _sign(c));
         vm.prank(agent);
         vm.expectRevert(abi.encodeWithSelector(BondVault.InsufficientAvailable.selector, 100e18, 90e18));
-        vault.bond(MANDATE, principal, address(fee), 100e18);
+        vault.bond(id);
+    }
+
+    /* ---------------------------------------------------------- reentrancy */
+
+    /**
+     * The state that closes a mandate is written before any transfer, so a
+     * token that calls back finds it settled and the bond leaves exactly once.
+     */
+    function test_aTokenThatReEntersDuringTransferCannotDrainTheBond() public {
+        ReentrantToken evil = new ReentrantToken();
+        evil.mint(agent, 500e18);
+        vm.prank(agent);
+        evil.approve(address(vault), type(uint256).max);
+
+        uint256 id = _open(_claim(address(evil), 200e18));
+        evil.arm(vault, id);
+        oracle.set(0, true);
+
+        vault.settle(id);
+
+        assertTrue(evil.tried(), "the hook never fired, so this proved nothing");
+        assertTrue(evil.secondCallReverted(), "the vault let a second settlement in");
+        assertEq(evil.balanceOf(principal), 200e18);
+        assertEq(vault.locked(agent, address(evil)), 0);
+        assertEq(vault.available(agent, address(evil)), 300e18);
     }
 
     /* ------------------------------------------------------------ invariants */
 
     /**
      * The accounting identity: whatever the vault holds for an agent is
-     * exactly what it says is available plus what it says is locked. Fuzzed
-     * across deposit, bond, settle and withdraw in every order the sequence
-     * allows.
+     * exactly what it says is available plus what it says is locked.
      */
-    function testFuzz_theVaultHoldsExactlyWhatItSaysItHolds(
-        uint128 depositAmount,
-        uint128 bondAmount,
-        bool claimHeld,
-        bool withdrawRest
-    ) public {
-        depositAmount = uint128(bound(depositAmount, 1, 1_000e18));
-        bondAmount = uint128(bound(bondAmount, 1, depositAmount));
+    function testFuzz_theVaultHoldsExactlyWhatItSaysItHolds(uint128 bondAmount, bool claimHeld, bool withdrawRest)
+        public
+    {
+        bondAmount = uint128(bound(bondAmount, 1, 500e18));
 
-        token.mint(agent, depositAmount);
-        vm.startPrank(agent);
-        token.approve(address(vault), type(uint256).max);
-        vault.deposit(address(token), depositAmount);
-        vault.bond(MANDATE, principal, address(token), bondAmount);
-        vm.stopPrank();
+        uint256 id = _open(_claim(address(token), bondAmount));
+        assertEq(vault.available(agent, address(token)) + vault.locked(agent, address(token)), 500e18);
 
-        assertEq(
-            vault.available(agent, address(token)) + vault.locked(agent, address(token)),
-            depositAmount
-        );
-
-        _bindClosed(MANDATE, 9_000);
         oracle.set(claimHeld ? int256(9_500) : int256(1_000), true);
-        vault.settle(MANDATE);
+        vault.settle(id);
 
-        // A slash leaves the vault; a release stays. Either way the books tie.
-        uint256 expectedHeld = claimHeld ? depositAmount : depositAmount - bondAmount;
+        uint256 expectedHeld = claimHeld ? 500e18 : 500e18 - bondAmount;
         assertEq(vault.locked(agent, address(token)), 0);
         assertEq(vault.available(agent, address(token)), expectedHeld);
         assertGe(token.balanceOf(address(vault)), expectedHeld);
@@ -431,91 +481,50 @@ contract BondVaultTest is Test {
     function testFuzz_aSlashNeverExceedsTheBond(int256 measured, uint128 bondAmount) public {
         bondAmount = uint128(bound(bondAmount, 1, 500e18));
 
-        vm.startPrank(agent);
-        vault.deposit(address(token), 500e18);
-        vault.bond(MANDATE, principal, address(token), bondAmount);
-        vm.stopPrank();
-
-        _bindClosed(MANDATE, 9_000);
+        uint256 id = _open(_claim(address(token), bondAmount));
         oracle.set(measured, true);
-        (, uint256 moved) = vault.settle(MANDATE);
+        (, uint256 moved) = vault.settle(id);
 
         assertLe(moved, bondAmount);
         assertLe(token.balanceOf(principal), bondAmount);
     }
 
-    /// Only the principal named at lock time is ever paid a slash.
+    /// Only the principal named in the signed claim is ever paid a slash.
     function testFuzz_onlyTheNamedPrincipalIsEverPaid(address who) public {
-        vm.assume(who != principal && who != address(vault) && who != address(0));
-        _bondedAgent();
-        _bindClosed(MANDATE, 9_000);
+        vm.assume(who != principal && who != address(vault) && who != address(0) && who != agent);
+        uint256 id = _standardMandate();
         oracle.set(0, true);
 
         uint256 before = token.balanceOf(who);
-        vault.settle(MANDATE);
+        vault.settle(id);
 
         assertEq(token.balanceOf(who), before);
         assertEq(token.balanceOf(principal), BOND);
     }
 
-
-    /* ---------------------------------------------------------- reentrancy */
-
-    /**
-     * The vault never calls a principal, so the only way back in is a token
-     * that calls out during its own transfer. The state that closes the
-     * mandate is written before that transfer happens, so the second entry
-     * finds the mandate already settled and reverts — and the bond leaves
-     * exactly once.
-     */
-    function test_aTokenThatReEntersDuringTransferCannotDrainTheBond() public {
-        ReentrantToken evil = new ReentrantToken();
-        evil.mint(agent, 300e18);
-
-        vm.startPrank(agent);
-        evil.approve(address(vault), type(uint256).max);
-        vault.deposit(address(evil), 300e18);
-        vault.bond(MANDATE, principal, address(evil), 200e18);
-        vm.stopPrank();
-
-        evil.arm(vault, MANDATE);
-        _bindClosed(MANDATE, 9_000);
-        oracle.set(0, true);
-
-        vault.settle(MANDATE);
-
-        assertTrue(evil.tried(), "the hook never fired, so this proved nothing");
-        assertTrue(evil.secondCallReverted(), "the vault let a second settlement in");
-        assertEq(evil.balanceOf(principal), 200e18);
-        assertEq(vault.locked(agent, address(evil)), 0);
-        assertEq(vault.available(agent, address(evil)), 100e18);
-    }
-
     /* ------------------------------------------------------------- settling */
 
     function test_anybodyMaySettleBecauseTheOutcomeDoesNotDependOnWhoAsks() public {
-        _bondedAgent();
-        _bindClosed(MANDATE, 9_000);
+        uint256 id = _standardMandate();
         oracle.set(1_000, true);
 
         vm.prank(stranger);
-        vault.settle(MANDATE);
+        vault.settle(id);
 
         assertEq(token.balanceOf(principal), BOND);
     }
 
     function test_settlingAMandateThatWasNeverBondedReverts() public {
-        vm.expectRevert(abi.encodeWithSelector(BondVault.NoSuchMandate.selector, 99));
+        vm.expectRevert(abi.encodeWithSelector(BondVault.NoSuchMandate.selector, uint256(99)));
         vault.settle(99);
     }
 
     function test_theMandateRecordsTheVerdictThatSettledIt() public {
-        _bondedAgent();
-        _bindClosed(MANDATE, 9_000);
+        uint256 id = _standardMandate();
         oracle.set(500, true);
-        vault.settle(MANDATE);
+        vault.settle(id);
 
-        Mandate memory m = vault.mandateOf(MANDATE);
+        Mandate memory m = vault.mandateOf(id);
         assertEq(uint8(m.verdict), uint8(Verdict.Failed));
         assertTrue(m.settled);
         assertEq(m.principal, principal);

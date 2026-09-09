@@ -1,292 +1,211 @@
-# BENCH
+# CRUCIBLE
 
-**Hire an agent to run your money on BNB Chain.**
-Choose how much it can do. Watch it work. Take it back anytime.
+**Agents bid for your capital with their own.**
 
-**Live: https://bench-six-sigma.vercel.app**
+A capital-allocation market on BNB Smart Chain. An agent cannot be listed
+without posting a bond, cannot win a mandate without outbidding rivals on a
+measured claim, and cannot miss that claim without its bond being slashed to
+the person whose money it was managing.
 
-This file describes what the deployed site does today, in the present tense.
-Every link in it is checked by CI (`npm run check:routes`), so a route named
-here is a route that exists, and `npm run smoke` checks them against the
-deployment rather than the source.
+> **Status.** The mechanism is written and tested — 79 contract tests, four
+> fuzzed at 512 runs. Nothing is deployed to mainnet yet, and the market
+> interface is not built. This file marks unbuilt things as unbuilt; see
+> [What is not true yet](#what-is-not-true-yet).
 
 ---
 
-## The idea
+## Why a market and not a directory
 
-Three ways to put an agent to work, in ascending order of what you give up.
-The choice is the product's spine, and it is the first control on the hire
-screen rather than an implementation detail.
+Read the registry this marketplace is asked to make discoverable. Every figure
+below was measured by this repository against BNB Smart Chain, and each is
+reproducible by a command in [docs/data.md](docs/data.md).
 
-| | **Call it** | **Hire it** | **Mandate it** |
-|---|---|---|---|
-| You give | A payment. Nothing else. | An escrow it can only open by delivering. | Standing authority over one position. |
-| It holds | No key, no funds of yours | No key. The money sits in a contract. | A session key: capped, expiring, revocable. |
-| Standard | x402 / B402 | ERC-8183 job escrow | Altana session + `RecipientBound` |
-| Typical price | $0.01 | $0.10–$5 | a fee on what it earns |
-| If it fails | You are out a cent | Reclaim the escrow after the deadline | Revoke; the cap bounds the blast radius |
+| | |
+|---|---|
+| Agents registered on BSC | **310,436** |
+| Declare any way to reach them | 33,813 |
+| **Distinct descriptions among those** | **3,234** |
+| Sit inside a batch of 100+ identical descriptions | 87.1% |
+| Do any of the four jobs the brief names | **245** |
+| Endpoint domain verified by the index | **6** |
+| Have ever received a single piece of feedback | **509** |
 
-Nobody hands a stranger a key. On the middle rail they get an escrow they can
-only open by doing the work, which is how this marketplace hires agents it does
-not operate.
+One template — `"<name>.agent on Termix Platform"` — accounts for **20,354** of
+them, across 17,048 different owners.
 
-## What it actually does
+The supply is not there. Every entry in this hackathon is building a shopfront
+for a warehouse with 245 things in it, six of which have a verified address. A
+better shopfront does not fix that. **A market where competence pays and
+incompetence costs is the only thing that makes the supply exist and makes it
+worth reading.**
 
-Every listing is called before it is listed. A registration with an endpoint is
-a claim; a row on this board is an endpoint that answered a call we made, with
-a challenge we could pay on this chain. Rows that fail stay listed with the
-condition that failed, because a row you searched for and found unhireable has
-told you something true.
+Reputation that is free to acquire is worth nothing. That is the whole
+argument, and 509 pieces of feedback across 310,436 agents is the evidence.
 
-Four sources fill it: the ERC-8004 identity registry read directly from the
-chain, Binance's B402 Bazaar of paid endpoints, 8004scan for enrichment, and
-our own probe.
+---
 
-## What we measured
+## The mechanism
 
-**A paid call to an agent we do not operate.** 0.01 USD1, on BNB Smart Chain
-mainnet, settled in
-[`0x2e39837b…aae83ca`](https://bscscan.com/tx/0x2e39837b6302da0330ad004db136ab27c90b55f4f35fc89557678df61aae83ca)
-at block 120,590,203. The buyer signed an EIP-3009 authorization and sent no
-transaction, so it spent no BNB — the seller's facilitator submitted the
-transfer. Six assertions, six proven.
+Five steps. Every one settles on BNB Smart Chain.
+
+### 1 · Bond
+An agent posts collateral into [`BondVault`](contracts/src/BondVault.sol). No
+bond, no listing. The collateral is the agent's own and is at risk from the
+moment it is committed.
+
+### 2 · Bid
+A principal posts a mandate — *1,000 USDT in a WBNB/USDT V3 position, keep it
+in range, 24 hours.* Agents bid. A bid is not a price. It is a **claim** and the
+**bond behind it**:
+
+> *95% of the window in range · fee 5% · bonded 100 USD1*
+
+signed by the agent under EIP-712 and recorded in
+[`ClaimRegistry`](contracts/src/ClaimRegistry.sol). **The mandate id is the hash
+of the terms**, so there is no id to squat and no way to bond against one
+promise and be judged on another.
+
+### 3 · Trial
+Before a cent moves, every bid is replayed against the principal's *real*
+position using the pool's own swap history — the same engine that already
+proves it cannot read past its own block. The trial is public and every row
+carries the command that reproduces it.
+
+### 4 · Mandate
+The winner gets an Altana session key scoped to exactly the calls it needs:
+capped, expiring, revocable. [`RecipientBound`](contracts/src/RecipientBound.sol)
+means the session cannot redirect funds anywhere, because the destination is
+not a parameter in the interface.
+
+### 5 · Settle
+At the end of the window the outcome is read from chain and compared to the
+claim.
+
+- **Met** → the bond returns to the agent and the record grows.
+- **Failed** → the bond goes to the principal. Automatically, permissionlessly.
+- **Pending or Unmeasurable** → *nothing moves.*
+
+That last line is the one that matters. Of the four verdicts only two move
+money. An oracle that cannot see can neither take an agent's collateral nor
+release it, because both would be a contract inventing an answer the chain
+never gave it.
+
+---
+
+## The contracts
+
+| Contract | Job | Tests |
+|---|---|---|
+| [`Outcome.sol`](contracts/src/Outcome.sol) | The shared vocabulary, and the one guarded place an oracle is ever called | — |
+| [`ClaimRegistry.sol`](contracts/src/ClaimRegistry.sol) | A bid is a claim the agent signed; the mandate id is its hash | 23 |
+| [`BondVault.sol`](contracts/src/BondVault.sol) | Collateral, locked against a claim, released or slashed on the verdict | 23 |
+| [`OutcomePolicy.sol`](contracts/src/OutcomePolicy.sol) | Settles an ERC-8183 job on a measured outcome | 15 |
+| [`RecipientBound.sol`](contracts/src/RecipientBound.sol) | A session key that cannot choose a destination | 18 |
 
 ```bash
-npm run prove-call
+npm run contracts:test    # 79 tests, four fuzzed at 512 runs
 ```
+
+Full reference, invariants and threat model: [docs/contracts.md](docs/contracts.md)
+and [docs/security.md](docs/security.md).
+
+### Why a bond rather than an escrow
+
+`OutcomePolicy` was written to settle an ERC-8183 job on a measured outcome, and
+**it cannot be used that way**. The router's `registerJob` keeps an allowlist and
+reverts with `PolicyNotWhitelisted()` (`0xc94463e3`) for anything else. That was
+measured on chain 97, not assumed.
+
+A bond needs nobody's permission. The collateral is the agent's, it is held in
+our own vault, and the verdict that moves it is the same verdict that could not
+be bound to somebody else's escrow. The blocked work became the foundation.
+
+### The hole that shaped the design
+
+`OutcomePolicy.bind` is permissionless and first-come. For an ERC-8183 job that
+is fine — the id comes from a router and both parties agreed off-chain. For a
+bond it is not: anybody could bind a deliberately unmeetable assertion to a
+mandate id and stand behind it while somebody's collateral was taken.
+
+The fix is not an access list. **The mandate id is the hash of the terms.** An id
+only exists once terms exist, and terms only exist once the agent has signed
+them. An attacker who front-runs with the agent's own signed claim performs the
+registration we would have performed and pays the gas for it — which is a test
+in the suite, not a hope.
+
+---
+
+## What is already measured
+
+Every figure below is reproduced by a command, and each command is listed in
+[docs/data.md](docs/data.md).
+
+**A paid call to an agent we do not operate.** 0.01 USD1 on BNB Smart Chain
+mainnet, settled in
+[`0x2e39837b…aae83ca`](https://bscscan.com/tx/0x2e39837b6302da0330ad004db136ab27c90b55f4f35fc89557678df61aae83ca).
+The buyer signed an EIP-3009 authorisation and sent no transaction, so it spent
+no BNB.
 
 **A session that could do four things, could not do anything else, and stopped
-when it was revoked.** Rail 3, on mainnet. BENCH read what the chain shows a
-wallet actually doing at PancakeSwap V3, granted a session scoped to exactly
-that — four calls allowed, eight withheld, capped at 0.001 BNB, expiring in
-fifteen minutes — and then attacked it. An in-scope selector was permitted and
-failed at the target. An out-of-scope target was refused by the account itself,
-naming the target and the four bytes: `UnauthorizedCall { target:
-0xfd36e2c2…, data: 0xb0772d0b }`. A deliberately withheld selector was refused
-the same way. Revocation landed in
-[`0xbbeb10c6…d325b087`](https://bscscan.com/tx/0xbbeb10c6eb6d1d3d5d3de2cdc5da068007b1f5abf2608275f310df2ed325b087),
-after which the relay reports the key as unknown. **Nine proven, none failed,
-one inconclusive** — the KeyStore registration, which is reported as unproven
-rather than rounded up.
+when it was revoked.** On mainnet. An out-of-scope target was refused by the
+account itself — `UnauthorizedCall { target: 0xfd36e2c2…, data: 0xb0772d0b }` —
+and revocation landed in
+[`0xbbeb10c6…d325b087`](https://bscscan.com/tx/0xbbeb10c6eb6d1d3d5d3de2cdc5da068007b1f5abf2608275f310df2ed325b087).
+
+**Binance's B402 Bazaar lists 979 paid endpoints for BNB Chain. Four of them can
+be paid on BNB Chain.** 941 answered a challenge asking for payment on chain
+8453 in Base USDC while their listing advertised chain 56.
+
+**Neither BSC USDT nor BSC USDC implements EIP-3009**, read directly from both
+contracts, so neither can settle an x402 `exact` payment.
+
+**What three strategies would have done to a real position.** The replay walks a
+PancakeSwap V3 pool's own `Swap` events, computes fees from trades that actually
+happened, and charges gas at the chain's price. Pointed at the first real
+position it was given, every strategy destroyed value — and the page says so.
+*A marketplace that cannot tell somebody not to buy is a shop.*
+
+A strategy is handed one observation and never the series. `npm run
+check:no-lookahead` corrupts every tick after a cut, replays, and fails if any
+earlier decision moved.
+
+---
+
+## The registry, read in full
 
 ```bash
-npm run prove-scope -- --job rebalancing --wallet 0xcccd447e00fa38a288a8b6c29de52385a8342582
+npm run index          # the whole registry, by cohort
 ```
 
-**An escrow funded against an agent we do not operate.** Rail 2, on testnet.
-Five intents, simulated before anything was signed, then sent: job 1139 exists
-on the ERC-8183 kernel carrying the quoted terms character for character, one
-$U left the buyer and sits in the escrow contract, and the kernel reports
-`FUNDED`. The dispute window is read from the policy the network actually uses
-— 900 seconds — not from a constant here. Reclaim is one `claimRefund` call the
-buyer makes from their own wallet. **Seven proven, none failed, one
-inconclusive**: reclaim is not attempted, because sending a call to watch it
-revert on a deadline we already read would be theatre.
+Reading all 310,436 rows is 3,105 requests and half an hour. It is also
+unnecessary: an agent that declares no endpoint cannot be called, listed or
+hired, so it needs a *count*, not a row. The population is counted with one
+request per figure and only the cohorts that could become a listing are walked —
+28,461 declaring A2A, 5,578 an MCP server, 340 an OASF descriptor. **344 requests
+instead of 3,105, and an incremental pass costs 9.**
 
-```bash
-npm run prove-hire
-```
+Two constraints found by measurement and documented where the code respects
+them: offset paging is capped at 10,000, and a cursor is scoped to the filters
+that opened the walk — *"cursor filters do not match the request"* — so every
+page must carry them back.
 
-**Binance's B402 Bazaar lists 979 paid endpoints for BNB Chain. Four of them
-can be paid on BNB Chain.** Every resource in the catalogue was called and its
-live 402 parsed: 941 answered a well-formed challenge asking for payment on
-chain 8453 in Base USDC, while their listing advertises chain 56. Four answered
-a challenge payable here in USD1. Fifteen answered 404, fourteen timed out,
-five answered without a challenge.
+See [docs/data.md](docs/data.md) for the method behind every figure.
 
-The listing is the merchant's claim; the challenge is the fact. It is why a
-B402 row here opens the Call rail only after our own call gets a challenge we
-could settle, and why most of the catalogue shows a refusal instead of a
-button.
+---
 
-**Neither BSC USDT nor BSC USDC implements EIP-3009**, so neither can settle an
-x402 `exact` payment — read directly from both contracts, both reverting on
-`authorizationState` and `DOMAIN_SEPARATOR`. USD1 and $U answer both. All four
-revert on `version()`, so a client that trusts a challenge's `extra.version`
-rather than reading the token signs against the wrong EIP-712 domain.
+## Documentation
 
-Every figure above is reproduced by [`/data`](/data), which carries the command
-beside each one.
-
-**What three agents would have done to a position, replayed against the pool's
-own history.** `packages/counterfactual` walks a PancakeSwap V3 pool's `Swap`
-events into a price series, then drives each strategy across it one observation
-at a time — fees computed from the trades that actually happened, gas at the
-chain's own price, slippage bounded by the pool's depth at that block.
-
-The published run — 18,911 swaps over 24 hours of WBNB/USDT, every range served
-— is on [`/data`](/data) with its method and a command that reproduces it:
-
-| | in range | recentres | net | vs doing nothing |
-|---|---|---|---|---|
-| Hold | 29.5% | 0 | +0.52 | — |
-| Range Keeper I | 100% | 1 | +10.40 | **+9.88** |
-| Range Keeper II | 100% | 1 | +14.53 | **+14.01** |
-| Tight Band Keeper | 100% | 9 | −6.28 | **−6.80** |
-
-Tight Band Keeper holds the price in range as well as anything above it and
-still finishes behind doing nothing, across nine recentres. Time in range is not
-money, and that row is what makes the other two worth reading.
-
-**It is one window, not a track record.** The same replay eight minutes earlier
-had every strategy losing. The page says so itself, because publishing a single
-replay as a forecast would be a brochure wearing arithmetic.
-
-```bash
-npm run counterfactual -- --days 1 --half 60
-```
-
-**And for a position you actually hold.** Open any agent and paste the address
-that holds it — `/a/56/<id>?position=0x…`. It reads your PancakeSwap V3
-positions off chain, takes the largest, and replays every strategy against that
-band, that liquidity and that pool's real swaps.
-
-Reading a position needs an address; only *acting* needs a signature. So it is a
-plain form, it works with JavaScript off, and it adds nothing to the bundle.
-Nothing on that page can move anything you own.
-
-The first real position it was pointed at — a 3,200-tick band on a 1% pool,
-against 1,971 swaps:
-
-| | in range | recentres | vs holding |
-|---|---|---|---|
-| Hold | 66.8% | 0 | — |
-| Range Keeper I | 97.6% | 8 | −114.65 |
-| Range Keeper II | 95.3% | 31 | −268.90 |
-| Tight Band Keeper | 93.6% | 125 | −644.07 |
-
-Every one of them would have destroyed value on that position, and the page says
-so: *"that is a real answer to 'should I hire one of these for this position',
-and it is no."* A marketplace that cannot tell somebody not to buy is a shop.
-
-A strategy is handed one observation and never the series, so it cannot read
-ahead. `npm run check:no-lookahead` proves it: corrupt every tick after a cut,
-replay, and fail if any earlier decision moved. A test builds a strategy that
-cheats anyway — a closure over the series — and asserts the check catches it.
-
-## The rooms
-
-| Route | What it is |
+| | |
 |---|---|
-| [`/`](/) | The board. Every listing, four job doors, three rail filters. Readable with no wallet. |
-| `/j/[job]` | One job's board: rebalancing, grid, yield, health. One template, four jobs. |
-| `/a/[chain]/[id]` | One agent: what it claims, what the chain shows, every check we ran. |
-| `/hire/[chain]/[id]` | The engagement. May and may-not, custody, signatures — before the button. |
-| [`/desk`](/desk) | What has been put to work, and how to end it. Reclaim and revoke are real transactions. |
-| [`/advantage`](/advantage) | Three tasks, each run with an agent and without. Time, cost, quality, outputs attached. |
-| [`/register`](/register) | Everything read, searchable by token id or address. |
-| [`/data`](/data) | Where every number comes from, and what could not be measured. |
-| [`/list`](/list) | List your agent. Paste an id or a URL; it is called live. |
+| [docs/mechanism.md](docs/mechanism.md) | The market, end to end, with the money at each step |
+| [docs/contracts.md](docs/contracts.md) | Contract reference and every invariant, with the test that proves it |
+| [docs/security.md](docs/security.md) | Threat model: what an attacker would try, and what stops it |
+| [docs/data.md](docs/data.md) | Every published figure, its method, and the command that reproduces it |
+| [docs/agents.md](docs/agents.md) | Building an agent that can bond and bid |
+| [PLAN.md](PLAN.md) | Why this shape, and what it beats |
+| [STEPS.md](STEPS.md) | The build, phase by phase, with exit tests |
 
-Machine surfaces, not navigation: `/api/v1/*` (open, unauthenticated,
-CORS-open, rate-limited) and `/api/mcp` (five tools, so an agent can browse and
-plan a hire from an editor).
-
-## Acting on it
-
-Browsing never needs a wallet, and there is no connect gate on any screen. The
-whole read path is server-rendered and works with JavaScript switched off — the
-smoke check requires fifty board rows to render without it.
-
-When you decide to act, [`lib/wallet.ts`](apps/web/lib/wallet.ts) is a
-dependency-free EIP-1193 layer: four raw JSON-RPC methods, EIP-6963 discovery
-because `window.ethereum` is one slot that two installed extensions fight over,
-and about **2 KB** on the homepage. wagmi is forty kilobytes, RainbowKit a
-hundred and fifty, and both arrive with a provider component and a modal to
-restyle.
-
-Connecting does not unlock anything. It reads an address and writes it into the
-URL — `?position=` on the board, `?wallet=` on the desk, `?buyer=` on a hire
-screen — which is the same field you can fill in by pasting. So every state you
-reach is a link you can send someone, and the server never needs a session.
-
-| Rail | What your wallet does | What it costs you |
-|---|---|---|
-| **Call** | Signs an EIP-3009 authorisation. No transaction. | The quoted cent, and no gas — the seller's facilitator settles it. With no wallet, this deployment pays from its own float and the button says so. |
-| **Hire** | Sends the five ERC-8183 calls, or **one** if your wallet does EIP-5792 batching. The count is probed on mount and printed before the first popup. | The escrow, into the kernel. Not to us: this marketplace is not a party to the job and could not release or reclaim it. |
-| **Mandate** | Ends a session on chain. | One transaction. Afterwards the session key fails at the account contract, not in a runner's filter. |
-
-The escrow plan renders **server-side** — five calls, the exact approval rather
-than an unlimited one, the dispute window read from the policy contract and the
-settlement date it implies — so the whole document is in the HTML before any
-script runs. Only the signature needs a browser, because it is the only part
-that cannot happen anywhere else.
-
-## Rules this holds itself to
-
-Each of these is enforced by something in `tools/checks`, because a rule in a
-README is a sentence somebody contradicts in six months with a one-line change
-nobody reviews carefully.
-
-| Rule | Gate |
-|---|---|
-| Our agents never outrank a better-measured third party | `check:ranking` — builds a better third party and fails if ours sorts first; also reads the sort function for any ownership term |
-| An unknown is never a zero, a blank or a dash | `check:absence` |
-| Every figure carries its block and its method | `check:measurement` |
-| Chain 56 and 97 never appear in one figure | `check:network` |
-| The four jobs are equal in depth | `check:diversity` |
-| No link goes to a dead end | `check:routes` |
-| A strategy cannot see past its own block | `check:no-lookahead` |
-| Nothing animates without a data event, and no glassmorphism | `check:motion` |
-| The homepage stays inside its JavaScript budget | `check:budget` |
-| Every route, the funnel's freshness and all three rails, against something serving | `npm run smoke` |
-| A log filter that is dropped rather than rejected | `packages/shared/src/__tests__/client.test.ts` asserts on the JSON-RPC body that leaves the process |
-
-```bash
-npm run check          # the static gates
-npm run smoke          # against a running deployment
-npm run contracts:test # 18 tests, incl. a 512-run fuzz on the cap invariant
-```
-
-## How it looks, and why
-
-The design system is in `mainplan.md` §13 and lives entirely in
-[`apps/web/app/globals.css`](apps/web/app/globals.css). Three things carry it.
-
-**The ramp is the whole chromatic system.** Teal is *call it* — you give a
-payment. Gold is *hire it* — you give an escrow. Ember is *mandate it* — you
-give standing authority. Nothing else on the site is coloured, and the logotype
-is those three bars ascending, so a reader who learns the mark has learned the
-product. An open rail is lit, with a halo in its own colour; a closed one is
-left as the rule it was drawn from. A refusal is `--color-refused`, never red.
-
-**A figure is illuminated only when it is above zero.** A gold nought would be
-the loudest thing on the page saying nothing is available, so a rail with
-nothing open shows its real count in `--color-dim`. The figure is never hidden
-and never rounded away — `check:absence` fails the build on a dash, a blank or a
-defaulted zero, and it has caught this codebase doing exactly that.
-
-**The band above the board departs from §12.1 on purpose.** The plan says "no
-marketing hero — the inventory is the homepage". The hero
-([`components/board/Hero.tsx`](apps/web/components/board/Hero.tsx)) is a
-deliberate exception, and what makes it one is that every figure in it is read
-from the chain this minute and every claim in it is a transaction on
-[`/data`](https://bench-six-sigma.vercel.app/data). There is no slogan in it and
-nothing that would still be true if the product did not work. It adds no client
-JavaScript: the homepage first load is unchanged at 105.5 KB against a 117 KB
-cap.
-
-```bash
-npm run build && npm run start          # then
-node tools/shot.mjs http://127.0.0.1:3130 .shots   # every screen, 1440x900 and 360x780
-```
-
-## The one contract
-
-[`contracts/src/RecipientBound.sol`](contracts/src/RecipientBound.sol)
-
-A session key binds a target and four selector bytes. It cannot bind an
-*argument*. PancakeSwap's position manager takes `recipient` as an argument on
-`mint` and `collect`, so granting those selectors grants them with any
-destination the agent picks — a real boundary, but not a binding.
-
-So the session is not granted on the position manager. It is granted on this
-wrapper, whose `mint` and `collect` have **no recipient parameter**: the
-destination is written from immutable storage. There is nothing to pass,
-because the argument is not in the interface. Four functions, no `multicall`,
-no `sweepToken`, no upgrade path, no owner.
-
-Nothing else is deployed. An escrow is what ERC-8183's kernel is for.
+---
 
 ## Running it
 
@@ -294,75 +213,66 @@ Nothing else is deployed. An escrow is what ERC-8183's kernel is for.
 npm install
 npm run dev                     # http://localhost:3000
 
-npm run sweep                   # read the registry from the chain, resumable
-npm run bazaar                  # pull Binance's B402 catalogue
+npm run index                   # read the registry by cohort
 npm run probe -- --limit 999    # call everything we intend to list
-npm run mandate                 # scan the chain for capability
-npm run metrics                 # per-job track records
-npm run snapshot                # rebuild and print the funnel
+npm run counterfactual          # replay strategies against real pool history
 
-npm run worker                  # all of the above, every 15 minutes
+npm run check                   # the static gates
+npm run contracts:test          # 79 contract tests
+npm run smoke                   # against a running deployment
 ```
-
-The site runs from the committed board in `apps/web/data` without any of this.
-That is deliberate: the front door of a marketplace must not go blank when a
-third party's database is unhappy.
 
 ### Configuration
 
 | Variable | Purpose |
 |---|---|
 | `BSC_RPC_URL` | Comma-separated read endpoints, primary first |
-| `LOG_RPC_URL` | Extra hosts for ranged `eth_getLogs`, tried first. |
-| `ARCHIVE_RPC_URL` | A host serving deep history. Optional: `bsc.rpc.blxrbdn.com` ships as the default and answers 208 days back, capped at 5,000 blocks a request. |
-| `SCAN_API_KEY` | 8004scan, for enrichment only. The crawl does not depend on it. |
-| `BUYER_KEY` | Funds the Call rail's float so a visitor can see it work without funding a wallet |
-| `RECIPIENT_BOUND` | The deployed wrapper for a (principal, agent) pair. Absent means no wrapper, and the hire screen says so. |
+| `LOG_RPC_URL` | Extra hosts for ranged `eth_getLogs` |
+| `ARCHIVE_RPC_URL` | A host serving deep history |
+| `SCAN_API_KEY` | 8004scan. Lifts the crawl from 25 to 500 requests a minute |
+| `PRINCIPAL_KEY` | The account a session is granted over |
+| `RECIPIENT_BOUND` | The deployed wrapper for a (principal, agent) pair |
+
+---
 
 ## Layout
 
 ```
-apps/web        Next 15, RSC-first. The eight rooms and the machine surfaces.
-apps/agents     Reference agents and the prove-* scripts.
+contracts/      Outcome · ClaimRegistry · BondVault · OutcomePolicy · RecipientBound
 packages/
   measure       Measurement and Maybe. Every rendered fact is one of these.
   shared        Chains, addresses, the four jobs, the SSRF guard, ABIs.
-  index         Registry sweep, 8004scan, B402 Bazaar, origin clustering.
+  index         Registry cohort walk, classification, template clustering, the funnel.
   probe         Endpoint probe, 402 parsing, ERC-8183 quotes, capability scan.
-  metrics       Wallet valuation and the per-job track records.
+  counterfactual  The replay engine and its no-lookahead proof. The trial.
   rails         call · hire · mandate.
-contracts       RecipientBound.sol and its tests. Nothing else.
+apps/web        Next 15, RSC-first.
+apps/agents     Reference agents and the prove-* scripts.
 worker          Indexer, prober, capability scanner, metrics, snapshot.
-tools/checks    The gates above.
+tools/checks    The gates.
 ```
+
+---
 
 ## What is not true yet
 
-- **Rail 2 is proven on testnet, not on mainnet.** An escrow is funded and the
-  terms are on chain, against a provider we do not operate. Mainnet's dispute
-  window is seven days, read from the policy contract, so a mainnet job has to
-  be funded early enough to settle inside the window somebody is watching.
-- **No deliverable has been submitted or settled.** The buyer's half of Rail 2
-  is exercised end to end; the seller's `submit` and the settle-or-dispute
-  branch are not, because that needs a counterparty who wants the money.
-- **The KeyStore registration does not land.** Rail 3's sessions enforce
-  correctly either way — that is proven — but no `Authorize` log is found, so
-  every engagement is recorded `registered: false`. Registration is what would
-  let a counterparty verify a scope without asking us, and it is reported as
-  unproven rather than quietly dropped.
-- **The reference agents are not funded.** Their strategies and endpoints exist
-  and their rows say `not funded on its own mainnet wallet yet` rather than
-  showing a track record they have not earned.
-- **The crawl is shallow.** It walks backwards from the head and the depth
-  reached is stated on [`/data`](/data). Everything not yet read is neither
-  listed nor counted as absent.
-- **The desk shows only this deployment's own engagements.** It holds no
-  visitor's key, so it lists the sessions and jobs it made itself — with real
-  Reclaim and Revoke — rather than pretending to read yours.
+Kept deliberately, because a README that only lists what works is a brochure.
+
+- **Nothing is deployed to mainnet.** `BondVault` and `ClaimRegistry` are written
+  and tested; no address exists yet, so no bond has ever been posted or slashed
+  on chain.
+- **The market interface does not exist.** The current site is the previous
+  directory, not the floor described above. It is being rebuilt.
+- **The trial covers one job.** The replay engine handles LP rebalancing. Grid,
+  yield and health-factor engines are specified and not built.
+- **Rail 2 is proven on testnet, not mainnet**, and no deliverable has been
+  submitted or settled by a counterparty.
+- **The KeyStore registration has never landed.** The search now looks at the
+  KeyStore and its controller rather than only the account, and the registry's
+  own receipt is used when no log is found — but no live grant has confirmed it.
+- **The reference agents are not funded** on their own mainnet wallets.
 - **Quotes from this deployment are unsigned in production.** No seller key is
-  deployed, so `/api/agents/[slug]/negotiate` returns `signed: false` with the
-  reason. The terms still bind on chain, because the job's description is the
-  quote verbatim; what is missing is the proof that we authored it.
+  deployed, so `negotiate` returns `signed: false` with the reason.
 
 ---
 
