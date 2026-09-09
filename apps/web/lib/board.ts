@@ -16,6 +16,7 @@
  */
 
 import { readFileSync, existsSync } from "node:fs";
+import { readSummary, type Candidate as RegistryCandidate } from "./registry";
 import { join } from "node:path";
 import {
   DEFAULT_CHAIN,
@@ -471,6 +472,64 @@ export function agentRow(a: Agent): Row {
   };
 }
 
+/**
+ * A registry candidate, as a board row.
+ *
+ * The board was built from what the prober had already called — 257 agents
+ * walked backwards from the chain head — and a job page therefore showed five
+ * rows where the registry holds sixty. That is not a small display bug: a
+ * marketplace whose category page shows five of sixty is not describing the
+ * market, and the four doors above it were reading `2` for the same reason.
+ *
+ * So the registry's classified candidates become rows too. What they carry is
+ * exactly what the registry knows and nothing more: a name, a description, the
+ * job its own words claim, and whether it says it takes x402. Every rail is
+ * closed, because this deployment has not called it yet, and each closed rail
+ * says so in those words rather than implying the agent is broken.
+ *
+ * A candidate that the prober *has* reached is dropped here and kept there —
+ * see `mergeCandidates` — so a probed row is never replaced by a thinner one.
+ */
+export function candidateRow(c: RegistryCandidate): Row {
+  const unprobed = "This deployment has not called this agent yet.";
+  const rail = { open: false, reason: unprobed, detail: null, price: null };
+
+  return {
+    key: `c:${DEFAULT_CHAIN}:${c.tokenId}`,
+    kind: "agent",
+    name: c.name?.trim() || `Agent ${c.tokenId}`,
+    description: trim(c.description?.trim() || ""),
+    tokenId: c.tokenId,
+    address: c.owner,
+    href: `/a/${DEFAULT_CHAIN}/${encodeURIComponent(c.tokenId)}`,
+    job: c.job,
+    jobReason: c.jobReason || null,
+    rails: { call: { ...rail }, hire: { ...rail }, mandate: { ...rail } },
+    track: null,
+    trackMissing: unprobed,
+    metrics: {},
+    probedAt: null,
+    latencyMs: null,
+    freshness: "never",
+    originHost: null,
+    originCohortSize: 1,
+    isOurs: false,
+    mismatch: null,
+  };
+}
+
+/**
+ * Board rows first, registry rows for everything the board has not reached.
+ *
+ * Keyed on token id rather than on row key, because the two sources build
+ * different keys for the same agent and a naive concat would list it twice.
+ */
+export function mergeCandidates(rows: Row[], candidates: RegistryCandidate[]): Row[] {
+  const held = new Set(rows.map((r) => r.tokenId).filter(Boolean) as string[]);
+  const extra = candidates.filter((c) => !held.has(c.tokenId)).map(candidateRow);
+  return [...rows, ...extra];
+}
+
 export function serviceRow(s: BazaarService): Row {
   const fresh = freshnessOf(s.probe?.at ?? null);
   const host = s.originHost;
@@ -633,6 +692,13 @@ export function readBoardView(query: BoardQuery = {}): BoardView {
   const board = getBoard(chainId);
 
   let rows: Row[] = [...board.agents.map(agentRow), ...board.services.map(serviceRow)];
+
+  /*
+    Everything the registry classified, minus what the prober already holds.
+    Without this a job page shows what has been called rather than what exists,
+    and those are different markets.
+  */
+  rows = mergeCandidates(rows, readSummary(chainId)?.classified ?? []);
   /*
     The funnel counts the whole board, not the filtered view. A reader who has
     clicked "Hire it for one job" is still owed the true callable count in the
@@ -712,6 +778,15 @@ function decay(snapshot: Snapshot, rows: Row[]): Snapshot {
     const mine = rows.filter((r) => r.job === job);
     perJob[job] = {
       ...perJob[job],
+      /*
+        `listed` is recounted here too, and used not to be.
+
+        The stored snapshot counted only what the prober had walked, so a door
+        read "5 listed" while the page beneath it rendered sixty-five rows. A
+        door that disagrees with the list under it is worse than a door with a
+        small number on it: one is a thin market, the other is a broken one.
+      */
+      listed: mine.length,
       callable: mine.filter((r) => r.rails.call.open).length,
       hireable: mine.filter((r) => r.rails.hire.open).length,
       mandatable: mine.filter((r) => r.rails.mandate.open).length,
@@ -722,6 +797,7 @@ function decay(snapshot: Snapshot, rows: Row[]): Snapshot {
     ...snapshot,
     totals: {
       ...snapshot.totals,
+      listed: rows.length,
       callable: openOn("call"),
       hireable: openOn("hire"),
       mandatable: openOn("mandate"),

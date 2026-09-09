@@ -357,8 +357,14 @@ export default function Board({
               ) : null}
               <td data-col="latency" style={{ textAlign: "right" }}>
                 <Latency row={row} />
+                {/*
+                  "ago" belongs to the age, not to the cell. A row this
+                  deployment has never called renders "never", and "never ago"
+                  is not a sentence.
+                */}
                 <span className="board__sub provenance" style={{ display: "block" }}>
-                  <Age row={row} /> ago
+                  <Age row={row} />
+                  {row.probedAt ? " ago" : null}
                 </span>
               </td>
 

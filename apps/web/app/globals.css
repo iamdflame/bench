@@ -2078,3 +2078,16 @@ td.num,
   .funnel-share { margin-left: 0; }
   .market-figures { gap: 1.1rem; }
 }
+
+/*
+  The door's second line: how much of the market is reachable today.
+
+  Deliberately quiet. The headline is the size of the market; this is the
+  qualifier, and a qualifier that competes with its figure has replaced it.
+*/
+.door__reach {
+  display: block;
+  margin-top: 0.3rem;
+  font-size: 0.6875rem;
+  font-family: var(--font-mono);
+}
