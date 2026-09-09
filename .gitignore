@@ -1,33 +1,31 @@
-node_modules/
-.next/
-dist/
-out/
-*.tsbuildinfo
 
-# Secrets. `.env.example` documents what belongs here.
-.env
-.env.local
-.env.*.local
-
-# Foundry
-contracts/cache/
-contracts/out/
-contracts/broadcast/
-contracts/lib/
-
-# Local scratch
-.DS_Store
-*.log
-.vercel/
-.shots/
-
-# Session signing keys.
 #
-# `grantEngagement` generates a signer per engagement and persists its key here,
 # because a session whose key exists only in memory becomes, after a restart,
-# live authority on chain with no off switch. That makes this directory the most
+contracts/broadcast/
+contracts/cache/
+contracts/lib/
+contracts/out/
 # dangerous thing in the working tree: 0600 on disk, and never in a commit.
-.sessions/
-*.key
-.vercel
+dist/
+.DS_Store
+.env
 .env*
+.env.*.local
+.env.local
+# Foundry
+# `grantEngagement` generates a signer per engagement and persists its key here,
+*.key
+# live authority on chain with no off switch. That makes this directory the most
+# Local scratch
+*.log
+.next/
+node_modules/
+out/
+.scratch/
+# Secrets. `.env.example` documents what belongs here.
+.sessions/
+# Session signing keys.
+.shots/
+*.tsbuildinfo
+.vercel
+.vercel/

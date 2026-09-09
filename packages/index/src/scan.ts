@@ -120,8 +120,21 @@ async function get<T>(path: string, params: Record<string, string | number>): Pr
 interface Page<T> {
   items: T[];
   total?: number;
+  next_cursor?: string | null;
+  has_more?: boolean;
   pagination?: { total?: number; limit?: number; offset?: number };
 }
+
+/**
+ * The largest page this index will serve.
+ *
+ * Asking for more is not merely capped — it is rejected, with a 422 whose body
+ * carries `detail` and no `items` at all. Read through `page.items ?? []` that
+ * arrives as an empty page rather than an error, which is indistinguishable
+ * from "the registry is empty" and is how a crawl silently reads nothing. The
+ * constant exists so no caller can pick a number the server will refuse.
+ */
+export const SCAN_PAGE_MAX = 100;
 
 /**
  * How many agents are registered.
@@ -142,16 +155,238 @@ export async function countAgents(chainId: SupportedChain): Promise<Maybe<number
   }
 }
 
+/**
+ * How many agents match a filter.
+ *
+ * The index answers this in the `total` of a one-row page, which makes a
+ * population count cost one request instead of a walk. It is the mechanism the
+ * whole funnel is built on: six filters, six requests, no crawl.
+ *
+ * Unknown rather than zero when the index cannot be read — the distinction
+ * this codebase exists to keep. "No agents match" and "we could not ask" are
+ * different sentences and only one of them is about the registry.
+ */
+export async function countWhere(
+  chainId: SupportedChain,
+  params: Record<string, string | number | boolean> = {},
+): Promise<Maybe<number>> {
+  try {
+    const page = await get<Page<ScanAgent>>("/agents", {
+      chain_id: chainId,
+      limit: 1,
+      ...Object.fromEntries(Object.entries(params).map(([k, v]) => [k, String(v)])),
+    });
+    const total = page.pagination?.total ?? page.total;
+    return typeof total === "number"
+      ? known(total)
+      : unknown("The registry index answered without a total, so the population is not established.");
+  } catch (e) {
+    return unknown(e instanceof ScanUnavailable ? e.reason : "The registry index could not be read.");
+  }
+}
+
 export async function listAgents(
   chainId: SupportedChain,
   opts: { limit?: number; offset?: number } = {},
 ): Promise<{ items: ScanAgent[]; total: number | null }> {
   const page = await get<Page<ScanAgent>>("/agents", {
     chain_id: chainId,
-    limit: Math.min(opts.limit ?? 100, 2000),
+    limit: Math.min(opts.limit ?? SCAN_PAGE_MAX, SCAN_PAGE_MAX),
     offset: opts.offset ?? 0,
   });
   return { items: page.items ?? [], total: page.pagination?.total ?? page.total ?? null };
+}
+
+// ---------------------------------------------------------------------------
+// The walk
+// ---------------------------------------------------------------------------
+
+/**
+ * Where a walk had got to. Everything needed to resume one, and nothing else.
+ *
+ * `cursor` is the index's own opaque token. It encodes the sort and the point
+ * reached, so a resumed walk continues from that row rather than re-reading
+ * from the head and drifting as new registrations land above it. Offset paging
+ * cannot promise that: rows shift under it while the walk runs.
+ */
+export interface WalkState {
+  cursor: string | null;
+  /** Rows yielded so far by this walk, across every page. */
+  fetched: number;
+  /** Pages fetched. Useful only for reporting the shape of a run. */
+  pages: number;
+  /** The population the index claims, read from the first page. */
+  total: number | null;
+  /** False once the index says there is nothing after the current cursor. */
+  more: boolean;
+  /**
+   * The token that ended the walk early, when `until` matched.
+   *
+   * Null means the walk ended because the index ran out of rows, or because
+   * `max` was reached. The distinction matters to a caller deciding whether it
+   * has read the whole population or merely the part it asked for.
+   */
+  stopped: string | null;
+}
+
+export interface WalkOptions {
+  /** Page size. Clamped to what the server will actually serve. */
+  limit?: number;
+  /** Resume point from a previous run's `WalkState`. */
+  cursor?: string | null;
+  /** Stop after this many rows. For smoke runs; a full walk omits it. */
+  max?: number;
+  /** How many times to retry a page before giving up on the walk. */
+  attempts?: number;
+  /**
+   * Which field orders the walk, and from which end.
+   *
+   * **Only the default ordering can be walked.** Measured 2026-09-09: the
+   * index accepts `sort_by` and `sort_order` on the opening request, answers
+   * it correctly, and hands back a cursor it then rejects with a 422 on the
+   * very next call — for `token_id` in either direction and for `created_at`
+   * ascending. `created_at` descending, which is the default, is the only
+   * ordering whose cursor survives a second request.
+   *
+   * That is worth stating rather than working around silently, because it
+   * decides the shape of the backfill. A two-ended walk — ascending from token
+   * 0, descending from the head, meeting in the middle — would halve three
+   * thousand serial requests, and it is not available. Offset paging is not an
+   * alternative either: it is capped at 10,000, so it cannot reach past the
+   * newest three per cent of the registry.
+   *
+   * So these options exist, they are honoured on the opening page, and a
+   * caller that sets them for anything but a single-page read should expect
+   * the walk to stop after one page. They are kept because the constraint is
+   * the index's and may lift.
+   */
+  sortBy?: "created_at" | "token_id";
+  sortOrder?: "asc" | "desc";
+  /**
+   * Stop when a row is reached that this returns true for.
+   *
+   * The row that triggers it is still yielded, so the caller can see what
+   * stopped the walk. Two uses: an incremental pass that stops at the first
+   * token it already holds, and a two-ended backfill where each side stops at
+   * the other's frontier.
+   */
+  until?: (a: ScanAgent) => boolean;
+}
+
+/**
+ * One page of the walk, with the state that would resume it.
+ *
+ * The state is yielded *with* the rows rather than returned at the end, so a
+ * caller can checkpoint after every page. A walk of three thousand requests
+ * that loses its place on the last one has done seven minutes of work for
+ * nothing, and rate limits make that the expected case rather than the
+ * unlucky one.
+ */
+export interface WalkPage {
+  items: ScanAgent[];
+  state: WalkState;
+}
+
+/**
+ * Read the whole registry, a page at a time.
+ *
+ * The index holds every registration and will hand over all of them; nothing
+ * here needs the chain. That matters because walking the chain backwards from
+ * the head reads a few hundred rows before it becomes uneconomic, and a
+ * marketplace that has read a few hundred of three hundred thousand
+ * registrations is not describing the population it claims to describe.
+ *
+ * A 429 is not a failure here. At five hundred requests a minute a full walk
+ * is a few thousand requests, and being asked to slow down is the ordinary
+ * condition of that. So the walk backs off and retries the same cursor rather
+ * than abandoning the run — but it gives up after `attempts`, because retrying
+ * for ever against an index that is down is how a worker appears to be working
+ * while reading nothing.
+ */
+export async function* walkAgents(
+  chainId: SupportedChain,
+  opts: WalkOptions = {},
+): AsyncGenerator<WalkPage> {
+  const limit = Math.min(opts.limit ?? SCAN_PAGE_MAX, SCAN_PAGE_MAX);
+  const attempts = opts.attempts ?? 5;
+
+  const state: WalkState = {
+    cursor: opts.cursor ?? null,
+    fetched: 0,
+    pages: 0,
+    total: null,
+    more: true,
+    stopped: null,
+  };
+
+  while (state.more) {
+    if (opts.max !== undefined && state.fetched >= opts.max) break;
+
+    let page: Page<ScanAgent> | null = null;
+    let lastReason = "";
+
+    for (let attempt = 0; attempt < attempts; attempt++) {
+      if (attempt > 0) {
+        // Back off, then try the same cursor again. Doubling from a second
+        // keeps a transient limit cheap and a sustained one bounded.
+        await new Promise((r) => setTimeout(r, 1_000 * 2 ** (attempt - 1)));
+      }
+      try {
+        page = await get<Page<ScanAgent>>("/agents", {
+          chain_id: chainId,
+          limit,
+          // The sort is carried inside the cursor once one exists, so it is
+          // sent only to open the walk. Sending it again alongside a cursor
+          // risks the two disagreeing.
+          ...(state.cursor
+            ? { cursor: state.cursor }
+            : {
+                ...(opts.sortBy ? { sort_by: opts.sortBy } : {}),
+                ...(opts.sortOrder ? { sort_order: opts.sortOrder } : {}),
+              }),
+        });
+        break;
+      } catch (e) {
+        lastReason = e instanceof ScanUnavailable ? e.reason : "The registry index could not be read.";
+      }
+    }
+
+    if (!page) throw new ScanUnavailable(lastReason || "The registry index stopped answering mid-walk.");
+
+    let items = page.items ?? [];
+
+    // A stop condition truncates the page at the row that matched, keeping
+    // that row. Everything after it belongs to the other side of the walk, or
+    // was read on a previous pass.
+    if (opts.until) {
+      const hit = items.findIndex(opts.until);
+      if (hit !== -1) {
+        items = items.slice(0, hit + 1);
+        state.stopped = items[hit]?.token_id ?? null;
+      }
+    }
+
+    if (state.total === null) {
+      const total = page.pagination?.total ?? page.total;
+      state.total = typeof total === "number" ? total : null;
+    }
+
+    state.pages += 1;
+    state.fetched += items.length;
+    state.cursor = page.next_cursor ?? null;
+
+    // Three ways a walk ends, and all of them must end it. The index says
+    // there is no more; it stops issuing a cursor; or it returns a page with
+    // nothing on it, which would otherwise spin against the same cursor for
+    // ever.
+    state.more =
+      state.stopped === null &&
+      page.has_more === true &&
+      state.cursor !== null &&
+      items.length > 0;
+
+    yield { items, state: { ...state } };
+  }
 }
 
 export async function getAgent(chainId: SupportedChain, tokenId: string): Promise<ScanAgent | null> {
