@@ -16,3 +16,4 @@ export * from "./bazaar";
 export * from "./origins";
 export * from "./classify";
 export * from "./funnel";
+export * from "./templates";
