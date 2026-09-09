@@ -15,6 +15,7 @@
  */
 
 import { chainClient, resolveChain, type SupportedChain } from "@bench/shared";
+import { walkRegistry } from "./registry-walk";
 import { listBazaar, toService, clusterOrigins, BazaarUnavailable, BAZAAR_LIMITATIONS } from "@bench/index";
 import { countAgents, useCrawlTimeouts } from "@bench/index";
 import { readTrack } from "@bench/metrics";
@@ -439,6 +440,32 @@ const HELP = `bench worker
   --chain 56|97            default 56
 `;
 
+
+/**
+ * Read the registry by cohort.
+ *
+ * Bounded in requests rather than rows, because requests are what a rate limit
+ * counts. A run that hits the budget checkpoints and the next one resumes, so
+ * `--budget` is a way to take a bite, not a way to truncate the answer.
+ */
+async function cmdIndex(chainId: SupportedChain, budget: number) {
+  const report = await walkRegistry(chainId, {
+    budget: budget > 0 ? budget : undefined,
+    onProgress: (m) => console.log(`  ${m}`),
+  });
+
+  console.log("");
+  for (const c of report.cohorts) {
+    const pct = c.total ? ` (${((c.fetched / c.total) * 100).toFixed(1)}%)` : "";
+    console.log(
+      `  ${c.key.padEnd(6)} ${String(c.fetched).padStart(7)}/${String(c.total ?? "?").padStart(7)}${pct}  ${c.complete ? "complete" : "incomplete"}`,
+    );
+  }
+  console.log(
+    `\n  ${report.candidates} candidates (+${report.added}) from ${report.requests} requests in ${report.seconds.toFixed(1)}s`,
+  );
+}
+
 async function main() {
   const argv = process.argv.slice(2);
   const cmd = argv[0];
@@ -465,6 +492,8 @@ async function main() {
       return cmdGrade(chainId);
     case "counterfactual":
       return cmdCounterfactual(chainId, flag("days", 1), flag("half", 60), BigInt(flag("ago", 0)));
+    case "index":
+      return cmdIndex(chainId, flag("budget", 0));
     case "snapshot":
       return cmdSnapshot(chainId);
     default:

@@ -117,6 +117,29 @@ const replacer = (_k: string, v: unknown) => (typeof v === "bigint" ? BIGINT_TAG
 const reviver = (_k: string, v: unknown) =>
   typeof v === "string" && v.startsWith(BIGINT_TAG) ? BigInt(v.slice(BIGINT_TAG.length)) : v;
 
+/**
+ * Write a document the same way the board is written: to a temporary file,
+ * then renamed over the target.
+ *
+ * The rename is the point. A worker killed midway through a thirty-megabyte
+ * write leaves a truncated file, and a truncated JSON file read by the site is
+ * not a degraded board — it is a blank one. Renaming is atomic on the same
+ * filesystem, so a reader sees either the previous document or the new one.
+ */
+export function writeAtomicJson(path: string, value: unknown) {
+  writeAtomic(path, `${JSON.stringify(value, replacer, 1)}\n`);
+}
+
+/** Read a document, or null if it is absent or unreadable. */
+export function readJson<T>(path: string): T | null {
+  if (!existsSync(path)) return null;
+  try {
+    return JSON.parse(readFileSync(path, "utf8"), reviver) as T;
+  } catch {
+    return null;
+  }
+}
+
 export const boardPath = (chainId: SupportedChain) => join(DATA_DIR, `board-${chainId}.json`);
 export const cursorPath = (chainId: SupportedChain) => join(DATA_DIR, `cursor-${chainId}.json`);
 

@@ -49,7 +49,8 @@
     "examples": "tsx --env-file-if-exists=.env --env-file-if-exists=.env.local worker/src/cli.ts examples",
     "check:no-lookahead": "tsx tools/checks/no-lookahead.ts",
     "counterfactual": "tsx --env-file-if-exists=.env --env-file-if-exists=.env.local worker/src/cli.ts counterfactual",
-    "grade": "tsx --env-file-if-exists=.env --env-file-if-exists=.env.local worker/src/cli.ts grade"
+    "grade": "tsx --env-file-if-exists=.env --env-file-if-exists=.env.local worker/src/cli.ts grade",
+    "index": "tsx --env-file-if-exists=.env --env-file-if-exists=.env.local worker/src/cli.ts index"
   },
   "dependencies": {
     "@altananetwork/sdk": "^0.7.1",

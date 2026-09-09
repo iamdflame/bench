@@ -241,27 +241,29 @@ export interface WalkOptions {
   /**
    * Which field orders the walk, and from which end.
    *
-   * **Only the default ordering can be walked.** Measured 2026-09-09: the
-   * index accepts `sort_by` and `sort_order` on the opening request, answers
-   * it correctly, and hands back a cursor it then rejects with a 422 on the
-   * very next call — for `token_id` in either direction and for `created_at`
-   * ascending. `created_at` descending, which is the default, is the only
-   * ordering whose cursor survives a second request.
+   * A cursor is a position *within a query*, not a standalone bookmark: the
+   * index encodes the filters and the sort into it and refuses any page whose
+   * request does not carry the same ones back — "cursor filters do not match
+   * the request". So the sort is repeated on every request, not just the
+   * first, and the same is true of `filters`.
    *
-   * That is worth stating rather than working around silently, because it
-   * decides the shape of the backfill. A two-ended walk — ascending from token
-   * 0, descending from the head, meeting in the middle — would halve three
-   * thousand serial requests, and it is not available. Offset paging is not an
-   * alternative either: it is capped at 10,000, so it cannot reach past the
-   * newest three per cent of the registry.
-   *
-   * So these options exist, they are honoured on the opening page, and a
-   * caller that sets them for anything but a single-page read should expect
-   * the walk to stop after one page. They are kept because the constraint is
-   * the index's and may lift.
+   * Offset paging is not an alternative for a deep walk: it is capped at
+   * 10,000, so it cannot reach past the newest three per cent of the registry.
+   * The cursor is the only way through, which is why getting its contract
+   * right matters more here than it looks.
    */
   sortBy?: "created_at" | "token_id";
   sortOrder?: "asc" | "desc";
+  /**
+   * Extra filters, sent verbatim on the opening request.
+   *
+   * The index filters server-side — `has_a2a`, `has_mcp`, `x402_supported`,
+   * `created_after` and the rest — which is what makes it possible to walk a
+   * cohort of thirty thousand instead of a registry of three hundred
+   * thousand. They are sent on every request, because the cursor is scoped to
+   * them and the index rejects a page whose filters have drifted.
+   */
+  filters?: Record<string, string | number | boolean>;
   /**
    * Stop when a row is reached that this returns true for.
    *
@@ -338,12 +340,16 @@ export async function* walkAgents(
           // The sort is carried inside the cursor once one exists, so it is
           // sent only to open the walk. Sending it again alongside a cursor
           // risks the two disagreeing.
-          ...(state.cursor
-            ? { cursor: state.cursor }
-            : {
-                ...(opts.sortBy ? { sort_by: opts.sortBy } : {}),
-                ...(opts.sortOrder ? { sort_order: opts.sortOrder } : {}),
-              }),
+          // Every filter and the sort go on *every* request, beside the
+          // cursor. The index validates that the two agree and refuses the
+          // page otherwise — "cursor filters do not match the request" — so a
+          // cursor is a position within a query, never a substitute for it.
+          ...Object.fromEntries(
+            Object.entries(opts.filters ?? {}).map(([k, v]) => [k, String(v)]),
+          ),
+          ...(opts.sortBy ? { sort_by: opts.sortBy } : {}),
+          ...(opts.sortOrder ? { sort_order: opts.sortOrder } : {}),
+          ...(state.cursor ? { cursor: state.cursor } : {}),
         });
         break;
       } catch (e) {

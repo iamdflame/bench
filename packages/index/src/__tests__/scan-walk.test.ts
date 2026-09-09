@@ -143,9 +143,10 @@ describe("walkAgents", () => {
     expect(urls[0]!.searchParams.get("limit")).toBe(String(SCAN_PAGE_MAX));
   });
 
-  it("sends the sort only to open the walk, never alongside a cursor", async () => {
-    // The sort is baked into the cursor the index issues. Sending both invites
-    // the two to disagree, and the index answers that with a 422.
+  it("repeats the sort on every request, because the cursor is scoped to it", async () => {
+    // A cursor is a position within a query. The index rejects a page whose
+    // request does not carry back the same sort the cursor was issued under:
+    // "cursor filters do not match the request".
     const urls = serve([
       { items: rows("2"), next_cursor: "c1", has_more: true },
       { items: rows("1"), next_cursor: null, has_more: false },
@@ -156,7 +157,7 @@ describe("walkAgents", () => {
     expect(urls[0]!.searchParams.get("sort_order")).toBe("desc");
     expect(urls[0]!.searchParams.has("cursor")).toBe(false);
     expect(urls[1]!.searchParams.get("cursor")).toBe("c1");
-    expect(urls[1]!.searchParams.has("sort_order")).toBe(false);
+    expect(urls[1]!.searchParams.get("sort_order")).toBe("desc");
   });
 
   it("resumes from a supplied cursor instead of restarting at the head", async () => {
@@ -165,5 +166,22 @@ describe("walkAgents", () => {
     await collect({ limit: 1, cursor: "saved-cursor" });
 
     expect(urls[0]!.searchParams.get("cursor")).toBe("saved-cursor");
+  });
+
+  it("repeats cohort filters on every request, beside the cursor", async () => {
+    // Walking a cohort is what makes this affordable: 344 requests for the
+    // agents that declare an endpoint, against 3,105 for a registry whose
+    // overwhelming majority declare none.
+    const urls = serve([
+      { items: rows("2"), next_cursor: "c1", has_more: true },
+      { items: rows("1"), next_cursor: null, has_more: false },
+    ]);
+
+    await collect({ limit: 1, filters: { has_a2a: true, is_testnet: false } });
+
+    expect(urls[0]!.searchParams.get("has_a2a")).toBe("true");
+    expect(urls[0]!.searchParams.get("is_testnet")).toBe("false");
+    expect(urls[1]!.searchParams.get("has_a2a")).toBe("true");
+    expect(urls[1]!.searchParams.get("cursor")).toBe("c1");
   });
 });
