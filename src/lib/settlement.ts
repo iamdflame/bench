@@ -243,7 +243,7 @@ export async function measureAlpha(mandateId: number, epoch: number): Promise<Me
     explanation:
       `wallet held ${fmt(prev.valuationWei)} BNB at the mark for epoch ${epoch === 0 ? "open" : epoch - 1} ` +
       `and holds ${fmt(observation.valuationWei)} at block ${observation.blockNumber}, ` +
-      `so ${alphaBps >= 0n ? "+" : ""}${(Number(alphaBps) / 100).toFixed(2)}% against holding, gas included`,
+      `so ${alphaBps >= 0n ? "+" : ""}${(Number(alphaBps) / 100).toFixed(2)}% against holding — gas included`,
   };
 }
 

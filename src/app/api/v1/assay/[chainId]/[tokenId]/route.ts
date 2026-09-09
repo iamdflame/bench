@@ -1,8 +1,8 @@
 /**
  * A full assay of any agent on BSC. Free, unauthenticated, rate limited.
  *
- * The expensive endpoint, six tests against the chain, several seconds of
- * real work, so it carries the tightest limit. It is open anyway because an
+ * The expensive endpoint — six tests against the chain, several seconds of
+ * real work — so it carries the tightest limit. It is open anyway because an
  * assay office that only answered its own front end would be a trade
  * association, and because the argument this project makes is stronger if
  * anyone can check it, including the people competing with it.

@@ -1,92 +1,17 @@
-@import "tailwindcss";
-
 /**
- * MANDATE, "The Instrument"
+ * MANDATE — Assay Office for Autonomous Agents
  *
- * The subject is the measurement of precious things applied to autonomous
- * agents that handle money. The feeling is a precision instrument: calm, exact,
- * high-signal, a little clinical. Light and cool, not antique, not crypto-gold.
+ * Three metals and a void. Colour is earned by data, never applied for
+ * decoration, and every number is monospaced and tabular because in a product
+ * about measurement, digits that jitter destroy credibility instantly.
  *
- * One number leads every surface. Boldness is spent on the hallmark and
- * nowhere else, at most one struck, brass mark per viewport. Everything else
- * is disciplined and quiet. Absence is designed: "not assayed" and "couldn't
- * read" are different, visible states, never a zero and never a blank.
+ * The ground is deliberately deeper than BNB's #0B0E11: this is the anvil, not
+ * the brand. --gold-999 at #E8A317 is warmer and deeper than BNB's #F0B90B, so
+ * the two harmonise side by side and are never confused. That is the single
+ * most important colour decision in the system.
  */
 
-/* ------------------------------------------------------------------ tokens */
-
-@theme {
-  /* --- ground & metal --------------------------------------------------- */
-  --color-paper: #f7f8fa;       /* base surface, cool near-white */
-  --color-paper-2: #eef1f5;     /* recessed surface */
-  --color-panel: #ffffff;       /* raised panel */
-  --color-pewter: #dfe3e8;      /* the metal being assayed */
-  --color-pewter-2: #cdd4dc;    /* deeper pewter, edges */
-
-  /* --- ink -------------------------------------------------------------- */
-  --color-touchstone: #12151a;  /* primary ink / the strike */
-  --color-ink: #12151a;
-  --color-ink-2: #49515b;       /* secondary text, ~7:1 on paper */
-  --color-ink-3: #6a727c;       /* tertiary / meta, ~4.6:1 */
-  --color-line: #d7dce2;        /* hairline substitute, soft, never 1px black */
-  --color-line-2: #c2c9d2;      /* stronger divider */
-
-  /* --- signal (used almost never) --------------------------------------- */
-  --color-assay: #2b6cf6;       /* the one interactive / live accent */
-  --color-assay-ink: #1f52c9;   /* darker, for accent text on light */
-  --color-assay-wash: #eaf0fe;  /* faint accent fill */
-  --color-struck: #9a7b3f;      /* brass, a passed hallmark, once per view */
-  --color-struck-hi: #b8933f;   /* brighter brass, the instant of the strike */
-  --color-struck-wash: #f4eede; /* faint brass fill behind a mark */
-  --color-pass: #2f7d5b;        /* muted green, verified, never neon */
-  --color-fail: #b23a3a;        /* inconclusive / fail, sparingly */
-  --color-fail-wash: #fbeeee;
-
-  /* --- type ------------------------------------------------------------- */
-  --font-sans: var(--font-sans-loaded), "IBM Plex Sans", system-ui, -apple-system, sans-serif;
-  --font-mono: var(--font-mono-loaded), "IBM Plex Mono", ui-monospace, "SF Mono", Menlo, monospace;
-
-  /* One modular scale, ~1.25: 12 / 15 / 19 / 24 / 30 / 38 / 48 */
-  --text-2xs: 0.75rem;      /* 12, chips, meta */
-  --text-xs: 0.8125rem;     /* 13 */
-  --text-sm: 0.9375rem;     /* 15, small body */
-  --text-base: 1rem;        /* 16, body */
-  --text-lg: 1.1875rem;     /* 19 */
-  --text-xl: 1.5rem;        /* 24 */
-  --text-2xl: 1.875rem;     /* 30 */
-  --text-3xl: 2.375rem;     /* 38, hero */
-  --text-4xl: 3rem;         /* 48 */
-
-  /* --- geometry --------------------------------------------------------- */
-  --radius-chip: 4px;       /* data chips */
-  --radius-ui: 10px;        /* interactive: buttons, inputs, cards */
-  --radius-panel: 14px;     /* large panels */
-
-  --shadow-card: 0 1px 2px rgba(18, 21, 26, 0.04), 0 2px 8px rgba(18, 21, 26, 0.05);
-  --shadow-lift: 0 2px 4px rgba(18, 21, 26, 0.06), 0 8px 24px rgba(18, 21, 26, 0.08);
-
-  --width-shell: 72rem;     /* page gutter width */
-  --width-read: 42rem;      /* ≤ ~72ch reading measure */
-
-  /* --- motion ------------------------------------------------------------
-     Easing and duration are tokens, never literals, so nothing can animate
-     off-system and nothing escapes the reduced-motion switch. Curves are the
-     standard penner approximations: ease-out for anything entering (fast in,
-     settles slow, which reads as confident), ease-in-out for movement already
-     on screen. One spring exists and it belongs to the hallmark alone.        */
-  --ease-out: cubic-bezier(0.23, 1, 0.32, 1);          /* quint */
-  --ease-out-soft: cubic-bezier(0.215, 0.61, 0.355, 1); /* cubic */
-  --ease-in-out: cubic-bezier(0.645, 0.045, 0.355, 1);
-  --ease-strike: cubic-bezier(0.34, 1.56, 0.64, 1);     /* the one spring */
-
-  --d-micro: 120ms;   /* hover, press, chips: feedback you feel, not see */
-  --d-ui: 200ms;      /* standard interface transitions */
-  --d-panel: 280ms;   /* panels and reveals, the ceiling for UI */
-  --d-strike: 460ms;  /* the hallmark strike, the single exception */
-  --d-stagger: 45ms;  /* gap between staggered siblings */
-}
-
-/* ------------------------------------------------------------------- reset */
+/* ------------------------------------------------------------------ reset */
 
 *,
 *::before,
@@ -101,560 +26,4050 @@ html {
   -moz-osx-font-smoothing: grayscale;
 }
 
-body {
-  margin: 0;
-  background: var(--color-paper);
-  color: var(--color-ink);
-  font-family: var(--font-sans);
-  font-size: var(--text-base);
-  line-height: 1.55;
-  font-feature-settings: "ss01", "cv05";
-}
-
+body,
 h1, h2, h3, h4, p, figure, blockquote, dl, dd, ol, ul {
   margin: 0;
   padding: 0;
 }
 
-ol, ul { list-style: none; }
-img, svg { display: block; max-width: 100%; }
-a { color: inherit; text-decoration: none; }
-table { border-collapse: collapse; border-spacing: 0; }
-[hidden] { display: none !important; }
-
-/*
-  The control reset belongs in a layer, and the reason is not tidiness.
-
-  An unlayered rule beats every layered one, whatever the specificity: that is
-  the cascade, not a quirk. So `button { background: none; border: none }`
-  written out here silently overrode `.btn--primary` inside `@layer components`,
-  and every <button> in the product rendered as bare text while every <a> with
-  the identical class rendered correctly. It survived a screenshot review
-  because most of the buttons that mattered were links.
-
-  What it cost: the Grant control on the hire ticket, which is the one
-  irreversible action in the whole product, had no fill at all.
-
-  In `base` it does what a reset should, and loses to the components that come
-  after it.
-*/
-@layer base {
-  button, input, select, textarea { font: inherit; color: inherit; }
-  button { background: none; border: none; cursor: pointer; }
+ol, ul {
+  list-style: none;
 }
 
-/* Tabular numerals everywhere a figure appears; digits must not jitter. */
-.num, .mono {
-  font-family: var(--font-mono);
-  font-feature-settings: "tnum", "zero";
-  font-variant-numeric: tabular-nums;
-  letter-spacing: -0.01em;
+img, svg {
+  display: block;
+  max-width: 100%;
 }
 
-/* Visible keyboard focus, one ring, the accent. */
-:focus-visible {
-  outline: 2px solid var(--color-assay);
-  outline-offset: 2px;
-  border-radius: 3px;
+button, input, select, textarea {
+  font: inherit;
+  color: inherit;
 }
 
-::selection {
-  background: var(--color-assay);
-  color: #fff;
+button {
+  background: none;
+  border: none;
+  cursor: pointer;
 }
 
-/* --------------------------------------------------------------- typography */
+a {
+  color: inherit;
+  text-decoration: none;
+}
 
-@layer components {
-  .shell {
-    width: 100%;
-    max-width: var(--width-shell);
-    margin-inline: auto;
-    padding-inline: clamp(1rem, 4vw, 2rem);
-  }
+table {
+  border-collapse: collapse;
+  border-spacing: 0;
+}
 
-  .read { max-width: var(--width-read); }
+/* ----------------------------------------------------------------- tokens */
 
-  /* Sentence-case section title. No tracked all-caps anywhere in the system. */
-  .hd-hero {
-    font-size: clamp(1.75rem, 4.4vw, var(--text-3xl));
-    line-height: 1.1;
-    letter-spacing: -0.02em;
-    font-weight: 500;
-    color: var(--color-touchstone);
-    text-wrap: balance;
-  }
-  .hd-2 {
-    font-size: var(--text-xl);
-    line-height: 1.2;
-    letter-spacing: -0.01em;
-    font-weight: 500;
-    color: var(--color-touchstone);
-  }
-  .hd-3 {
-    font-size: var(--text-lg);
-    line-height: 1.25;
-    font-weight: 500;
-    color: var(--color-touchstone);
-  }
-  .lede {
-    font-size: var(--text-lg);
-    line-height: 1.5;
-    color: var(--color-ink-2);
-  }
-  .sub { color: var(--color-ink-2); }
-  /* A measured absence in a dense figure column: present, quiet, never a blank. */
-  .dim { color: var(--color-ink-3); }
-  .meta {
-    font-size: var(--text-2xs);
-    line-height: 1.4;
-    color: var(--color-ink-3);
-  }
+:root {
+  color-scheme: dark;
 
-  /* --- buttons: the name is the action, and it keeps its name ----------- */
-  .btn {
-    display: inline-flex;
-    align-items: center;
-    gap: 0.5rem;
-    padding: 0.6rem 1rem;
-    border-radius: var(--radius-ui);
-    border: 1px solid var(--color-line-2);
-    background-color: var(--color-panel);
-    color: var(--color-ink);
-    /*
-      Buttons and links must render identically.
+  /* --- ground: the anvil ------------------------------------------------ */
+  --void: #08090b;
+  --iron: #111316;
+  --iron-hi: #1a1d21;
+  --score: #24282d;
 
-      Tailwind's preflight resets `background-color` on form controls, and a
-      `background` shorthand carrying a var() lost to it on <button> while
-      winning on <a>. The primary action of the whole product is a <button>, so
-      it rendered as bare text on the one screen where a signature happens.
-      Longhands settle it, and `appearance: none` stops a UA control style
-      creeping back in.
-    */
-    appearance: none;
-    font-size: var(--text-sm);
-    font-weight: 500;
-    line-height: 1;
-    transition: border-color var(--d-micro) var(--ease-out),
-                background var(--d-micro) var(--ease-out),
-                box-shadow var(--d-micro) var(--ease-out),
-                transform var(--d-micro) var(--ease-out);
-  }
-  .btn--primary {
-    background-color: var(--color-assay);
-    border-color: var(--color-assay);
-    color: #fff;
-  }
-  .btn--ghost { background-color: transparent; border-color: transparent; color: var(--color-assay-ink); }
-  .btn--sm { padding: 0.4rem 0.7rem; font-size: var(--text-2xs); }
-  .btn[disabled] { opacity: 0.5; cursor: not-allowed; }
+  /* --- the metals: these carry all meaning ------------------------------ */
+  --gold-999: #e8a317;   /* fine gold — hallmarked, settled */
+  --gold-750: #c98b14;   /* 18ct — assayed and passing */
+  --silver-925: #b8bec6; /* sterling — live, capable, unbonded */
+  --pewter-500: #6b7280; /* resolvable but unproven */
+  --base: #3a4048;       /* base metal — registered and nothing more */
 
-  /* --- panels & cards: differentiated by role, not one radius everywhere - */
-  .panel {
-    background: var(--color-panel);
-    border: 1px solid var(--color-line);
-    border-radius: var(--radius-panel);
-    box-shadow: var(--shadow-card);
-  }
-  .card {
-    background: var(--color-panel);
-    border: 1px solid var(--color-line);
-    border-radius: var(--radius-ui);
-  }
+  /* --- signals: used almost never --------------------------------------- */
+  --struck: #e8e4dc;     /* the instant a mark lands */
+  --cancelled: #8b3a3a;  /* defacement. Deep oxblood, never red */
+  --verify: #4a9d7f;     /* verification passed. Muted, never neon */
 
-  /* --- the ticket ------------------------------------------------------- */
+  /* --- text ------------------------------------------------------------- */
+  --ink: #e6e8ea;
+  --ink-2: #9aa1a9;
   /*
-    One dark surface in a light instrument, and it is the page where authority
-    is granted.
+    Its own value, not the metal.
 
-    Everywhere else this product reads: pale paper, quiet ink, nothing shouting.
-    The ticket is the one screen where a signature happens and money starts
-    moving, so it stops looking like a document and starts looking like an
-    instrument panel. The inversion is the warning. It is used on exactly one
-    route, and a second dark surface anywhere else would spend the signal.
+    `--ink-3` was an alias of `--pewter-500`, which the brand assigns a meaning:
+    an agent that resolves. Borrowing it as the body's third ink spent a
+    semantic colour on ordinary text and, at #6B7280 on the void, sat at about
+    4:1 — under the readable floor for the small sizes it was mostly used at.
+    This is a neutral grey at roughly 6:1, and the metal is left to mean what
+    it means.
   */
-  .ticket {
-    background: var(--color-touchstone);
-    color: #eef1f5;
-    border: 1px solid #2a2f38;
-    border-radius: var(--radius-panel);
-  }
-  .ticket .hd-2,
-  .ticket .hd-3,
-  .ticket .hd-hero { color: #f7f8fa; }
-  .ticket .sub { color: #b6bdc7; }
-  .ticket .meta { color: #8d95a1; }
-  .ticket .num { color: #eef1f5; }
-  .ticket hr,
-  .ticket .rule { border-color: #2a2f38; }
-  /* A clause of the leash: what may happen, or what may not. */
-  .clause {
-    display: flex;
-    gap: 0.6rem;
-    align-items: baseline;
-    padding: 0.4rem 0;
-    border-bottom: 1px solid #232830;
-    font-size: var(--text-sm);
-  }
-  .clause:last-child { border-bottom: 0; }
-  .clause__mark {
-    flex: none;
-    width: 1.15rem;
-    font-variant-numeric: tabular-nums;
-  }
-  .clause--may .clause__mark { color: #6fbf95; }
-  .clause--not .clause__mark { color: #e08585; }
-  .ticket .chip {
-    background: #1b2027;
-    border-color: #2f3540;
-    color: #b6bdc7;
-  }
-  .ticket .btn {
-    background-color: #1b2027;
-    border-color: #333a45;
-    color: #eef1f5;
-  }
-  .ticket .btn--primary {
-    background-color: var(--color-assay);
-    border-color: var(--color-assay);
-    color: #fff;
-  }
-  .ticket .link-accent { color: #7ea8ff; }
-  /* The one figure on the ticket a reader must not misread: the cap. */
-  .ticket-figure {
-    font-size: var(--text-xl);
-    font-variant-numeric: tabular-nums;
-    color: #f7f8fa;
-  }
+  --ink-3: #8a929b;
 
-  /* --- the comparison --------------------------------------------------- */
+  /* --- type ------------------------------------------------------------- */
+  --serif: var(--font-display-loaded), "Instrument Serif", "Times New Roman", serif;
+  --sans: var(--font-sans-loaded), "IBM Plex Sans", system-ui, -apple-system, sans-serif;
+  --mono: var(--font-mono-loaded), "IBM Plex Mono", ui-monospace, "SF Mono", Menlo, monospace;
+
+  --t-display: clamp(2.75rem, 7vw, 4.75rem);
+  --t-h1: clamp(2rem, 4.6vw, 3rem);
+  --t-h2: clamp(1.5rem, 3vw, 2rem);
+  --t-h3: 1.3125rem;
+  --t-body: 1rem;
+  --t-small: 0.8125rem;
+  --t-data: 0.875rem;
+  --t-data-lg: clamp(1.375rem, 3vw, 1.75rem);
   /*
-    Three columns on a desk, one column on a phone.
+    The label size.
 
-    A comparison collapses badly: two values under one label become four
-    unlabelled values in a stack. So on a narrow viewport the row keeps its
-    label and the two cells sit under it, indented, rather than the grid
-    reflowing into a column of orphans.
+    It was 0.625rem — ten pixels — and it carries most of the text on this
+    site: column heads, stamps, office descriptions, the rung tests, the reason
+    a call was withheld. Measured across fourteen routes at four viewports,
+    every page had between fifty and eighty text nodes under 10.5px. Ten-pixel
+    tracked uppercase in a dim grey is hard to read on a laptop and worse on a
+    phone, and no amount of correct layout survives text nobody wants to read.
   */
-  .compare-head,
-  .compare-row {
-    display: grid;
-    grid-template-columns: 11rem 1fr 1fr;
-    gap: 0.75rem 1rem;
-    align-items: start;
-  }
-  .compare-head { padding: 0 1.25rem 0.5rem; }
-  .compare-row {
-    padding: 0.7rem 0;
-    border-bottom: 1px solid var(--color-line);
-  }
-  .compare-row:last-child { border-bottom: 0; }
-  .compare-row__label { padding-top: 0.1rem; }
-  @media (max-width: 40rem) {
-    .compare-head,
-    .compare-row { grid-template-columns: 1fr; gap: 0.3rem; }
-    .compare-row > *:not(.compare-row__label) { padding-left: 0.9rem; }
-  }
+  --t-mark: 0.6875rem;
 
-  /* --- data chip -------------------------------------------------------- */
-  .chip {
-    display: inline-flex;
-    align-items: center;
-    gap: 0.35rem;
-    padding: 0.15rem 0.45rem;
-    border-radius: var(--radius-chip);
-    background: var(--color-paper-2);
-    border: 1px solid var(--color-line);
-    font-size: var(--text-2xs);
-    color: var(--color-ink-2);
-    white-space: nowrap;
-  }
-  .chip--pass { background: color-mix(in srgb, var(--color-pass) 10%, white); border-color: color-mix(in srgb, var(--color-pass) 25%, white); color: var(--color-pass); }
-  .chip--fail { background: var(--color-fail-wash); border-color: color-mix(in srgb, var(--color-fail) 25%, white); color: var(--color-fail); }
-  .chip--live { background: var(--color-assay-wash); border-color: color-mix(in srgb, var(--color-assay) 25%, white); color: var(--color-assay-ink); }
-  .chip--struck { background: var(--color-struck-wash); border-color: color-mix(in srgb, var(--color-struck) 30%, white); color: var(--color-struck); }
+  /*
+    A label may be small. A sentence may not.
 
-  /* A live dot that pulses, respectfully. */
-  .dot {
-    width: 7px; height: 7px; border-radius: 50%;
-    background: var(--color-ink-3); flex: none;
-  }
-  .dot--live { background: var(--color-assay); animation: dot-pulse 2.4s ease-in-out infinite; }
-  .dot--pass { background: var(--color-pass); }
-  .dot--fail { background: var(--color-fail); }
+    The same ten pixels was being used for actual prose set in the mono — why a
+    call is withheld, how a figure was obtained, what an office does. Those are
+    read, not scanned, and they get their own size.
+  */
+  --t-note: 0.75rem;
 
-  /* Soft divider that reads as an edge, not a broadsheet rule. */
-  .rule { height: 1px; background: var(--color-line); border: 0; }
+  /* --- motion: nothing moves unless the chain moved --------------------- */
+  --strike-in: cubic-bezier(0.55, 0, 1, 0.45);   /* accelerating, gaining weight */
+  --settle: cubic-bezier(0.16, 1, 0.3, 1);       /* overshoot and rest */
+  --linear: linear;
 
-  /* --- links ------------------------------------------------------------ */
-  .link-accent {
-    color: var(--color-assay-ink);
-    font-weight: 500;
-    box-shadow: inset 0 -1px 0 color-mix(in srgb, var(--color-assay) 35%, transparent);
-    transition: box-shadow var(--d-micro) var(--ease-out);
-  }
-  .link-accent:hover { box-shadow: inset 0 -2px 0 var(--color-assay); }
-  /* --- the one bar ------------------------------------------------------ */
-  .site-header {
-    position: sticky;
-    top: 0;
-    z-index: 40;
-    border-bottom: 1px solid var(--color-line);
-    background: color-mix(in srgb, var(--color-paper) 85%, transparent);
-    backdrop-filter: saturate(1.1) blur(6px);
-  }
-  .site-header__inner {
-    display: flex;
-    align-items: center;
-    gap: 1rem;
-    height: 3.5rem;
-  }
-  .site-word {
-    display: inline-flex;
-    align-items: center;
-    gap: 0.5rem;
-    flex: none;
-  }
-  /* The nav takes the remaining width, aligns right, and, on a phone, shrinks
-     below its content and scrolls, so the page body never widens. */
-  .site-nav {
-    display: flex;
-    align-items: center;
-    gap: 1.1rem;
-    margin-left: auto;
-    min-width: 0;
-    overflow-x: auto;
-    scrollbar-width: none;
-    -webkit-overflow-scrolling: touch;
-    justify-content: flex-end;
-  }
-  .site-nav::-webkit-scrollbar { display: none; }
-  .nav-link {
-    transition: color var(--d-micro) var(--ease-out);
-    font-size: var(--text-sm);
-    color: var(--color-ink-2);
-    white-space: nowrap;
-    padding-bottom: 2px;
-    border-bottom: 2px solid transparent;
-    flex: none;
-  }
-  .nav-link:hover { color: var(--color-touchstone); }
-  .nav-link[data-active] {
-    color: var(--color-touchstone);
-    font-weight: 500;
-    border-bottom-color: var(--color-assay);
-  }
-  @media (max-width: 560px) {
-    .site-nav { gap: 0.85rem; }
-    .nav-link { font-size: var(--text-xs); }
-  }
+  --d-strike: 260ms;
+  --d-roll: 180ms;
+  --d-deface: 340ms;
+  --d-hover: 120ms;
+  --d-route: 200ms;
+  --d-reveal: 400ms;
+  --d-pulse: 900ms;   /* hairline, while a reading is still open */
 
-  /* --- responsive grids ------------------------------------------------- */
-  .doors-grid {
-    display: grid;
-    grid-template-columns: repeat(4, 1fr);
-    gap: 0.85rem;
-  }
-  .steps-grid {
-    display: grid;
-    grid-template-columns: repeat(4, 1fr);
-    gap: 1.5rem;
-  }
-  @media (max-width: 900px) {
-    .doors-grid { grid-template-columns: repeat(2, 1fr); }
-    .steps-grid { grid-template-columns: repeat(2, 1fr); }
-  }
-  @media (max-width: 520px) {
-    .doors-grid { grid-template-columns: 1fr; }
-    .steps-grid { grid-template-columns: 1fr; }
-  }
-
-  /* Two-column layouts that must collapse on a phone. Defined here rather than
-     inline so the media query can win, an inline grid-template-columns would
-     override it and pin the layout to two columns at 360px. */
-  .scope-grid, .work-grid {
-    display: grid;
-    grid-template-columns: 1fr 1fr;
-    gap: 1rem;
-  }
-  .work-grid { gap: 0.85rem; }
-  @media (max-width: 640px) {
-    .scope-grid, .work-grid { grid-template-columns: 1fr; }
-  }
-  .agent-row {
-    transition: border-color var(--d-ui) var(--ease-out),
-                box-shadow var(--d-ui) var(--ease-out),
-                transform var(--d-ui) var(--ease-out);
-  }
-
-  /* --- hover lifts, reserved for genuinely clickable cards --------------- */
-  .jobdoor {
-    transition: border-color var(--d-ui) var(--ease-out),
-                box-shadow var(--d-ui) var(--ease-out),
-                transform var(--d-ui) var(--ease-out);
-  }
-  /* The way through. Parked at the right edge, it slides on hover and is the
-     only moving part of a door. */
-  .jobdoor__go {
-    margin-left: auto;
-    color: var(--color-assay);
-    font-size: var(--text-sm);
-    opacity: 0;
-    transform: translateX(-4px);
-    transition: opacity var(--d-ui) var(--ease-out),
-                transform var(--d-ui) var(--ease-out);
-  }
-  .proof-card {
-    transition: border-color var(--d-ui) var(--ease-out),
-                box-shadow var(--d-ui) var(--ease-out),
-                transform var(--d-ui) var(--ease-out);
-  }
+  /* --- layout ----------------------------------------------------------- */
+  --content: 1440px;
+  --gutter: clamp(1.25rem, 4vw, 4.5rem);
+  --row: 44px;
+  --hair: 1px;
 }
 
-/* ---------------------------------------------------------------- motion */
-
-/*
-  Motion here is evidence, not decoration.
-
-  Only `transform` and `opacity` are ever animated: both are composited, so
-  they skip layout and paint and hold 60fps on a phone. Nothing animates
-  `height`, `width`, `margin` or `padding`, because those reflow the document
-  and drop frames on exactly the cheap hardware this has to work on.
-
-  Durations are capped at the panel token. Anything an interface does to
-  itself should be over before a person can wonder whether it is stuck; only
-  the hallmark strike is allowed to be slower, because it is the one moment
-  the product is asking to be watched.
-*/
-
-@keyframes dot-pulse {
-  0%, 100% { opacity: 1; }
-  50% { opacity: 0.35; }
-}
-
-/*
-  The orchestrated moment: the hallmark is struck.
-
-  It drops, overshoots by a hair on the spring, and settles, while the brass
-  brightens once and cools. This is the only spring in the system and the only
-  animation over 300ms. Everything else on the page is quiet so that this
-  reads as an event.
-*/
-@keyframes strike-drop {
-  0%   { transform: translateY(-10px) scale(0.92); opacity: 0; }
-  100% { transform: translateY(0) scale(1); opacity: 1; }
-}
-@keyframes strike-heat {
-  0%   { filter: brightness(1.55) saturate(1.3); }
-  100% { filter: brightness(1) saturate(1); }
-}
-.strike {
-  animation: strike-drop var(--d-strike) var(--ease-strike) both;
-  will-change: transform, opacity;
-}
-.strike > * {
-  animation: strike-heat var(--d-strike) var(--ease-out) both;
-}
-
-/*
-  The entrance: content rises a few pixels into place.
-
-  Staggered by an index the markup sets on each child, so a row of doors or a
-  list of agents arrives in sequence rather than all at once. Eight items is
-  the cap; past that the last one waits too long to feel responsive.
-*/
-@keyframes rise {
-  from { opacity: 0; transform: translateY(10px) scale(0.985); }
-  to   { opacity: 1; transform: none; }
-}
-.reveal {
-  animation: rise var(--d-panel) var(--ease-out) both;
-  animation-delay: calc(var(--i, 0) * var(--d-stagger));
-  will-change: transform, opacity;
-}
-
-/*
-  Reveal on scroll, with no JavaScript at all.
-
-  `animation-timeline: view()` drives the same keyframes from the element's
-  own position in the viewport, so a long board reveals as you read it. Where
-  the browser has not shipped it the rule simply does not apply and the
-  content is there immediately, which is the correct fallback: never hide
-  content behind an effect that might not run.
-*/
-@supports (animation-timeline: view()) {
-  @media (prefers-reduced-motion: no-preference) {
-    .reveal-scroll {
-      animation: rise var(--d-panel) var(--ease-out) both;
-      animation-timeline: view();
-      animation-range: entry 0% cover 18%;
-    }
-  }
-}
-
-/*
-  The gauge sweeps to its reading.
-
-  `stroke-dashoffset` is the one property outside transform and opacity that
-  this system animates, and only here. It is what draws a line: there is no
-  transform that reveals an arc from its start without distorting it, and on an
-  SVG path it costs a repaint of the path alone, never a reflow. The arc is
-  normalised with pathLength="1" so the sweep takes the same time whether the
-  reading is 155 or 812.
-*/
-@keyframes dial-sweep {
-  from { stroke-dashoffset: 1; }
-  to   { stroke-dashoffset: 0; }
-}
-.dial-sweep {
-  stroke-dasharray: 1;
-  animation: dial-sweep var(--d-strike) var(--ease-out) both;
-}
-
-/* A figure that has just changed settles into place rather than swapping. */
-@keyframes count-in {
-  from { opacity: 0; transform: translateY(3px); }
-  to   { opacity: 1; transform: none; }
-}
-.count-in { animation: count-in var(--d-ui) var(--ease-out) both; }
-
-/*
-  Hover is a pointer affordance, so it is gated to devices that actually have
-  one. On a touch screen these rules never apply, which stops the sticky
-  hover state phones leave behind after a tap.
-*/
-@media (hover: hover) and (pointer: fine) {
-  .jobdoor:hover,
-  .agent-row:hover {
-    transform: translateY(-2px);
-    border-color: var(--color-pewter-2);
-    box-shadow: var(--shadow-card);
-  }
-  .proof-card:hover {
-    transform: translateY(-2px);
-    border-color: color-mix(in srgb, var(--color-struck) 45%, var(--color-line));
-    box-shadow: var(--shadow-lift);
-  }
-  .jobdoor:hover .jobdoor__go { opacity: 1; transform: none; }
-  .btn:hover { border-color: var(--color-ink-3); background-color: var(--color-paper); }
-}
-
-/* Press is universal: every pointer and every finger gets the same feedback. */
-.jobdoor:focus-visible .jobdoor__go { opacity: 1; transform: none; }
-.btn:active { transform: scale(0.97); }
-.jobdoor:active, .agent-row:active, .proof-card:active { transform: translateY(0) scale(0.995); }
-
-/*
-  Reduced motion is honoured completely, with no exceptions.
-
-  Not damped, not shortened: off. A vestibular trigger is not a preference to
-  negotiate with, and a product whose whole argument is that it does what it
-  says cannot make an exception for its own favourite animation.
-*/
+/**
+ * prefers-reduced-motion is honoured absolutely: every duration to zero, every
+ * state final. Non-negotiable — a punch landing is a delight for one visitor
+ * and a symptom for another.
+ */
 @media (prefers-reduced-motion: reduce) {
-  *, *::before, *::after {
-    animation: none !important;
-    transition: none !important;
+  :root {
+    --d-strike: 0ms;
+    --d-roll: 0ms;
+    --d-deface: 0ms;
+    --d-hover: 0ms;
+    --d-route: 0ms;
+    --d-reveal: 0ms;
+    --d-pulse: 0ms;
+  }
+
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
     scroll-behavior: auto !important;
   }
 }
+
+/* ------------------------------------------------------------------- base */
+
+body {
+  background: var(--void);
+  color: var(--ink);
+  font-family: var(--sans);
+  font-size: var(--t-body);
+  line-height: 1.55;
+  min-height: 100dvh;
+}
+
+/**
+ * Every number is monospaced. Every number is tabular. Numbers never reflow.
+ *
+ * This single rule carries more of the product's credibility than any other
+ * line in this file.
+ */
+.num,
+.data,
+td.num,
+th.num,
+code,
+kbd,
+samp {
+  font-family: var(--mono);
+  font-variant-numeric: tabular-nums;
+  font-feature-settings: "tnum" 1, "zero" 1;
+  letter-spacing: 0;
+}
+
+::selection {
+  background: var(--gold-999);
+  color: var(--void);
+}
+
+:focus-visible {
+  outline: 2px solid var(--gold-999);
+  outline-offset: 2px;
+}
+
+/* ------------------------------------------------------------- typography */
+
+.display {
+  font-family: var(--serif);
+  font-weight: 400;
+  font-size: var(--t-display);
+  line-height: 0.92;
+  letter-spacing: -0.03em;
+  text-wrap: balance;
+}
+
+.h1 {
+  font-family: var(--serif);
+  font-weight: 400;
+  font-size: var(--t-h1);
+  line-height: 1;
+  letter-spacing: -0.02em;
+  text-wrap: balance;
+}
+
+.h2 {
+  font-family: var(--serif);
+  font-weight: 400;
+  font-size: var(--t-h2);
+  line-height: 1.1;
+  letter-spacing: -0.01em;
+}
+
+.h3 {
+  font-family: var(--sans);
+  font-weight: 500;
+  font-size: var(--t-h3);
+  line-height: 1.25;
+  letter-spacing: -0.005em;
+}
+
+/** All-caps section labels, heavily tracked, small. The punch-label voice. */
+.mark-label {
+  font-family: var(--mono);
+  font-size: var(--t-mark);
+  line-height: 1;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--ink-3);
+}
+
+.lede {
+  font-size: var(--t-body);
+  line-height: 1.55;
+  color: var(--ink-2);
+  max-width: 58ch;
+}
+
+.small {
+  font-size: var(--t-small);
+  line-height: 1.45;
+  color: var(--ink-2);
+}
+
+.dim {
+  color: var(--ink-3);
+}
+
+/* ----------------------------------------------------------------- layout */
+
+.shell {
+  width: 100%;
+  max-width: var(--content);
+  margin-inline: auto;
+  padding-inline: var(--gutter);
+}
+
+/*
+  The twelve columns, actually used.
+
+  `BRAND.md` specifies a twelve-column grid at 1,440 and then says the
+  governing decision is density — that the data structure carries the argument.
+  The site kept the first half and inverted the second: prose was capped at a
+  46-character measure and left to float alone, so the pages that carry the
+  argument used half the screen. Measured across ten routes, the median run of
+  ink reached 49% of the viewport on /authority, 50% on /list-your-agent and
+  53% on /assay, against 94% on the register.
+
+  A measure is right for reading and wrong as a page. So the measure stays and
+  the grid is used: an explanation takes the left half, and the table, figures
+  or evidence it is explaining takes the right, on the same rule. Nothing is
+  stretched to fill — the second column has to have something real in it, or
+  the section stays single-column and says so by being narrow.
+*/
+.band {
+  display: grid;
+  grid-template-columns: repeat(12, minmax(0, 1fr));
+  column-gap: var(--gutter);
+  row-gap: 24px;
+  align-items: start;
+}
+
+/** Prose, at a measure, on the left half of the sheet. */
+.band__say { grid-column: 1 / span 6; max-width: 68ch; }
+
+/** The thing the prose is about, on the right half. */
+.band__show { grid-column: 7 / span 6; min-width: 0; }
+
+/** Full bleed across the sheet, for a register or a book. */
+.band__wide { grid-column: 1 / -1; min-width: 0; }
+
+/** Two thirds and one third, where the figures are a summary rather than a table. */
+.band__main { grid-column: 1 / span 8; min-width: 0; }
+.band__side { grid-column: 9 / span 4; min-width: 0; }
+
+@media (max-width: 1040px) {
+  .band { grid-template-columns: minmax(0, 1fr); }
+  .band__say,
+  .band__show,
+  .band__wide,
+  .band__main,
+  .band__side { grid-column: 1 / -1; }
+}
+
+.rule {
+  border: 0;
+  border-top: var(--hair) solid var(--score);
+  margin: 0;
+}
+
+.stack > * + * {
+  margin-top: var(--stack-gap, 1rem);
+}
+
+/* ------------------------------------------------------------------ marks */
+
+/**
+ * An unstruck position.
+ *
+ * It reserves the space and shows nothing. The blank is load-bearing: a
+ * register whose mark column is empty for 301,000 rows argues the whole thesis
+ * before a word is read, and it can only do that if the blanks line up.
+ */
+.mark-absent {
+  display: inline-block;
+  flex: none;
+}
+
+.hallmark {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--hm-gap, 6px);
+  position: relative;
+  line-height: 0;
+}
+
+/** Each punch sits in its own square, as separate strikes into the metal. */
+.hallmark > * {
+  flex: none;
+}
+
+.hallmark__labels {
+  display: flex;
+  gap: var(--hm-gap, 6px);
+  margin-top: 6px;
+}
+
+.hallmark__labels span {
+  flex: none;
+  text-align: center;
+  font-family: var(--mono);
+  font-size: var(--t-mark);
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--ink-3);
+}
+
+/**
+ * Defacement.
+ *
+ * An item that failed assay was struck through and the piece broken. Here the
+ * mark stays visible and takes a single diagonal cut. The record is not
+ * deleted; it is cancelled — which is a stronger statement about
+ * accountability than any success state, and the only red in the product.
+ */
+.hallmark--defaced > svg {
+  opacity: 0.55;
+  filter: saturate(0.25);
+}
+
+.hallmark__cut {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  overflow: visible;
+}
+
+.hallmark__cut line {
+  stroke: var(--cancelled);
+  stroke-width: 2;
+  stroke-linecap: butt;
+  vector-effect: non-scaling-stroke;
+}
+
+/** The cut draws across, left to right. It is an act, not a state. */
+.hallmark--cutting .hallmark__cut line {
+  stroke-dasharray: 1;
+  stroke-dashoffset: 1;
+  animation: deface var(--d-deface) var(--strike-in) forwards;
+}
+
+@keyframes deface {
+  to { stroke-dashoffset: 0; }
+}
+
+/* ----------------------------------------------------------------- strike */
+
+/**
+ * The strike.
+ *
+ *   0–90ms    the punch descends, 1.15 → 1.00, accelerating under its own mass
+ *   90ms      impact
+ *   90–140ms  the surround settles, 0.98 → 1.00
+ *   140–260ms the --struck highlight bleeds off into the metal's true colour
+ *
+ * It must feel like weight landing, not like a UI element appearing.
+ */
+.strike {
+  display: inline-flex;
+  line-height: 0;
+  transform-origin: 50% 40%;
+}
+
+.strike[data-striking="1"] {
+  animation:
+    strike-descend var(--d-strike) var(--strike-in) both,
+    strike-heat var(--d-strike) linear both;
+}
+
+@keyframes strike-descend {
+  0%    { transform: scale(1.15) translateY(-2px); }
+  34.6% { transform: scale(1) translateY(0); }        /* 90ms — impact */
+  53.8% { transform: scale(0.98) translateY(0); }     /* 140ms */
+  100%  { transform: scale(1) translateY(0); }
+}
+
+/** The metal flashes near-white at the moment of impact and cools to its grade. */
+@keyframes strike-heat {
+  0%, 34.5% { filter: none; }
+  34.6%     { filter: brightness(2.1) saturate(0.15); }
+  53.8%     { filter: brightness(1.5) saturate(0.5); }
+  100%      { filter: none; }
+}
+
+/**
+ * Impact travels into the row that holds the punch. One pixel, once.
+ * Selecting the ancestor is the point — the displacement belongs to the metal
+ * around the strike, not to the mark itself.
+ */
+tr:has(.strike[data-striking="1"]),
+.row:has(.strike[data-striking="1"]) {
+  animation: strike-impact var(--d-strike) linear both;
+}
+
+@keyframes strike-impact {
+  0%, 34.5% { transform: translateY(0); }
+  34.6%     { transform: translateY(1px); }
+  53.8%     { transform: translateY(0); }
+}
+
+.hallmark-block {
+  display: inline-flex;
+  flex-direction: column;
+  align-items: flex-start;
+}
+
+/* ----------------------------------------------------- observation figures */
+
+/**
+ * A figure and the state it was read from.
+ *
+ * The stamp is deliberately quiet — a block number that shouted would be
+ * ornament. It has to be present on every number and invisible until looked
+ * for, which is what --ink-3 at 10px buys.
+ */
+.obs {
+  display: inline-flex;
+  flex-direction: column;
+  gap: 3px;
+  align-items: flex-start;
+}
+
+.obs__label {
+  display: block;
+}
+
+.obs__value {
+  font-size: var(--t-data);
+  line-height: 1.3;
+  color: var(--ink);
+  font-variant-numeric: tabular-nums;
+}
+
+.obs--large .obs__value {
+  font-size: var(--t-data-lg);
+  line-height: 1.1;
+  letter-spacing: -0.01em;
+  font-variant-numeric: tabular-nums;
+}
+
+.obs--small .obs__value {
+  font-size: var(--t-small);
+  font-variant-numeric: tabular-nums;
+}
+
+.obs__stamp {
+  display: inline-flex;
+  gap: 8px;
+  align-items: baseline;
+  font-size: var(--t-mark);
+  color: var(--ink-3);
+  white-space: nowrap;
+}
+
+.obs__block {
+  color: inherit;
+  border-bottom: var(--hair) solid transparent;
+  transition: border-color var(--d-hover) linear, color var(--d-hover) linear;
+}
+
+.obs__block:hover {
+  color: var(--silver-925);
+  border-bottom-color: var(--score);
+}
+
+/* -------------------------------------------------------------- commands */
+
+.cmd {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+/**
+ * The command wraps; the copy button stays put.
+ *
+ * It used to scroll horizontally with `scrollbar-width: none`, so a command
+ * longer than its box was simply cut — `npx mandate-verify --mandate 0 --chain
+ * 56 --deployment v1` ended at "--deployment v" with no scrollbar, no fade and
+ * nothing to suggest there was more. The whole argument of this page is that a
+ * reader can run these lines themselves; a line they cannot read is not an
+ * invitation.
+ *
+ * Wrapping keeps the prompt and the copy control on the first line and lets
+ * the command take the height it needs.
+ */
+.cmd__line {
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
+  min-height: var(--row);
+  padding: 0 12px;
+  background: var(--iron);
+  border: var(--hair) solid var(--score);
+}
+
+.cmd__prompt {
+  font-family: var(--mono);
+  font-size: var(--t-data);
+  line-height: 1.5;
+  color: var(--gold-750);
+  flex: none;
+  padding-block: 12px;
+}
+
+.cmd__text {
+  font-size: var(--t-data);
+  line-height: 1.5;
+  color: var(--ink);
+  /* Wraps at whitespace, and only breaks inside a token when it has to. */
+  white-space: pre-wrap;
+  overflow-wrap: anywhere;
+  flex: 1 1 auto;
+  min-width: 0;
+  padding-block: 12px;
+}
+
+.cmd__copy {
+  flex: none;
+  color: var(--ink-3);
+  padding: 14px 6px;
+  transition: color var(--d-hover) linear;
+}
+
+.cmd__copy:hover {
+  color: var(--gold-999);
+}
+
+.cmd__note {
+  margin: 0;
+}
+
+/* ------------------------------------------------------------ the register */
+
+/**
+ * Tables, not cards.
+ *
+ * A card is a marketing object: it implies each item deserves attention. There
+ * are 301,000 items here and about five that deserve attention. A dense
+ * monospaced register with struck marks in the leading column tells that truth
+ * structurally, before a single word is read — and it looks like BscScan and
+ * an assay register rather than a storefront, which is the impression that
+ * matters to someone deciding whether to run this.
+ */
+.register {
+  width: 100%;
+  font-size: var(--t-small);
+}
+
+.register th {
+  height: 32px;
+  padding: 0 12px;
+  text-align: left;
+  font-family: var(--mono);
+  font-size: var(--t-mark);
+  font-weight: 400;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--ink-3);
+  white-space: nowrap;
+  border-bottom: var(--hair) solid var(--score);
+  background: var(--void);
+  position: sticky;
+  top: 0;
+  z-index: 2;
+}
+
+.register th button {
+  font: inherit;
+  letter-spacing: inherit;
+  text-transform: inherit;
+  color: inherit;
+  padding: 0;
+  transition: color var(--d-hover) linear;
+}
+
+.register th button:hover {
+  color: var(--silver-925);
+}
+
+.register td {
+  height: var(--row);
+  padding: 0 12px;
+  /* Hairline separators, never a gap. Density carries the argument. */
+  border-bottom: var(--hair) solid var(--score);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  color: var(--ink-2);
+}
+
+.register tbody tr {
+  transition: background var(--d-hover) linear;
+}
+
+/*
+  The rule brightens; the row does not fill.
+
+  `BRAND.md` gives hover exactly one expression — the hairline moving from
+  `--score` to `--pewter-500` over 120ms — and this rule was already doing that
+  on the cell borders while also washing the whole row in `--iron`. On a
+  register whose argument is a column of blanks, filling the row makes the
+  pointer the loudest thing on the page. The hairline is enough; it is what the
+  eye is following down the mark column anyway.
+*/
+.register tbody tr:hover td {
+  border-bottom-color: var(--pewter-500);
+}
+
+/** The leading 40px column, where the eye counts how few marks there are. */
+.register td.mark-col,
+.register th.mark-col {
+  width: 40px;
+  padding-left: 0;
+  padding-right: 0;
+  text-align: center;
+}
+
+.register td.name-col {
+  width: 34%;
+  max-width: 0;
+  color: var(--ink);
+}
+
+.register td.num {
+  text-align: right;
+}
+
+.register tr[data-struck="1"] td.name-col {
+  color: var(--struck);
+}
+
+/** Loading is a hairline pulse on the row. No spinners, no skeletons. */
+.register tbody tr[data-loading="1"] td {
+  animation: hair-pulse var(--d-pulse) linear infinite;
+}
+
+@keyframes hair-pulse {
+  0%, 100% { border-bottom-color: var(--score); }
+  50%      { border-bottom-color: var(--pewter-500); }
+}
+
+.register__scroll {
+  position: relative;
+  overflow: auto;
+  border-top: var(--hair) solid var(--score);
+}
+
+/* ------------------------------------------------------------------ panels */
+
+.panel {
+  border: var(--hair) solid var(--score);
+  background: var(--iron);
+}
+
+.panel__head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  min-height: var(--row);
+  padding: 0 16px;
+  border-bottom: var(--hair) solid var(--score);
+}
+
+.panel__body {
+  padding: 16px;
+}
+
+.panel__body--flush {
+  padding: 0;
+}
+
+/* ------------------------------------------------------------------ buttons */
+
+.btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  height: var(--row);
+  padding: 0 18px;
+  border: var(--hair) solid var(--score);
+  background: transparent;
+  color: var(--ink);
+  font-size: var(--t-small);
+  white-space: nowrap;
+  transition:
+    border-color var(--d-hover) linear,
+    color var(--d-hover) linear,
+    background var(--d-hover) linear;
+}
+
+.btn:hover {
+  border-color: var(--pewter-500);
+  background: var(--iron);
+}
+
+.btn--primary {
+  border-color: var(--gold-750);
+  color: var(--gold-999);
+}
+
+.btn--primary:hover {
+  border-color: var(--gold-999);
+  background: rgb(232 163 23 / 0.08);
+}
+
+.btn[disabled],
+.btn[aria-disabled="true"] {
+  color: var(--ink-3);
+  border-color: var(--score);
+  cursor: not-allowed;
+}
+
+/* --------------------------------------------------------------- key/value */
+
+.kv {
+  display: grid;
+  grid-template-columns: max-content 1fr;
+  gap: 6px 24px;
+  align-items: baseline;
+}
+
+.kv dt {
+  font-family: var(--mono);
+  font-size: var(--t-mark);
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--ink-3);
+}
+
+.kv dd {
+  margin: 0;
+  font-family: var(--mono);
+  font-size: var(--t-data);
+  font-variant-numeric: tabular-nums;
+  color: var(--ink);
+}
+
+/* ------------------------------------------------------------------- assay */
+
+.assay {
+  display: flex;
+  flex-direction: column;
+}
+
+.assay__row {
+  display: grid;
+  grid-template-columns: 120px auto 1fr max-content;
+  align-items: center;
+  gap: 0 16px;
+  padding: 10px 0;
+  border-bottom: var(--hair) solid var(--score);
+}
+
+.assay__name {
+  font-size: var(--t-small);
+  color: var(--ink-2);
+}
+
+.assay__bar {
+  display: inline-flex;
+  gap: 2px;
+}
+
+/** Ten cut segments. Empty ones are scored into the ground, not drawn on it. */
+.assay__seg {
+  display: block;
+  width: 9px;
+  height: 12px;
+  background: var(--score);
+}
+
+.assay__verdict {
+  font-family: var(--mono);
+  font-size: var(--t-mark);
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--ink-3);
+}
+
+.assay__verdict--pass {
+  color: var(--verify);
+}
+
+/** A failure is stated, not alarmed. Oxblood is reserved for defacement. */
+.assay__verdict--fail {
+  color: var(--silver-925);
+}
+
+.assay__weight {
+  font-size: var(--t-mark);
+}
+
+.assay__finding {
+  grid-column: 2 / -1;
+  margin: 4px 0 0;
+  font-family: var(--mono);
+  font-size: var(--t-mark);
+  line-height: 1.5;
+  letter-spacing: 0;
+  text-transform: none;
+  color: var(--ink-3);
+  white-space: normal;
+}
+
+.assay__row[data-loading="1"] .assay__seg {
+  animation: seg-pulse var(--d-pulse) linear infinite;
+}
+
+@keyframes seg-pulse {
+  0%, 100% { background: var(--score); }
+  50%      { background: var(--iron-hi); }
+}
+
+@media (max-width: 640px) {
+  .assay__row {
+    grid-template-columns: 1fr max-content;
+  }
+  .assay__bar {
+    grid-column: 1 / -1;
+  }
+}
+
+/* ---------------------------------------------------------------- autopsy */
+
+.au__scores {
+  display: grid;
+  grid-template-columns: 1fr auto 1fr;
+  align-items: stretch;
+  gap: 24px;
+  margin-bottom: 20px;
+}
+
+.au__score {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.au__fig {
+  font-family: var(--mono);
+  font-size: var(--t-data-lg);
+  line-height: 1;
+  letter-spacing: -0.02em;
+  color: var(--ink-2);
+  font-variant-numeric: tabular-nums;
+}
+
+/** The corrected figure is the true one, so it is the one struck in metal. */
+.au__score--after .au__fig {
+  color: var(--silver-925);
+}
+
+.au__score--after .au__fig[data-wiped="1"] {
+  color: var(--cancelled);
+}
+
+.au__note {
+  font-size: var(--t-mark);
+  color: var(--ink-3);
+}
+
+.au__rule {
+  width: var(--hair);
+  background: var(--score);
+}
+
+/** Provenance at 1:1 — the width is the count, not an illustration of it. */
+.au__prov {
+  display: flex;
+  height: 10px;
+  gap: 1px;
+  margin-bottom: 8px;
+}
+
+.au__prov-seg--flagged { background: var(--cancelled); }
+.au__prov-seg--clean   { background: var(--silver-925); }
+
+.au__caption {
+  font-size: var(--t-mark);
+  color: var(--ink-3);
+  margin: 0 0 20px;
+}
+
+.au__lede {
+  margin: 0 0 16px;
+  max-width: 68ch;
+}
+
+.au__flagged {
+  display: flex;
+  flex-direction: column;
+  margin: 0 0 16px;
+}
+
+.au__flagged-row {
+  display: grid;
+  grid-template-columns: 160px 1fr max-content;
+  align-items: center;
+  gap: 16px;
+  height: 28px;
+  border-bottom: var(--hair) solid var(--score);
+}
+
+.au__addr {
+  font-size: var(--t-mark);
+  color: var(--ink-2);
+  transition: color var(--d-hover) linear;
+}
+
+.au__addr:hover { color: var(--gold-999); }
+
+.au__flagged-bar {
+  display: block;
+  height: 6px;
+  background: var(--score);
+}
+
+.au__flagged-bar i {
+  display: block;
+  height: 100%;
+  background: var(--cancelled);
+}
+
+.au__flagged-fig {
+  font-size: var(--t-mark);
+  color: var(--ink-3);
+}
+
+.au__reasons {
+  margin: 0 0 16px;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  font-size: var(--t-mark);
+  color: var(--ink-3);
+}
+
+@media (max-width: 720px) {
+  .au__scores { grid-template-columns: 1fr; }
+  .au__rule { width: auto; height: var(--hair); }
+  .au__flagged-row { grid-template-columns: 1fr; height: auto; padding: 6px 0; gap: 4px; }
+}
+
+/* ----------------------------------------------------------------- ledger */
+
+.ledger {
+  display: flex;
+  flex-direction: column;
+}
+
+.ledger__row {
+  display: grid;
+  grid-template-columns: 56px minmax(140px, 1fr) max-content max-content 32px;
+  align-items: center;
+  gap: 0 20px;
+  min-height: var(--row);
+  padding: 6px 0;
+  border-bottom: var(--hair) solid var(--score);
+  font-size: var(--t-small);
+  transition: border-color var(--d-hover) linear;
+}
+
+.ledger__row:hover {
+  border-bottom-color: var(--pewter-500);
+}
+
+.ledger__time {
+  font-size: var(--t-mark);
+  color: var(--ink-3);
+}
+
+.ledger__title { color: var(--ink); }
+
+.ledger__figure {
+  font-size: var(--t-data);
+  color: var(--ink-2);
+  text-align: right;
+  white-space: nowrap;
+  font-variant-numeric: tabular-nums;
+}
+
+.ledger__flag {
+  font-size: var(--t-mark);
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--ink-3);
+  white-space: nowrap;
+}
+
+.ledger__tx a {
+  font-size: var(--t-mark);
+  color: var(--ink-3);
+  border-bottom: var(--hair) solid var(--score);
+  transition: color var(--d-hover) linear, border-color var(--d-hover) linear;
+}
+
+.ledger__tx a:hover {
+  color: var(--gold-999);
+  border-bottom-color: var(--gold-750);
+}
+
+.ledger__note {
+  grid-column: 2 / -1;
+  margin: 2px 0 0;
+  font-size: var(--t-mark);
+  color: var(--ink-3);
+  white-space: normal;
+}
+
+@media (max-width: 720px) {
+  .ledger__row {
+    grid-template-columns: 48px 1fr max-content;
+    gap: 0 12px;
+  }
+  .ledger__flag { grid-column: 2 / -1; }
+}
+
+/* ----------------------------------------------------------- attestations */
+
+.att__empty { padding: 16px; margin: 0; }
+
+.att__row {
+  display: grid;
+  grid-template-columns: 84px max-content 1fr max-content max-content;
+  align-items: center;
+  gap: 20px;
+  min-height: 52px;
+  padding: 8px 16px;
+  border-bottom: var(--hair) solid var(--score);
+}
+
+.att__row:last-child { border-bottom: 0; }
+
+.att__hash {
+  font-size: var(--t-mark);
+  color: var(--ink-2);
+}
+
+.att__links a {
+  font-size: var(--t-mark);
+  color: var(--ink-3);
+  transition: color var(--d-hover) linear;
+}
+
+.att__links a:hover { color: var(--gold-999); }
+
+@media (max-width: 720px) {
+  .att__row { grid-template-columns: 1fr max-content; gap: 8px 16px; }
+  .att__hash { grid-column: 1 / -1; }
+}
+
+/* ------------------------------------------------------------ session scope */
+
+.scope[data-revoked="1"] { opacity: 0.6; }
+
+.scope__kv { margin-bottom: 20px; }
+
+.scope__link {
+  color: var(--ink);
+  border-bottom: var(--hair) solid var(--score);
+  transition: color var(--d-hover) linear, border-color var(--d-hover) linear;
+}
+
+.scope__link:hover { color: var(--gold-999); border-bottom-color: var(--gold-750); }
+
+.scope__lists {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 24px;
+  margin-bottom: 16px;
+}
+
+.scope__calls {
+  display: flex;
+  flex-direction: column;
+  margin-top: 8px;
+}
+
+.scope__calls li {
+  display: flex;
+  justify-content: space-between;
+  gap: 16px;
+  font-size: var(--t-mark);
+  padding: 5px 0;
+  border-bottom: var(--hair) solid var(--score);
+}
+
+/**
+ * A full Solidity signature is long and unbreakable.
+ *
+ * `exactInputSingle((address,address,uint24,address,uint256,uint256,uint256,uint160))`
+ * is 78 characters with no space in it, and it pushed the page 189px wide on a
+ * 390px screen. It is allowed to wrap: the function name stays first on the
+ * line, which is the part being scanned, and the argument list continues
+ * underneath rather than being truncated into something unverifiable.
+ */
+.scope__sig {
+  color: var(--ink-2);
+  overflow-wrap: anywhere;
+  min-width: 0;
+}
+
+/** Withheld calls are recessive. They are absent authority, not a warning. */
+.scope__calls--withheld .scope__sig { color: var(--ink-3); text-decoration: line-through; }
+
+.scope__why { margin: 0 0 16px; max-width: 72ch; }
+
+.scope__foot {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 16px;
+}
+
+@media (max-width: 720px) {
+  .scope__lists { grid-template-columns: 1fr; }
+}
+
+/* ------------------------------------------------------- register surface */
+
+.sr-only {
+  position: absolute;
+  width: 1px; height: 1px;
+  padding: 0; margin: -1px;
+  overflow: hidden;
+  clip: rect(0 0 0 0);
+  white-space: nowrap;
+  border: 0;
+}
+
+.reg {
+  display: grid;
+  grid-template-columns: 200px 1fr;
+  gap: 32px;
+  align-items: start;
+}
+
+/** Filters as a left rail, not a dropdown row — state visible, not hidden. */
+.reg__rail {
+  position: sticky;
+  top: 24px;
+  display: flex;
+  flex-direction: column;
+  gap: 24px;
+}
+
+.reg__search {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.reg__search input {
+  height: 32px;
+  padding: 0 10px;
+  background: var(--iron);
+  border: var(--hair) solid var(--score);
+  color: var(--ink);
+  font-family: var(--mono);
+  font-size: var(--t-small);
+  width: 100%;
+}
+
+.reg__search input::placeholder { color: var(--ink-3); }
+.reg__search input:focus { border-color: var(--pewter-500); outline: none; }
+
+.reg__hint { align-self: flex-end; }
+
+.reg__facet { display: flex; flex-direction: column; gap: 8px; }
+
+.reg__choices { display: flex; flex-direction: column; }
+
+.reg__choice {
+  text-align: left;
+  padding: 5px 0;
+  font-family: var(--mono);
+  font-size: var(--t-mark);
+  letter-spacing: 0.04em;
+  color: var(--ink-3);
+  border-bottom: var(--hair) solid transparent;
+  transition: color var(--d-hover) linear, border-color var(--d-hover) linear;
+}
+
+.reg__choice:hover { color: var(--silver-925); }
+
+.reg__choice[data-on="1"] {
+  color: var(--gold-999);
+  border-bottom-color: var(--gold-750);
+}
+
+.reg__main { min-width: 0; }
+
+.reg__stat {
+  display: flex;
+  align-items: flex-end;
+  flex-wrap: wrap;
+  gap: 24px;
+  padding-bottom: 12px;
+}
+
+.reg__struck { color: var(--gold-750); }
+
+.register__scroll { height: calc(100dvh - 260px); min-height: 420px; }
+
+.register td a {
+  border-bottom: var(--hair) solid transparent;
+  transition: color var(--d-hover) linear, border-color var(--d-hover) linear;
+}
+
+.register td a:hover { color: var(--gold-999); border-bottom-color: var(--gold-750); }
+
+.reg__office { display: inline-flex; }
+
+/*
+  The empty row is prose, so it is allowed to be prose.
+
+  `.register td` fixes every cell at one row, clips the overflow and adds an
+  ellipsis — right for three thousand rows of token ids, wrong for the one
+  cell that has to explain that a token is absent from our crawl rather than
+  from the registry, and offer the certificate. Named with the element so it
+  out-ranks those defaults.
+*/
+.register td.reg__none {
+  text-align: center;
+  color: var(--ink-3);
+  height: auto;
+  min-height: 88px;
+  padding: 24px 12px;
+  white-space: normal;
+  overflow: visible;
+  text-overflow: clip;
+  line-height: 1.6;
+}
+
+@media (max-width: 900px) {
+  .reg { grid-template-columns: 1fr; gap: 20px; }
+  .reg__rail { position: static; }
+  .reg__choices { flex-direction: row; flex-wrap: wrap; gap: 12px; }
+  .register__scroll { height: calc(100dvh - 380px); }
+}
+
+/** Virtualiser spacers hold height and nothing else. */
+.register tbody tr[aria-hidden="true"] td {
+  border: 0;
+  padding: 0;
+  height: auto;
+}
+
+/* ------------------------------------------------------------------- shell */
+
+.app {
+  display: flex;
+  flex-direction: column;
+  min-height: 100dvh;
+}
+
+.app-header {
+  position: sticky;
+  top: 0;
+  z-index: 40;
+  background: var(--void);
+  border-bottom: var(--hair) solid var(--score);
+}
+
+.app-header__inner {
+  display: flex;
+  align-items: center;
+  gap: 32px;
+  height: 56px;
+}
+
+.wordmark {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  flex: none;
+}
+
+.wordmark__name {
+  font-family: var(--serif);
+  line-height: 1;
+  letter-spacing: 0.02em;
+  color: var(--ink);
+}
+
+.wordmark--stacked {
+  flex-direction: column;
+  gap: 12px;
+  align-items: center;
+}
+
+.wordmark__sub { text-align: center; }
+
+.app-nav {
+  display: flex;
+  align-items: center;
+  gap: 20px;
+  margin-right: auto;
+  overflow-x: auto;
+  /*
+    A flex item will not shrink below its own content unless it is told it may.
+    Without this, `overflow-x: auto` never engages: the nav keeps its full
+    width, widens the header past the viewport, and the whole document scrolls
+    sideways on a phone — nine uppercase links deciding the width of the page.
+  */
+  min-width: 0;
+  scrollbar-width: none;
+}
+
+.app-nav::-webkit-scrollbar { display: none; }
+
+.app-nav a {
+  font-family: var(--mono);
+  font-size: var(--t-mark);
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--ink-3);
+  white-space: nowrap;
+  padding: 4px 0;
+  border-bottom: var(--hair) solid transparent;
+  transition: color var(--d-hover) linear, border-color var(--d-hover) linear;
+}
+
+.app-nav a:hover { color: var(--silver-925); }
+
+.app-nav a[aria-current="page"] {
+  color: var(--gold-999);
+  border-bottom-color: var(--gold-750);
+}
+
+.app-header__right {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  flex: none;
+}
+
+/** The pulse is chain liveness, not decoration. Off means we could not read. */
+.pulse {
+  width: 6px;
+  height: 6px;
+  background: var(--base);
+  flex: none;
+}
+
+.pulse--on { background: var(--verify); }
+
+.app main { flex: 1; }
+
+.foot {
+  border-top: var(--hair) solid var(--score);
+  padding-block: 24px 40px;
+  margin-top: 64px;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.foot__row {
+  display: flex;
+  justify-content: space-between;
+  gap: 24px;
+  flex-wrap: wrap;
+}
+
+.foot__note { margin: 0; text-transform: none; letter-spacing: 0.04em; line-height: 1.6; }
+
+.foot a { border-bottom: var(--hair) solid var(--score); }
+.foot a:hover { color: var(--gold-999); }
+
+@media (max-width: 900px) {
+  .app-header__inner { height: auto; padding-block: 12px; flex-wrap: wrap; gap: 16px; }
+}
+
+/* ------------------------------------------------------------------ funnel */
+
+/**
+ * The funnel is drawn to scale, and the scale is linear.
+ *
+ * It was a column of right-aligned serif numerals, which meant the single most
+ * important fact in the register — three hundred thousand registrations
+ * collapsing to five reachable agents and then to nothing — had to be arrived
+ * at by reading four numbers and doing the division. The track does it
+ * instead. Rung 0 fills it, rung 1 is a one-percent sliver, everything below
+ * is a hairline, and the argument lands before the first word is read.
+ *
+ * A logarithmic axis would make the lower rungs comfortably visible. It would
+ * also be arguing for ourselves, so it is linear.
+ */
+
+.funnel {
+  display: flex;
+  flex-direction: column;
+  border-top: var(--hair) solid var(--score);
+}
+
+.funnel__row { border-bottom: var(--hair) solid var(--score); }
+
+.funnel__link {
+  display: grid;
+  grid-template-columns: minmax(0, 20ch) 12ch minmax(120px, 1fr) minmax(0, 34ch);
+  align-items: center;
+  gap: 24px;
+  min-height: 56px;
+  padding: 0;
+}
+
+/*
+  The rung name is read, so it is legible.
+
+  It was set at the register's label size in `--ink-3` against the ground —
+  correct as a caption and wrong as the only label on the most important
+  object on the page. A judge scanning the ladder for four seconds was reading
+  the dimmest text on the site.
+*/
+.funnel__meta {
+  display: flex;
+  align-items: baseline;
+  gap: 10px;
+  color: var(--silver-925);
+  white-space: nowrap;
+}
+
+/** The rung number, in the register's own hand. */
+.funnel__n {
+  display: inline-block;
+  min-width: 1.4ch;
+  color: var(--ink-4);
+  font-variant-numeric: tabular-nums;
+}
+
+.funnel__floor { color: var(--ink-4); margin-right: 0.15em; }
+
+/**
+ * Tabular and right-aligned so the digits stack true down the column while the
+ * figures run from six characters to one.
+ */
+.funnel__fig {
+  font-family: var(--mono);
+  font-size: var(--t-data-lg);
+  line-height: 1;
+  font-variant-numeric: tabular-nums;
+  text-align: right;
+  color: var(--ink);
+  transition: color var(--d-hover) linear;
+}
+
+/*
+  The metals carry the collapse.
+
+  Every figure was one grey, so the single most important thing the ladder has
+  to say — that three hundred thousand registrations become base metal, and a
+  handful become gold — had to be worked out from the bar. The scale it
+  already uses is the palette: base metal at the bottom rung, then pewter,
+  silver, and gold where something has actually been struck or settled. No new
+  colour; the ones the brand already assigns to these exact states.
+*/
+.funnel__row:nth-child(1) .funnel__fig { color: var(--base); }
+.funnel__row:nth-child(2) .funnel__fig,
+.funnel__row:nth-child(3) .funnel__fig { color: var(--pewter-500); }
+.funnel__row:nth-child(4) .funnel__fig,
+.funnel__row:nth-child(5) .funnel__fig { color: var(--silver-925); }
+.funnel__row:nth-child(6) .funnel__fig { color: var(--gold-750); }
+.funnel__row:nth-child(7) .funnel__fig { color: var(--gold-999); }
+
+/* Unmeasurable stays unlit whatever rung it sits on. */
+.funnel__row .funnel__none { color: var(--base); }
+
+/**
+ * An unmeasurable rung used to render as an em-dash, which at this size read
+ * as a stray rule and looked like the page had failed rather than declined.
+ * It says what it means now, in the voice used for every other absence here.
+ */
+.funnel__none {
+  font-family: var(--mono);
+  font-size: var(--t-mark);
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--ink-4);
+  white-space: nowrap;
+}
+
+/*
+  The track is a hairline; the fill is a bar drawn over it. Both were 3px and
+  the same family of grey, so a rung at full population looked exactly like a
+  rung at none — the drawing said nothing that the numbers had not already
+  said. Height now carries the difference as well as colour, which survives
+  being read at a glance and in greyscale.
+*/
+.funnel__track {
+  position: relative;
+  height: 5px;
+  display: flex;
+  align-items: center;
+}
+
+.funnel__track::before {
+  content: "";
+  position: absolute;
+  inset: 50% 0 auto 0;
+  height: var(--hair);
+  background: var(--score);
+}
+
+.funnel__fill {
+  position: relative;
+  height: 5px;
+  background: var(--pewter-500);
+  /*
+    Draws once, when the reading lands. This figure is fetched from the chain
+    after the page paints, so the arrival is a data event — the only thing the
+    motion doctrine here lets move.
+  */
+  transition: width var(--d-reveal) cubic-bezier(0.2, 0.8, 0.2, 1);
+}
+
+.funnel__row:first-child .funnel__fill { background: var(--base); }
+.funnel__row:nth-last-child(2) .funnel__fill { background: var(--gold-750); }
+.funnel__row:last-child .funnel__fill { background: var(--gold-999); }
+
+/** Not measured is not zero, and the dotted track keeps them apart. */
+.funnel__row:not([data-measured]) .funnel__track::before {
+  height: 0;
+  border-top: var(--hair) dashed var(--score);
+}
+
+.funnel__test {
+  font-family: var(--mono);
+  font-size: var(--t-note);
+  line-height: 1.45;
+  color: var(--ink-3);
+  text-align: right;
+  display: -webkit-box;
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: 2;
+  line-clamp: 2;
+  overflow: hidden;
+}
+
+.funnel__link:hover .funnel__fig { color: var(--struck); }
+.funnel__link:hover .funnel__fill { background: var(--struck); }
+
+@media (prefers-reduced-motion: reduce) {
+  .funnel__fill { transition: none; }
+}
+
+@media (max-width: 860px) {
+  .funnel__link {
+    grid-template-columns: minmax(0, 1fr) 11ch;
+    grid-template-areas: "meta fig" "track track";
+    gap: 8px 16px;
+    padding-block: 10px;
+  }
+  .funnel__meta { grid-area: meta; }
+  .funnel__fig { grid-area: fig; }
+  .funnel__track { grid-area: track; }
+  .funnel__test { display: none; }
+}
+
+/* The rung pages want the prose, and give up the scale drawing to get it. */
+.funnel--detail .funnel__row {
+  padding-bottom: 20px;
+  margin-bottom: 20px;
+  border-bottom: var(--hair) solid var(--score);
+}
+
+.funnel--detail .funnel__link {
+  grid-template-columns: minmax(0, 20ch) 11ch minmax(120px, 1fr);
+  align-items: baseline;
+}
+
+.funnel--detail .funnel__test { display: none; }
+.funnel--detail .funnel__fig { font-size: var(--t-data-lg); font-variant-numeric: tabular-nums; }
+
+.funnel__source,
+.funnel__break {
+  margin: 8px 0 12px;
+  font-family: var(--mono);
+  font-size: var(--t-note);
+  line-height: 1.6;
+  color: var(--ink-3);
+  max-width: 76ch;
+}
+
+/** The discontinuity is the finding. It gets the one accent this page allows. */
+.funnel__break {
+  border-left: 2px solid var(--cancelled);
+  padding-left: 12px;
+  color: var(--ink-2);
+}
+
+/* ==========================================================================
+   SHARED VOCABULARY
+
+   The classes the whole product speaks: sections, statistics, tables, the
+   tape, sheets, chips. Defined once here rather than per component, so a
+   change to density or metal is a change in one place — and so a surface
+   nobody has rewritten yet still arrives in the right language.
+   ========================================================================== */
+
+/*
+  One leading edge, not two.
+
+  `padding-block` applied the spacing to both edges, so two adjacent sections
+  each contributed up to 52px and nothing on the site could be closer together
+  than 104px. Where a section rendered short, the run of empty ground reached
+  240px on /offices and /floor. The space belongs above a section, once.
+*/
+.section {
+  padding-block-start: clamp(2rem, 4vw, 3.25rem);
+  padding-block-end: 0;
+}
+
+/* The last section still needs ground under it before the footer. */
+.app main > .section:last-of-type { padding-block-end: clamp(2rem, 4vw, 3.25rem); }
+
+.section__head,
+.section-head {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 24px;
+  flex-wrap: wrap;
+  margin-bottom: 24px;
+}
+
+.section-title,
+.section__title {
+  font-family: var(--serif);
+  font-weight: 400;
+  font-size: var(--t-h2);
+  line-height: 1.1;
+  letter-spacing: -0.01em;
+  color: var(--ink);
+  margin: 0;
+}
+
+.section-sub,
+.section__note {
+  font-size: var(--t-small);
+  line-height: 1.55;
+  color: var(--ink-2);
+  max-width: 68ch;
+  margin: 0 0 24px;
+}
+
+/** All-caps punch label. The product's only decorative typographic gesture. */
+.label,
+.eyebrow {
+  display: inline-block;
+  font-family: var(--mono);
+  font-size: var(--t-mark);
+  line-height: 1.4;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--ink-3);
+}
+
+/** A figure. Monospaced and tabular, always. */
+.fig {
+  font-family: var(--mono);
+  font-variant-numeric: tabular-nums;
+  font-feature-settings: "tnum" 1, "zero" 1;
+  font-size: var(--t-data-lg);
+  line-height: 1.1;
+  letter-spacing: -0.01em;
+  color: var(--ink);
+}
+
+.mono, .tnum {
+  font-family: var(--mono);
+  font-variant-numeric: tabular-nums;
+}
+
+.prose {
+  font-size: var(--t-body);
+  line-height: 1.6;
+  color: var(--ink-2);
+  max-width: 68ch;
+}
+
+.prose + .prose { margin-top: 1rem; }
+
+.prose strong { color: var(--ink); font-weight: 500; }
+
+.prose code,
+.small code,
+p code {
+  font-size: 0.92em;
+  color: var(--silver-925);
+}
+
+/* -------------------------------------------------------------- statistics */
+
+.stats {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: stretch;
+  gap: 0;
+}
+
+.stat {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  padding-inline: clamp(0.9rem, 2vw, 1.4rem);
+  border-left: var(--hair) solid var(--score);
+}
+
+.stat:first-child { border-left: 0; padding-left: 0; }
+
+.stat__value {
+  font-family: var(--mono);
+  font-variant-numeric: tabular-nums;
+  font-size: var(--t-data-lg);
+  line-height: 1.1;
+  color: var(--ink);
+}
+
+/* ------------------------------------------------------------------ tables */
+
+.tablewrap, .scroll-x { overflow-x: auto; scrollbar-width: thin; }
+
+.tbl {
+  width: 100%;
+  font-size: var(--t-small);
+}
+
+/*
+  Column heads only.
+
+  This selector was `.tbl th`, which also caught every `th[scope="row"]` in a
+  body — so a row header carrying two lines was laid into a cell fixed at 32px
+  and set to `nowrap`, and its second line escaped the row and landed on top of
+  the row beneath it. /offices had four rows of office names sitting across
+  four rows of figures. Heads are `thead th`; a row header is a cell.
+*/
+.tbl thead th {
+  height: 32px;
+  padding: 0 12px 0 0;
+  text-align: left;
+  font-family: var(--mono);
+  font-size: var(--t-mark);
+  font-weight: 400;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--ink-3);
+  white-space: nowrap;
+  border-bottom: var(--hair) solid var(--score);
+}
+
+.tbl td,
+.tbl tbody th {
+  height: var(--row);
+  padding: 10px 12px 10px 0;
+  border-bottom: var(--hair) solid var(--score);
+  color: var(--ink-2);
+  white-space: nowrap;
+  vertical-align: middle;
+}
+
+/*
+  A row header names the row; it is not a label for a column of them, so it
+  keeps sentence case and the body weight and is free to wrap.
+*/
+.tbl tbody th {
+  text-align: left;
+  font-weight: 400;
+  color: var(--ink);
+  white-space: normal;
+}
+
+.tbl th.r, .tbl td.r,
+.tbl th.num, .tbl td.num {
+  text-align: right;
+  padding-left: 20px;
+  font-family: var(--mono);
+  font-variant-numeric: tabular-nums;
+}
+
+.tbl tbody tr { transition: background var(--d-hover) linear; }
+/*
+  A row lights its own rule, it does not fill.
+
+  `BRAND.md` specifies the hover as the hairline brightening from `--score` to
+  `--pewter-500` over 120ms. Filling the row with `--iron` instead is a bigger
+  gesture than the doctrine allows for moving a mouse, and on a register of
+  three thousand rows it makes the pointer the loudest thing on the page.
+*/
+.tbl tbody tr:hover td,
+.tbl tbody tr:hover th { border-bottom-color: var(--pewter-500); }
+
+.tbl .empty,
+.empty {
+  color: var(--ink-3);
+  font-size: var(--t-small);
+}
+
+.tbl__foot,
+.empty-note {
+  margin: 12px 0 0;
+  font-family: var(--mono);
+  font-size: var(--t-note);
+  line-height: 1.6;
+  color: var(--ink-3);
+}
+
+/* ------------------------------------------------------------------- tones */
+
+/**
+ * Trailing is rendered as absence of light, never as red.
+ *
+ * Underperformance dims. Red appears exactly once in this product — a defaced
+ * mark on dismissal — and because it appears once, it lands.
+ */
+.up, .rise { color: var(--gold-999); }
+.down, .lost { color: var(--pewter-500); }
+.warn { color: var(--silver-925); }
+.accent { color: var(--gold-750); }
+.struck { color: var(--struck); }
+.dead { color: var(--cancelled); }
+
+/* ------------------------------------------------------------------- chips */
+
+.chips { display: flex; flex-wrap: wrap; gap: 8px; }
+
+.chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  height: 28px;
+  padding: 0 10px;
+  border: var(--hair) solid var(--score);
+  font-family: var(--mono);
+  font-size: var(--t-mark);
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--ink-3);
+  transition: color var(--d-hover) linear, border-color var(--d-hover) linear;
+}
+
+.chip:hover { color: var(--silver-925); border-color: var(--pewter-500); }
+
+.chip--on {
+  color: var(--gold-999);
+  border-color: var(--gold-750);
+}
+
+.chip__n { color: var(--ink-3); }
+
+.btn--sm { height: 32px; padding: 0 12px; font-size: var(--t-mark); }
+.btn--ghost { border-color: transparent; color: var(--ink-3); }
+.btn--ghost:hover { border-color: var(--score); color: var(--ink); }
+
+.link-underline {
+  border-bottom: var(--hair) solid var(--score);
+  transition: color var(--d-hover) linear, border-color var(--d-hover) linear;
+}
+
+.link-underline:hover { color: var(--gold-999); border-bottom-color: var(--gold-750); }
+
+/* -------------------------------------------------------------------- tape */
+
+/**
+ * The tape only moves when the chain does. Nothing here is on a timer.
+ */
+.tape { display: grid; }
+
+.tape__row {
+  display: grid;
+  grid-template-columns: 20px 5ch minmax(0, 1fr) max-content;
+  align-items: baseline;
+  gap: 12px;
+  padding: 10px 0;
+  border-bottom: var(--hair) solid var(--score);
+  font-family: var(--mono);
+  font-size: var(--t-note);
+  color: var(--ink-2);
+}
+
+/*
+  The event is the content; the mandate id is the reference.
+
+  The id carried `.fig`, the display numeral, so a settlement read as a huge
+  `#0` with the thing that actually happened set beside it in six-point grey —
+  the wrong half of the row at three times the size. Both are the tape's own
+  size now and the id is the dimmer of the two.
+*/
+.tape__time, .tape__id { color: var(--ink-3); }
+.tape__id { font-variant-numeric: tabular-nums; }
+.tape__mark { color: var(--ink-3); }
+.tape__row--gain .tape__mark { color: var(--gold-999); }
+.tape__row--loss .tape__mark { color: var(--pewter-500); }
+.tape__row--event .tape__mark { color: var(--silver-925); }
+.tape__idle { padding: 12px 0; color: var(--ink-3); font-size: var(--t-mark); }
+
+/* ------------------------------------------------------------------ sheets */
+
+.sheet { position: fixed; inset: 0; z-index: 60; display: grid; }
+
+.sheet__scrim {
+  position: absolute;
+  inset: 0;
+  background: rgb(8 9 11 / 0.82);
+}
+
+.sheet__panel {
+  position: relative;
+  justify-self: end;
+  width: min(560px, 100vw);
+  height: 100%;
+  overflow-y: auto;
+  background: var(--iron);
+  border-left: var(--hair) solid var(--score);
+  padding: 24px;
+}
+
+.sheet__head {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 16px;
+  margin-bottom: 20px;
+}
+
+.sheet__title {
+  font-family: var(--serif);
+  font-size: var(--t-h3);
+  color: var(--ink);
+  margin: 0;
+}
+
+.sheet__note {
+  font-size: var(--t-small);
+  color: var(--ink-2);
+  margin: 0 0 16px;
+}
+
+/* -------------------------------------------------------------------- hero */
+
+.hero {
+  display: grid;
+  gap: clamp(1.5rem, 4vw, 3rem);
+  padding-block: clamp(2rem, 5vw, 4rem);
+}
+
+.hero__copy { display: flex; flex-direction: column; gap: 16px; }
+.hero__lede { max-width: 62ch; }
+.hero__actions { display: flex; flex-wrap: wrap; gap: 12px; margin-top: 8px; }
+.hero__viz { min-width: 0; }
+
+.hero-grid {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+  gap: clamp(1.5rem, 4vw, 3rem);
+  align-items: start;
+}
+
+@media (max-width: 900px) {
+  .hero-grid { grid-template-columns: 1fr; }
+  .sheet__panel { width: 100vw; }
+}
+
+/* ------------------------------------------------------------- kv variants */
+
+.kv__row {
+  display: flex;
+  justify-content: space-between;
+  gap: 16px;
+  padding: 6px 0;
+  border-bottom: var(--hair) solid var(--score);
+  font-family: var(--mono);
+  font-size: var(--t-mark);
+  color: var(--ink-2);
+}
+
+/* ------------------------------------------------------------- front page */
+
+/*
+  The front page had a centred masthead floating above a left-aligned list of
+  numerals, with a hand's width of dead space between them and nothing tying
+  the two alignments together. The crest is now tightened into a letterhead and
+  the funnel sits directly beneath it as a captioned document, which is the
+  relationship an assay office's own paper has.
+*/
+.open {
+  display: flex;
+  flex-direction: column;
+  gap: clamp(1.5rem, 3vw, 2.25rem);
+  padding-block: clamp(1.75rem, 4.5vw, 3.25rem) clamp(2rem, 5vw, 3.5rem);
+}
+
+/*
+  The letterhead, on the page's own axis.
+
+  The crest, the wordmark and the positioning line were centred while every
+  other thing on the site — the ladder, the offices, the book, the register —
+  is set left against a hairline. Two axes on one page is the difference
+  between a document and a landing page, and it was the first thing a reader
+  saw. An assay office does not centre its own name over its own register.
+
+  So the mark and the name sit at the head of the sheet, and the sentence that
+  states the finding sits beside them at a readable measure, sharing the rule
+  the ladder starts from.
+*/
+.open__crest {
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr);
+  align-items: end;
+  column-gap: 20px;
+  row-gap: 6px;
+  padding-bottom: 18px;
+  border-bottom: var(--hair) solid var(--score);
+}
+
+.open__crest > :first-child { grid-row: span 2; align-self: center; }
+.open__sub { grid-column: 2; }
+
+.open__ladder { display: flex; flex-direction: column; gap: 10px; }
+
+.open__caption {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 16px;
+}
+
+.open__scale { color: var(--ink-4); }
+
+.open__name {
+  grid-column: 2;
+  align-self: end;
+  font-family: var(--serif);
+  font-weight: 400;
+  font-size: clamp(2.25rem, 5vw, 3rem);
+  line-height: 1;
+  letter-spacing: 0.02em;
+  color: var(--ink);
+  margin: 0;
+}
+
+.open__sub { margin: 0; letter-spacing: 0.22em; align-self: start; }
+
+/*
+  The finding, at a measure. Left, like everything under it, and wide enough
+  that the three numbers in it do not each land on their own line.
+*/
+/*
+  The sentence that says what the site is. Set as the page's own voice — sans,
+  at reading size — so it is plainly an explanation and not another finding.
+*/
+.open__lede {
+  font-size: var(--t-body);
+  line-height: 1.65;
+  color: var(--ink-2);
+  max-width: 68ch;
+  margin: 0;
+}
+
+/*
+  The sentence that says what the site is.
+
+  Set in the page's own voice — sans, at reading size — so it reads plainly as
+  an explanation rather than as another finding competing with the serif line
+  under it.
+*/
+.open__lede {
+  font-size: var(--t-body);
+  line-height: 1.65;
+  color: var(--ink-2);
+  max-width: 68ch;
+  margin: 0;
+}
+
+.open__line {
+  font-family: var(--serif);
+  font-size: var(--t-h2);
+  line-height: 1.3;
+  letter-spacing: -0.01em;
+  color: var(--ink);
+  max-width: 54ch;
+  margin: 0;
+  text-wrap: pretty;
+}
+
+.open__actions { display: flex; flex-wrap: wrap; gap: 12px; }
+
+/* ----------------------------------------------------------------- offices */
+
+/**
+ * Hairline grids draw their rules on the cells, not as a background showing
+ * through the gaps: an auto-fill row that does not fill left a lit rectangle
+ * where nothing existed, which read as a panel that had failed to load.
+ */
+.offices {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  border-top: var(--hair) solid var(--score);
+  border-left: var(--hair) solid var(--score);
+}
+
+.office {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  height: 100%;
+  padding: 20px;
+  background: var(--void);
+  border-right: var(--hair) solid var(--score);
+  border-bottom: var(--hair) solid var(--score);
+  transition: background var(--d-hover) linear;
+}
+
+.office:hover { background: var(--iron); }
+
+.office__n {
+  font-size: var(--t-data-lg);
+  line-height: 1;
+  color: var(--ink);
+  font-variant-numeric: tabular-nums;
+}
+
+.office__name { font-size: var(--t-small); color: var(--ink); }
+
+.office__blurb {
+  font-size: var(--t-note);
+  line-height: 1.6;
+  color: var(--ink-3);
+  text-transform: none;
+  letter-spacing: 0;
+}
+
+/*
+  The three figures every door carries.
+
+  Pushed to the bottom of the door so all four line up across the row: an
+  office with a thinner book has a visibly shorter answer in the same place,
+  rather than a different layout that hides the comparison.
+*/
+.office__figs {
+  margin-top: auto;
+  padding-top: 12px;
+  border-top: var(--hair) solid var(--score);
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  color: var(--pewter-500);
+}
+
+.office__figs .num { font-variant-numeric: tabular-nums; }
+
+@media (max-width: 900px) {
+  .offices { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+}
+
+@media (max-width: 520px) {
+  .offices { grid-template-columns: 1fr; }
+}
+
+/* --------------------------------------------------------------- mechanism */
+
+.mech {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 32px;
+  margin-bottom: 28px;
+}
+
+.mech__s {
+  font-family: var(--serif);
+  font-size: var(--t-h3);
+  line-height: 1.35;
+  color: var(--ink);
+  margin: 0;
+  padding-top: 16px;
+  border-top: var(--hair) solid var(--score);
+}
+
+.mech__s em { font-style: italic; color: var(--gold-999); }
+
+.mech__bond { max-width: 72ch; }
+
+@media (max-width: 900px) {
+  .mech { grid-template-columns: 1fr; gap: 20px; }
+}
+
+/* --------------------------------------------------------------- heartbeat */
+
+.beat { border: var(--hair) solid var(--score); background: var(--iron); }
+
+.beat__head {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 16px;
+  padding: 14px 20px;
+  border-bottom: var(--hair) solid var(--score);
+}
+
+.beat__list { list-style: none; margin: 0; padding: 0; }
+
+.beat__row {
+  display: grid;
+  grid-template-columns: 12ch 22ch minmax(0, 1fr) minmax(0, 1.4fr);
+  align-items: center;
+  gap: 16px;
+  min-height: 44px;
+  padding: 8px 20px;
+  border-bottom: var(--hair) solid var(--score);
+}
+
+.beat__row:last-child { border-bottom: 0; }
+
+.beat__name { display: inline-flex; align-items: center; gap: 8px; color: var(--ink-2); }
+
+/*
+  Down is unlit, not red. Red is reserved for a defaced mark, and a keeper that
+  has stopped is a fact rather than a verdict.
+*/
+.beat__row[data-state="running"] .beat__state { color: var(--verify); }
+.beat__row[data-state="down"] .beat__state { color: var(--silver-925); }
+.beat__row[data-state="never"] .beat__state { color: var(--base); }
+
+.beat__none { color: var(--base); }
+
+.beat__does {
+  font-size: var(--t-mark);
+  line-height: 1.5;
+  color: var(--ink-3);
+  text-transform: none;
+  letter-spacing: 0;
+}
+
+@media (max-width: 860px) {
+  .beat__row { grid-template-columns: minmax(0, 1fr); gap: 6px; }
+}
+
+.lya__head { padding-block: 8px 8px; }
+.lya__find { border-left: var(--hair) solid var(--score); padding-left: 24px; }
+
+/* ------------------------------------------------------- the seller's ladder */
+
+/*
+  A document with columns, not a stack of narrow paragraphs.
+
+  Every rung costs something different and the whole question a seller has is
+  which one they are on and what the next one takes — which is a comparison,
+  and a comparison needs the rows beside each other.
+*/
+.ladderdoc { display: flex; flex-direction: column; margin: 40px 0 0; padding: 0; list-style: none; }
+
+.ladderdoc__head,
+.ladderdoc__row {
+  display: grid;
+  grid-template-columns: 56px minmax(0, 1.1fr) minmax(0, 1.3fr) minmax(0, 0.7fr);
+  gap: 32px;
+  align-items: start;
+  padding: 20px 0;
+  border-top: var(--hair) solid var(--score);
+}
+
+.ladderdoc__head { padding: 0 0 10px; border-top: 0; }
+
+.ladderdoc__n {
+  font-size: var(--t-data-lg);
+  line-height: 1.1;
+  color: var(--base);
+  font-variant-numeric: tabular-nums;
+}
+
+.ladderdoc__what { display: flex; flex-direction: column; gap: 6px; min-width: 0; }
+
+.ladderdoc__name {
+  font-family: var(--serif);
+  font-size: var(--t-h3);
+  line-height: 1.25;
+  font-weight: 400;
+  color: var(--ink);
+}
+
+.ladderdoc__test,
+.ladderdoc__how {
+  font-size: var(--t-small);
+  line-height: 1.6;
+  color: var(--ink-2);
+}
+
+.ladderdoc__how { color: var(--ink-3); }
+
+/* The price is the column a seller scans, so it is the one set in the mono. */
+.ladderdoc__cost {
+  font-family: var(--mono);
+  font-size: var(--t-note);
+  line-height: 1.6;
+  color: var(--pewter-500);
+  font-variant-numeric: tabular-nums;
+}
+
+@media (max-width: 900px) {
+  .ladderdoc__head { display: none; }
+  .ladderdoc__row {
+    grid-template-columns: 40px minmax(0, 1fr);
+    gap: 8px 20px;
+  }
+  .ladderdoc__how,
+  .ladderdoc__cost { grid-column: 2; }
+}
+
+/* ------------------------------------------------------------ method sheet */
+
+/*
+  Every rung, its method and its command, as four columns.
+
+  The figure is not restated at display size here — the ladder above already
+  showed it, and repeating it large made the method sheet read as the more
+  important of the two.
+*/
+/*
+  Written as `.tbl th.x` / `.tbl td.x` on purpose.
+
+  `.tbl td` sets `white-space: nowrap` and carries one more element in its
+  selector than a bare class does, so a plain `.msheet__how { white-space:
+  normal }` lost to it and the method column rendered as a single line clipped
+  at the cell edge — the sentence explaining where each figure came from,
+  cut off mid-word, on the page that exists to explain where each figure came
+  from.
+*/
+.tbl th.msheet__rung { width: 16%; min-width: 150px; vertical-align: top; }
+.msheet__n { color: var(--base); margin-right: 8px; }
+
+.tbl td.msheet__fig { width: 10%; vertical-align: top; color: var(--ink); }
+
+.tbl td.msheet__how {
+  vertical-align: top;
+  white-space: normal;
+  font-size: var(--t-note);
+  line-height: 1.6;
+  color: var(--ink-3);
+}
+
+/* The one line on the sheet that is about a gap rather than a measurement. */
+.msheet__break {
+  display: block;
+  margin-top: 6px;
+  font-size: var(--t-note);
+  color: var(--pewter-500);
+}
+
+/*
+  The second count in the figure column: rows above, distinct products below.
+
+  Dimmer than the row count and set beneath it rather than beside it, because
+  it qualifies that number rather than competing with it — the same treatment
+  the floor mark gets. Tabular like every other figure, so the two counts keep
+  their right edge against each other as the digits change.
+*/
+.msheet__distinct {
+  display: block;
+  margin-top: 4px;
+  font-size: var(--t-mark);
+  font-variant-numeric: tabular-nums;
+  color: var(--pewter-500);
+}
+
+.tbl td.msheet__cmd { vertical-align: top; width: 26%; white-space: normal; }
+
+@media (max-width: 900px) {
+  .msheet { min-width: 720px; }
+}
+
+/* ------------------------------------------------------------ session scope */
+
+.scope__scope { margin-top: 20px; }
+
+.scope__scopehead {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 16px;
+  margin-bottom: 8px;
+}
+
+.scope__tbl { width: 100%; table-layout: fixed; }
+.scope__tbl td, .scope__tbl th { padding-block: 10px; vertical-align: top; height: auto; }
+
+.tbl td.scope__state { width: 11ch; }
+
+/* A selector wraps: it is the whole point of the row and must not be clipped. */
+.tbl td.scope__sel {
+  white-space: normal;
+  overflow-wrap: anywhere;
+  font-size: var(--t-mark);
+  line-height: 1.5;
+}
+
+.tbl td.scope__tgt { width: 14ch; color: var(--ink-3); }
+
+.tbl td.scope__whynot {
+  width: 34%;
+  white-space: normal;
+  color: var(--base);
+  font-size: var(--t-note);
+  line-height: 1.5;
+  text-transform: none;
+  letter-spacing: 0;
+}
+
+/* Absence of light, never red: a withheld call is unlit, not forbidden. */
+.scope__tbl tr[data-withheld] td { color: var(--base); }
+
+@media (max-width: 720px) {
+  .scope__scope { overflow-x: auto; }
+  .scope__tbl { min-width: 560px; }
+}
+
+/* --------------------------------------------------------------- authority */
+
+.auth-head { padding-block: 8px 32px; }
+
+/*
+  The caveat is set as an aside, not as a second lede: it qualifies the claim
+  beside it rather than continuing it, and the oxblood rule is the only place
+  on this page where a limitation is marked rather than described.
+*/
+.auth-caveat {
+  border-left: 2px solid var(--cancelled);
+  padding-left: 20px;
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+}
+
+/* ----------------------------------------------------------------- compare */
+
+.cmp { border: var(--hair) solid var(--score); background: var(--iron); }
+.cmp--empty { padding: 24px 20px; display: flex; flex-direction: column; gap: 20px; }
+
+.cmp__tbl { width: 100%; }
+.cmp__tbl td, .cmp__tbl th { height: 44px; }
+
+/* The row label is the test, and it stays legible while the columns scroll. */
+.cmp__label { text-align: left; color: var(--pewter-500); font-weight: 400; }
+
+.cmp__head {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  align-items: flex-start;
+  padding: 8px 0;
+}
+
+.cmp__name { font-size: var(--t-small); color: var(--ink); }
+
+.cmp__office { display: inline-flex; align-items: center; gap: 8px; }
+
+/*
+  The comparison scrolls inside itself below a laptop.
+
+  Three columns of test names and figures need about 900px; at 768 the table
+  was seventeen pixels wider than the tablet it was on and took the document
+  with it. It keeps its width and scrolls in its own frame, which is the
+  pattern every other wide table here uses.
+*/
+@media (max-width: 900px) {
+  .cmp { overflow-x: auto; }
+  .cmp__tbl { min-width: 680px; }
+}
+
+/* ------------------------------------------------------------------ ticket */
+
+/*
+  The ticket.
+
+  A document, not a form: the terms are the body copy and the button is the
+  last line of it. Everything that governs the money is above the signature,
+  which is the only arrangement that makes the disclosure worth having.
+*/
+.ticket {
+  border: var(--hair) solid var(--score);
+  background: var(--iron);
+}
+
+.ticket__head {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 16px;
+  padding: 16px 20px;
+  border-bottom: var(--hair) solid var(--score);
+}
+
+.ticket__grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+}
+
+.ticket__field {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  padding: 16px 20px;
+  border-bottom: var(--hair) solid var(--score);
+  border-right: var(--hair) solid var(--score);
+}
+
+.ticket__field:nth-child(2n) { border-right: 0; }
+
+.ticket__value {
+  font-family: var(--mono);
+  font-size: var(--t-data);
+  color: var(--ink);
+  margin: 0;
+  font-variant-numeric: tabular-nums;
+}
+
+.ticket__note {
+  font-size: var(--t-note);
+  line-height: 1.6;
+  color: var(--ink-3);
+  text-transform: none;
+  letter-spacing: 0;
+  margin: 0;
+}
+
+.ticket__offices {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+}
+
+.ticket__office {
+  font-family: var(--mono);
+  font-size: var(--t-mark);
+  color: var(--pewter-500);
+  background: transparent;
+  border: var(--hair) solid var(--score);
+  padding: 6px 10px;
+  cursor: pointer;
+  transition: color var(--d-hover) linear, border-color var(--d-hover) linear;
+}
+
+.ticket__office:hover { color: var(--silver-925); }
+.ticket__office[data-on] { color: var(--gold-999); border-color: var(--gold-750); }
+
+.ticket__amount {
+  display: flex;
+  align-items: baseline;
+  gap: 8px;
+}
+
+.ticket__input {
+  background: var(--void);
+  border: var(--hair) solid var(--score);
+  color: var(--ink);
+  font-size: var(--t-data);
+  padding: 8px 10px;
+  width: 12ch;
+  font-variant-numeric: tabular-nums;
+}
+
+.ticket__input:focus-visible { outline: 2px solid var(--gold-999); outline-offset: 1px; }
+
+.ticket__scope { padding: 16px 20px; border-bottom: var(--hair) solid var(--score); }
+
+.ticket__scopehead {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 16px;
+  margin-bottom: 10px;
+}
+
+.ticket__tbl { width: 100%; margin-bottom: 10px; table-layout: fixed; }
+.ticket__tbl td, .ticket__tbl th { height: auto; padding-block: 10px; vertical-align: top; }
+
+.tbl td.ticket__state { width: 10ch; }
+.tbl td.ticket__target { width: 22%; white-space: normal; }
+
+/*
+  A selector wraps.
+
+  `.tbl td` sets `white-space: nowrap` and out-ranks a bare class, so
+  `exactInputSingle((address,address,uint24,address,uint256,uint256,uint160))`
+  could not break — and one cell that cannot break pushed the whole document
+  sideways. /start scrolled horizontally, which is the one thing the layout
+  rules here forbid outright, and the selector that makes the grant specific
+  was the part that ended up off screen.
+*/
+.tbl td.ticket__sel {
+  font-size: var(--t-mark);
+  line-height: 1.5;
+  white-space: normal;
+  overflow-wrap: anywhere;
+}
+
+/* Absence of light, never red: a withheld call is unlit, not forbidden. */
+.ticket__tbl tr[data-withheld] td { color: var(--base); }
+
+.tbl td.ticket__why {
+  width: 26%;
+  white-space: normal;
+  color: var(--base);
+  text-transform: none;
+  letter-spacing: 0;
+  font-size: var(--t-note);
+  line-height: 1.5;
+}
+
+.ticket__rules {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  border-bottom: var(--hair) solid var(--score);
+}
+
+.ticket__rule {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  padding: 16px 20px;
+  border-right: var(--hair) solid var(--score);
+}
+
+.ticket__rule:last-child { border-right: 0; }
+
+.ticket__sign {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 12px;
+  padding: 16px 20px;
+}
+
+/* The one place a refusal is written out rather than left as a dead button. */
+.ticket__refusal {
+  font-size: var(--t-mark);
+  line-height: 1.6;
+  color: var(--silver-925);
+  border-left: 2px solid var(--cancelled);
+  padding-left: 12px;
+  margin: 0;
+  text-transform: none;
+  letter-spacing: 0;
+}
+
+.ticket__phase {
+  font-size: var(--t-mark);
+  color: var(--ink-2);
+  margin: 0;
+  text-transform: none;
+  letter-spacing: 0;
+}
+
+.ticket__phase[data-ok] { color: var(--gold-999); }
+
+/* ------------------------------------------------------------- start, split */
+
+.start-cols {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+  gap: 48px;
+  align-items: start;
+}
+
+.start-col { min-width: 0; }
+
+.start-colhead {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 16px;
+  padding-bottom: 12px;
+  margin-bottom: 20px;
+  border-bottom: var(--hair) solid var(--score);
+}
+
+@media (max-width: 1040px) {
+  .start-cols { grid-template-columns: minmax(0, 1fr); gap: 56px; }
+  .ticket__grid { grid-template-columns: minmax(0, 1fr); }
+  .ticket__field { border-right: 0; }
+  .ticket__rules { grid-template-columns: minmax(0, 1fr); }
+  .ticket__rule { border-right: 0; border-bottom: var(--hair) solid var(--score); }
+  .ticket__rule:last-child { border-bottom: 0; }
+  .ticket__scope { overflow-x: auto; }
+}
+
+/* -------------------------------------------------------- the book, at home */
+
+/*
+  The front door's copy of the floor.
+
+  Rows, not a canvas: this is the figure a judge screenshots, and it has to be
+  right in the first byte of HTML rather than after a socket connects.
+*/
+.fbook {
+  border: var(--hair) solid var(--score);
+  background: var(--iron);
+}
+
+.fbook__totals {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 32px;
+  padding: 16px 20px;
+  border-bottom: var(--hair) solid var(--score);
+}
+
+.fbook__tbl { width: 100%; }
+.fbook__tbl td,
+.fbook__tbl th { height: 44px; }
+.fbook__dep { color: var(--pewter-500); }
+
+.fbook__foot {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  padding: 12px 20px;
+  border-top: var(--hair) solid var(--score);
+}
+
+.fbook[aria-busy="true"] {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+  padding: 20px;
+}
+
+@media (max-width: 720px) {
+  .fbook__totals { gap: 20px; }
+  /* The first column stays put so a row keeps its identity while it scrolls. */
+  .fbook .tablewrap { overflow-x: auto; }
+}
+
+/* ------------------------------------------------------------ floor window */
+
+.floorwin {
+  position: relative;
+  border: var(--hair) solid var(--score);
+  background: var(--void);
+  overflow: hidden;
+}
+
+.floorwin__canvas { position: absolute; inset: 0; width: 100%; height: 100%; }
+
+.floorwin__go { position: absolute; right: 16px; bottom: 16px; background: var(--void); }
+
+.floorwin__status {
+  position: absolute;
+  right: 16px;
+  top: 16px;
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+}
+
+/* ---------------------------------------------------------------- legend */
+
+.legend {
+  position: absolute;
+  left: 16px;
+  bottom: 16px;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  margin: 0;
+  padding: 12px 14px;
+  background: rgb(8 9 11 / 0.78);
+  border: var(--hair) solid var(--score);
+  max-width: 320px;
+}
+
+.legend__head { color: var(--silver-925); margin-bottom: 4px; }
+
+.legend__row {
+  display: grid;
+  grid-template-columns: 64px 1fr;
+  gap: 12px;
+  align-items: baseline;
+}
+
+.legend__row dd {
+  margin: 0;
+  font-family: var(--mono);
+  font-size: var(--t-mark);
+  line-height: 1.5;
+  color: var(--ink-2);
+}
+
+@media (max-width: 640px) {
+  .legend { display: none; }
+}
+
+.reg-page { padding-block: 24px 0; }
+.reg-head { margin-bottom: 20px; }
+.reg-head .section-sub { margin-top: 10px; }
+
+.assay__ev {
+  grid-column: 2 / -1;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px 20px;
+  margin-top: 6px;
+}
+
+.assay__ev li {
+  display: inline-flex;
+  align-items: baseline;
+  gap: 8px;
+  font-size: var(--t-mark);
+  color: var(--ink-2);
+}
+
+/* ------------------------------------------------------------ certificate */
+
+.cert-page {
+  display: flex;
+  flex-direction: column;
+  gap: 24px;
+  padding-block: 32px 0;
+}
+
+.cert {
+  border: var(--hair) solid var(--score);
+  background: var(--iron);
+}
+
+.cert__head {
+  display: grid;
+  grid-template-columns: max-content 1fr max-content;
+  align-items: start;
+  gap: 32px;
+  padding: 28px;
+  border-bottom: var(--hair) solid var(--score);
+}
+
+.cert__id { display: flex; flex-direction: column; gap: 8px; min-width: 0; }
+
+.cert__name { margin: 0; color: var(--ink); }
+
+.cert__desc { margin: 6px 0 0; max-width: 68ch; color: var(--ink-2); }
+
+.cert__verdict {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: 8px;
+  text-align: right;
+}
+
+.cert__fig {
+  font-size: clamp(2rem, 5vw, 3rem);
+  line-height: 1;
+  letter-spacing: -0.02em;
+  font-variant-numeric: tabular-nums;
+}
+
+.cert__denom { font-size: var(--t-data); color: var(--ink-3); letter-spacing: 0; }
+
+.cert__unstruck {
+  margin: 4px 0 0;
+  font-family: var(--mono);
+  font-size: var(--t-mark);
+  line-height: 1.6;
+  color: var(--ink-3);
+  max-width: 32ch;
+}
+
+.cert__assay { border: 0; background: transparent; }
+.cert__assay .panel__head { padding-inline: 28px; }
+.cert__assay .panel__body { padding-inline: 28px; }
+
+.placement__unknown { display: block; margin: 10px 0 0; text-transform: none; letter-spacing: 0.04em; line-height: 1.6; }
+
+.career__totals { margin-bottom: 24px; }
+.career__table { margin-bottom: 24px; }
+.career__label { display: block; margin-bottom: 8px; }
+.career__dismissals { margin-top: 16px; }
+
+.excl { display: flex; flex-direction: column; }
+
+.excl-item {
+  padding: 12px 0;
+  border-bottom: var(--hair) solid var(--score);
+}
+
+.excl-item:last-child { border-bottom: 0; }
+
+.excl-rung {
+  font-family: var(--mono);
+  font-size: var(--t-mark);
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--ink-3);
+}
+
+.excl-reason { margin: 6px 0 0; font-size: var(--t-small); color: var(--ink); }
+
+.excl-remedy {
+  margin: 4px 0 0;
+  font-family: var(--mono);
+  font-size: var(--t-mark);
+  line-height: 1.6;
+  color: var(--ink-3);
+}
+
+.excl__lede { margin: 0 0 12px; max-width: 72ch; }
+
+@media (max-width: 900px) {
+  .cert__head { grid-template-columns: 1fr; gap: 24px; padding: 20px; }
+  .cert__verdict { align-items: flex-start; text-align: left; }
+  .cert__assay .panel__head, .cert__assay .panel__body { padding-inline: 20px; }
+}
+
+/* ------------------------------------------------------------ mandate page */
+
+.mandate-page {
+  display: flex;
+  flex-direction: column;
+  gap: 24px;
+  padding-block: 32px 0;
+}
+
+.mandate__head {
+  display: flex;
+  align-items: flex-end;
+  justify-content: space-between;
+  gap: 32px;
+  flex-wrap: wrap;
+  padding-bottom: 20px;
+  border-bottom: var(--hair) solid var(--score);
+}
+
+.mandate__head h1 { margin-top: 8px; }
+.mandate__terms { max-width: 82ch; margin: 0; }
+
+/* ------------------------------------------------------------- start page */
+
+.start { padding-block: clamp(2.5rem, 6vw, 4rem) 0; }
+
+.start-title { margin: 12px 0 20px; max-width: 18ch; }
+
+.start-sub { margin: 0 0 40px; max-width: 64ch; }
+
+/*
+  The falsify column on /start.
+
+  These were `.claim` and `.claim-*`, which is also the name of the `<Claim>`
+  component's own block — and that block is declared later in this file, so
+  every numbered row on /start was silently taking a bordered iron box and a
+  column flex instead of its two-column grid. Two owners for one name; renamed
+  to what this list actually is.
+*/
+.falsify { display: flex; flex-direction: column; }
+
+.falsify__item {
+  display: grid;
+  grid-template-columns: 48px 1fr;
+  gap: 24px;
+  padding: 24px 0;
+  border-top: var(--hair) solid var(--score);
+}
+
+.falsify__n {
+  font-family: var(--mono);
+  font-size: var(--t-mark);
+  font-variant-numeric: tabular-nums;
+  letter-spacing: 0.14em;
+  color: var(--ink-3);
+  padding-top: 4px;
+}
+
+.falsify__body { display: flex; flex-direction: column; gap: 10px; min-width: 0; }
+
+/** The claim is the object. Serif, because it is a statement, not a reading. */
+.falsify__text {
+  margin: 0;
+  font-family: var(--serif);
+  font-size: var(--t-h3);
+  line-height: 1.3;
+  color: var(--ink);
+  max-width: 46ch;
+}
+
+.falsify__note {
+  margin: 0;
+  font-size: var(--t-small);
+  line-height: 1.55;
+  color: var(--ink-2);
+  max-width: 72ch;
+}
+
+.falsify__link {
+  font-family: var(--mono);
+  font-size: var(--t-data);
+  color: var(--gold-999);
+  border-bottom: var(--hair) solid var(--gold-750);
+  align-self: flex-start;
+  padding-bottom: 2px;
+}
+
+.falsify__link:hover { color: var(--struck); }
+
+.start-next { padding-block: 40px; border-top: var(--hair) solid var(--score); }
+
+/* ------------------------------------------------------------ floor table */
+
+.floor-table {
+  position: absolute;
+  inset: 7rem 0 12rem;
+  z-index: 2;
+  overflow: auto;
+  pointer-events: auto;
+}
+
+@media (max-width: 900px) {
+  .floor-table { inset: 9rem 0 14rem; }
+}
+
+.legend { z-index: 2; }
+.legend--compact { padding: 10px 12px; max-width: 280px; }
+/** On the full floor the tape owns the bottom edge, so the legend sits above it. */
+.floor-legend .legend { bottom: 12.5rem; }
+
+@media (max-width: 900px) {
+  .floor-legend .legend { bottom: 15rem; }
+}
+
+.auth { display: flex; flex-direction: column; gap: 20px; margin-block: 32px; }
+.auth__stamp { display: block; }
+.auth__loading { margin: 32px 0; }
+
+/* ---------------------------------------------------------- evidence page */
+
+.ev-page { padding-block: clamp(2.5rem, 6vw, 4rem) 0; }
+
+.ev-head { margin: 48px 0 8px; }
+
+/** The adverse sections carry the one oxblood rule in the product. */
+.ev-head--adverse { border-top: 2px solid var(--cancelled); padding-top: 20px; }
+
+.ev-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+  border-top: var(--hair) solid var(--score);
+  border-left: var(--hair) solid var(--score);
+  margin-top: 20px;
+}
+
+.ev {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  padding: 20px;
+  background: var(--void);
+  border-right: var(--hair) solid var(--score);
+  border-bottom: var(--hair) solid var(--score);
+}
+
+.ev-title {
+  margin: 0;
+  font-family: var(--serif);
+  font-weight: 400;
+  font-size: var(--t-h3);
+  line-height: 1.25;
+  color: var(--ink);
+}
+
+.ev-body { margin: 0; font-size: var(--t-small); line-height: 1.55; color: var(--ink-2); }
+
+.ev-link {
+  font-family: var(--mono);
+  font-size: var(--t-mark);
+  color: var(--gold-999);
+  border-bottom: var(--hair) solid var(--gold-750);
+  align-self: flex-start;
+}
+
+.ladder-foot { margin-top: 40px; }
+
+/* ------------------------------------------------------------- token lookup */
+
+.lookup { display: flex; flex-direction: column; gap: 8px; margin-block: 20px 28px; max-width: 480px; }
+
+.lookup__row { display: flex; gap: 8px; }
+
+.lookup input {
+  flex: 1;
+  height: var(--row);
+  padding: 0 12px;
+  background: var(--iron);
+  border: var(--hair) solid var(--score);
+  color: var(--ink);
+  font-family: var(--mono);
+  font-variant-numeric: tabular-nums;
+  font-size: var(--t-data);
+  min-width: 0;
+}
+
+.lookup input::placeholder { color: var(--ink-3); }
+.lookup input:focus { border-color: var(--pewter-500); outline: none; }
+
+.lookup__note { text-transform: none; letter-spacing: 0.04em; }
+
+.claim-cost { color: var(--ink-3); }
+
+/* ------------------------------------------------------------------- bench */
+
+.bench-page { padding-block: clamp(2.5rem, 6vw, 4rem) 0; }
+.bench__title { margin: 12px 0 20px; max-width: 14ch; }
+.bench__lede { margin: 0 0 40px; }
+
+.bench__form {
+  display: flex;
+  gap: 16px;
+  align-items: stretch;
+  flex-wrap: wrap;
+  border-top: var(--hair) solid var(--silver-925);
+  border-bottom: var(--hair) solid var(--score);
+  padding-block: 16px;
+}
+
+/** The input is the largest thing on the page. Paste a number, get a verdict. */
+.bench__input {
+  flex: 1 1 20ch;
+  min-width: 0;
+  background: transparent;
+  border: 0;
+  outline: none;
+  color: var(--ink);
+  font-size: clamp(1.5rem, 4vw, 2.75rem);
+  letter-spacing: -0.03em;
+  padding: 0;
+}
+
+.bench__input::placeholder { color: var(--base); }
+
+.bench__go { align-self: center; }
+
+.bench__try { display: flex; align-items: center; gap: 12px; margin-top: 20px; flex-wrap: wrap; }
+
+.bench__status {
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+  gap: 16px;
+  flex-wrap: wrap;
+  margin-top: 36px;
+}
+
+.bench__error { margin-top: 20px; color: var(--ink); }
+
+.bench__results { margin-top: 16px; }
+
+.bench__verdict {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-end;
+  gap: 32px;
+  flex-wrap: wrap;
+  margin-top: 36px;
+  padding-top: 24px;
+  border-top: var(--hair) solid var(--silver-925);
+}
+
+.bench__who { display: flex; flex-direction: column; gap: 8px; }
+.bench__name { margin: 0; max-width: 22ch; }
+
+.bench__mark { display: flex; flex-direction: column; align-items: flex-end; gap: 10px; }
+
+.bench__fig { font-size: var(--t-data-lg); line-height: 1; letter-spacing: -0.02em; font-variant-numeric: tabular-nums; }
+.bench__denom { font-size: var(--t-data); color: var(--ink-3); }
+
+.bench__cmd { display: flex; align-items: center; gap: 16px; flex-wrap: wrap; margin-top: 24px; }
+.bench__cmd .cmd { flex: 1 1 320px; }
+
+/* ------------------------------------------------------------ method page */
+
+.method { padding-block: clamp(2.5rem, 6vw, 4rem) 0; }
+.method__crest { margin-bottom: 20px; }
+.method__title { margin: 12px 0 20px; max-width: 18ch; }
+
+/* The lookup sits on the rule the prose starts from, not under it. */
+.method__head { padding-block: 8px 24px; }
+.method__try { border-left: var(--hair) solid var(--score); padding-left: 24px; }
+.method__lede { margin: 0 0 8px; }
+/*
+  `.tbl td` sets nowrap and outranks a bare class; see .msheet__how.
+
+  The 42ch cap was doing to the table what the narrow column was doing to the
+  page: two of its four columns could not use the width they had, so the six
+  tests — the actual content of the method page — were squeezed into a third of
+  it. A measure belongs on prose, not on a cell that is already in a column.
+*/
+.tbl td.method__wrap { white-space: normal; line-height: 1.55; }
+.method__cmds { display: flex; flex-direction: column; gap: 20px; max-width: 720px; }
+
+.grades {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+  border-top: var(--hair) solid var(--score);
+  border-left: var(--hair) solid var(--score);
+  margin-bottom: 16px;
+}
+
+.grade {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  padding: 20px;
+  background: var(--void);
+  border-right: var(--hair) solid var(--score);
+  border-bottom: var(--hair) solid var(--score);
+}
+
+.grade__mark { font-size: var(--t-data-lg); line-height: 1; color: var(--ink); }
+.grade__name { font-size: var(--t-small); color: var(--ink); }
+.grade__note { font-family: var(--mono); font-size: var(--t-mark); line-height: 1.5; color: var(--ink-3); }
+
+.nf {
+  min-height: 100dvh;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: flex-start;
+  gap: 20px;
+}
+
+.nf__title { margin: 0; max-width: 16ch; }
+.nf__links { display: flex; gap: 12px; flex-wrap: wrap; margin-top: 12px; }
+
+/* -------------------------------------------------------- command palette */
+
+.pal { position: fixed; inset: 0; z-index: 80; display: grid; }
+
+.pal__scrim {
+  position: absolute;
+  inset: 0;
+  background: rgb(8 9 11 / 0.86);
+  border: 0;
+  cursor: default;
+}
+
+.pal__panel {
+  position: relative;
+  justify-self: center;
+  align-self: start;
+  margin-top: 12vh;
+  width: min(680px, calc(100vw - 32px));
+  background: var(--iron);
+  border: var(--hair) solid var(--score);
+  max-height: 70vh;
+  display: flex;
+  flex-direction: column;
+}
+
+.pal__input {
+  height: 56px;
+  padding: 0 16px;
+  background: transparent;
+  border: 0;
+  border-bottom: var(--hair) solid var(--score);
+  color: var(--ink);
+  font-size: var(--t-body);
+  outline: none;
+}
+
+.pal__input::placeholder { color: var(--ink-3); }
+
+.pal__rows { overflow-y: auto; }
+
+.pal__row {
+  display: grid;
+  grid-template-columns: 68px 1fr max-content;
+  align-items: baseline;
+  gap: 16px;
+  width: 100%;
+  padding: 10px 16px;
+  text-align: left;
+  border-bottom: var(--hair) solid var(--score);
+}
+
+.pal__row[data-on="1"] { background: var(--iron-hi); }
+.pal__row[data-on="1"] .pal__label { color: var(--gold-999); }
+
+.pal__kind { color: var(--ink-3); }
+.pal__label { font-size: var(--t-small); color: var(--ink); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.pal__hint { color: var(--ink-3); white-space: nowrap; }
+.pal__none { padding: 20px 16px; display: block; }
+.pal__foot { padding: 10px 16px; border-top: var(--hair) solid var(--score); }
+
+@media (max-width: 640px) {
+  .pal__row { grid-template-columns: 1fr; gap: 2px; }
+  .pal__hint { white-space: normal; }
+}
+
+/* -------------------------------------------------------------- route move */
+
+/**
+ * Content shifts up and resolves. There is no page transition — the old page
+ * does not slide away, because it is already gone and pretending otherwise is
+ * the kind of motion this doctrine refuses.
+ */
+.app main {
+  animation: route-in var(--d-route) var(--settle) both;
+}
+
+@keyframes route-in {
+  from { opacity: 0; transform: translateY(8px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
+/**
+ * Loading is a hairline pulse. No spinners, no skeletons.
+ *
+ * A skeleton is a drawing of data that does not exist yet, which in a product
+ * about not asserting things you cannot show is exactly the wrong gesture.
+ */
+.hairline {
+  display: block;
+  height: var(--hair);
+  background: var(--score);
+  animation: hair-glow var(--d-pulse) linear infinite;
+}
+
+@keyframes hair-glow {
+  0%, 100% { background: var(--score); }
+  50%      { background: var(--pewter-500); }
+}
+
+/** The funnel while it is still being read. One hairline per rung. */
+.funnel--pending {
+  gap: 28px;
+  padding-block: 12px;
+}
+
+.funnel--pending .hairline { width: min(520px, 100%); }
+
+.reg__struck[data-none="1"] { color: var(--ink-3); }
+.reg__src { color: var(--ink-3); margin-left: 8px; }
+
+/* --------------------------------------------------- operated agents (floor) */
+
+.ops {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+  border-top: var(--hair) solid var(--score);
+  border-left: var(--hair) solid var(--score);
+}
+
+.op {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  padding: 16px;
+  background: var(--void);
+  border-right: var(--hair) solid var(--score);
+  border-bottom: var(--hair) solid var(--score);
+}
+
+.op__head {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 16px;
+}
+
+.op__name {
+  margin: 0;
+  font-family: var(--serif);
+  font-weight: 400;
+  font-size: var(--t-h3);
+  line-height: 1.2;
+  color: var(--ink);
+}
+
+.op__nums { display: flex; flex-direction: column; align-items: flex-end; gap: 4px; }
+
+.op__bnb {
+  font-family: var(--mono);
+  font-variant-numeric: tabular-nums;
+  font-size: var(--t-data);
+  color: var(--ink);
+}
+
+.op__desc { margin: 0; font-size: var(--t-small); line-height: 1.55; color: var(--ink-2); }
+
+.op__observed { display: flex; flex-direction: column; gap: 6px; }
+
+.op__actions { display: flex; flex-direction: column; gap: 4px; }
+
+.op__actions li {
+  font-family: var(--mono);
+  font-size: var(--t-mark);
+  line-height: 1.6;
+  color: var(--ink-2);
+  padding: 4px 0;
+  border-bottom: var(--hair) solid var(--score);
+}
+
+.op__noop { display: block; }
+
+.op__session {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  padding-top: 12px;
+  border-top: var(--hair) solid var(--score);
+}
+
+.op__session--none, .op__session--dead { opacity: 0.6; }
+
+.op__session-head {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+.op__kv { gap: 10px 24px; }
+
+/*
+  A panel value is read, not announced.
+
+  These carried `.fig`, the display numeral — so a session key, a spend cap,
+  the word "registered" and a mandate id were all set at the size reserved for
+  the one figure a page exists to show. Four of them stacked, in three columns,
+  and the panel read as a debug dump rather than as the standing of an agent.
+*/
+.op__val {
+  font-size: var(--t-data);
+  line-height: 1.3;
+  color: var(--ink);
+}
+
+.op__call { font-size: var(--t-note); line-height: 1.6; color: var(--ink-2); }
+
+.op__allow { display: flex; flex-direction: column; gap: 4px; }
+
+.op__revoke-note {
+  margin: 0;
+  font-family: var(--mono);
+  font-size: var(--t-mark);
+  line-height: 1.6;
+  color: var(--ink-3);
+}
+
+.op__badge {
+  font-family: var(--mono);
+  font-size: var(--t-mark);
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--gold-750);
+}
+
+.op__badge--dead { color: var(--ink-3); }
+
+/* --------------------------------------------------------------- remainder */
+
+.tape__text { overflow: hidden; text-overflow: ellipsis; }
+
+.att { display: flex; flex-direction: column; }
+
+.att__epoch { color: var(--ink-3); }
+
+.placement .panel__body { padding-block: 14px; }
+
+.reg__tail { color: var(--ink-3); }
+
+.scope__to { text-align: right; }
+
+/** Provenance segments share a base; the metals are set per modifier above. */
+.au__prov-seg { display: block; min-width: 2px; }
+
+/** The canvas band inside the market page. It needs a height of its own. */
+.hero__viz.floorwin { height: clamp(280px, 42vh, 460px); margin: 0; }
+
+/**
+ * In the band the legend goes top-left, not bottom-left.
+ *
+ * The bodies are laid out along the lower half of the field — that is where the
+ * category columns put them — so a legend pinned to the bottom sits on top of
+ * the leftmost mandate. The top-left corner is the one part of this frame
+ * nothing occupies.
+ */
+.hero__viz.floorwin .legend { top: 16px; bottom: auto; }
+
+.register th.mark-col { text-align: center; letter-spacing: 0.1em; }
+
+/**
+ * An unstruck punch position on a certificate.
+ *
+ * The place where a mark would have been, scored into the ground. Never used
+ * in the register, where the blanks are the argument and an outline would be
+ * ornament repeated three hundred thousand times.
+ */
+.punch-empty {
+  display: block;
+  flex: none;
+  border: var(--hair) dashed var(--score);
+}
+
+/* ---------------------------------------------------------- narrow widths */
+
+/**
+ * 390px is a real device, not an afterthought.
+ *
+ * Two things overflow there and both are wide by nature: the struck hallmark
+ * row, which is five punches plus their labels, and a key/value list whose
+ * values are 42-character addresses. Neither is made smaller — a hallmark
+ * shrunk to fit stops being legible and an address elided further stops being
+ * checkable. They are given their own scroll instead, which is the rule for
+ * wide content everywhere in this system.
+ */
+.cert__head > * { min-width: 0; }
+
+/*
+  The hallmark scrolls only where it has to.
+
+  `overflow-x: auto` also makes the block clip vertically, which cut the punch
+  labels off at every width. It is scoped to the widths that actually overflow.
+*/
+@media (max-width: 900px) {
+  .cert__head .hallmark-block,
+  .cert__head .hallmark {
+    max-width: 100%;
+    overflow-x: auto;
+    scrollbar-width: thin;
+  }
+}
+
+.kv dd {
+  overflow-wrap: anywhere;
+  min-width: 0;
+}
+
+@media (max-width: 560px) {
+  .kv { grid-template-columns: 1fr; gap: 2px 0; }
+  .kv dt { margin-top: 8px; }
+  .scope__calls li { flex-direction: column; gap: 2px; }
+  .scope__to { text-align: left; }
+}
+
+/* ------------------------------------------------------------ digit rolls */
+
+.roll { display: inline-flex; }
+
+.roll__ch {
+  display: inline-block;
+  font-variant-numeric: tabular-nums;
+}
+
+/** Only the character that changed moves, and only vertically. */
+.roll__ch[data-rolling="1"] {
+  animation: roll-over var(--d-roll) var(--settle) both;
+}
+
+@keyframes roll-over {
+  from { transform: translateY(-0.5em); opacity: 0; }
+  to   { transform: translateY(0); opacity: 1; }
+}
+
+.cert__reading { font-size: var(--t-data); color: var(--ink-3); letter-spacing: 0.2em; }
+
+/** The autopsy could not do its job. Said plainly, with no verdict attached. */
+.au__unread {
+  margin: 0 0 20px;
+  padding: 12px 14px;
+  border-left: 2px solid var(--cancelled);
+  color: var(--ink-2);
+  max-width: 76ch;
+}
+
+/** The assay stopped. Stated once, above the rows it could not reach. */
+.assay__halted {
+  margin: 0 0 16px;
+  padding: 12px 14px;
+  border-left: 2px solid var(--cancelled);
+  color: var(--ink-2);
+  max-width: 82ch;
+}
+
+/* -------------------------------------------------------------------- hire */
+
+.hire__routes {
+  display: grid;
+  grid-template-columns: 1fr auto 1fr;
+  gap: 28px;
+  align-items: stretch;
+}
+
+.hire__route { display: flex; flex-direction: column; gap: 12px; align-items: flex-start; }
+
+.hire__what { margin: 0; max-width: 54ch; flex: 1; }
+
+.hire__rule { width: var(--hair); background: var(--score); }
+
+.hire__wallet {
+  display: block;
+  margin: 20px 0 0;
+  text-transform: none;
+  letter-spacing: 0.04em;
+}
+
+@media (max-width: 900px) {
+  .hire__routes { grid-template-columns: 1fr; }
+  .hire__rule { width: auto; height: var(--hair); }
+}
+
+/** The verb on every row. Quiet until the row is under the cursor. */
+.reg__hire {
+  font-family: var(--mono);
+  font-size: var(--t-mark);
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--ink-3);
+  white-space: nowrap;
+  transition: color var(--d-hover) linear;
+}
+
+.register tbody tr:hover .reg__hire { color: var(--gold-999); }
+
+.rs__note { margin-top: 20px; }
+/* `.tbl td` sets nowrap and outranks a bare class; see .method__how. */
+.tbl td.rs__status { white-space: normal; max-width: 34ch; color: var(--ink-3); font-size: var(--t-mark); }
+
+/* ------------------------------------------------------------- public api */
+
+.api__list { display: flex; flex-direction: column; gap: 16px; }
+.api__path { text-transform: none; letter-spacing: 0.04em; color: var(--ink); }
+.api__what { margin: 0 0 14px; max-width: 76ch; }
+.api__guarantees { margin-top: 20px; }
+
+.api__code {
+  margin: 20px 0 0;
+  padding: 16px;
+  background: var(--iron);
+  border: var(--hair) solid var(--score);
+  overflow-x: auto;
+  font-family: var(--mono);
+  font-size: var(--t-mark);
+  line-height: 1.7;
+  color: var(--ink-2);
+}
+
+.api__invite { max-width: 76ch; }
+
+/* ------------------------------------------------------------------ replay */
+
+/*
+  The replay panel sits directly above the register, and had no space under it
+  — the block scrubber, its notes and the register's search rail ran together
+  as one undifferentiated column. They are two instruments and read as two.
+*/
+.replay { margin-block: 28px 36px; }
+
+.replay__scrub { display: flex; flex-direction: column; gap: 10px; margin-bottom: 24px; }
+
+.replay__scrub input[type="range"] {
+  width: 100%;
+  accent-color: var(--gold-999);
+  background: transparent;
+}
+
+.replay__rungs { display: flex; flex-direction: column; }
+
+.replay__rung {
+  display: grid;
+  grid-template-columns: minmax(0, max-content) 1fr;
+  gap: 24px;
+  align-items: baseline;
+  padding: 8px 0;
+  border-bottom: var(--hair) solid var(--score);
+}
+
+/** A rung that cannot be re-derived recedes. It is absence, not failure. */
+.replay__rung[data-off="1"] { opacity: 0.55; }
+
+.replay__fig {
+  font-family: var(--mono);
+  font-variant-numeric: tabular-nums;
+  font-size: var(--t-data-lg);
+  line-height: 1.1;
+  text-align: right;
+  min-width: 9ch;
+  color: var(--ink);
+}
+
+.replay__rung[data-off="1"] .replay__fig { color: var(--base); }
+
+.replay__body { display: flex; flex-direction: column; gap: 3px; min-width: 0; }
+.replay__name { font-size: var(--t-small); color: var(--ink); }
+
+.replay__method {
+  font-family: var(--mono);
+  font-size: var(--t-mark);
+  line-height: 1.6;
+  color: var(--ink-3);
+}
+
+.replay__notes {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  margin: 16px 0;
+  font-family: var(--mono);
+  font-size: var(--t-mark);
+  line-height: 1.6;
+  color: var(--ink-3);
+}
+
+/* ------------------------------------------------------------------ claims */
+
+.claim {
+  border: var(--hair) solid var(--score);
+  background: var(--iron);
+  display: flex;
+  flex-direction: column;
+}
+
+.claim__row {
+  display: grid;
+  grid-template-columns: 84px 1fr;
+  gap: 20px;
+  align-items: start;
+  padding: 14px 16px;
+  border-bottom: var(--hair) solid var(--score);
+}
+
+.claim__row:last-child { border-bottom: 0; }
+
+.claim__text {
+  margin: 0;
+  font-family: var(--serif);
+  font-size: var(--t-h3);
+  line-height: 1.3;
+  color: var(--ink);
+}
+
+.claim__artifacts { display: flex; flex-direction: column; gap: 6px; }
+
+.claim__artifacts li {
+  display: flex;
+  align-items: baseline;
+  gap: 12px;
+  font-size: var(--t-mark);
+  color: var(--ink-2);
+}
+
+.claim__backing { margin: 0; font-size: var(--t-small); line-height: 1.55; color: var(--ink-2); }
+.claim__backing.dim { font-family: var(--mono); font-size: var(--t-mark); color: var(--ink-3); }
+
+@media (max-width: 640px) {
+  .claim__row { grid-template-columns: 1fr; gap: 8px; }
+}
+
+/**
+ * The deployment a mandate belongs to.
+ *
+ * Mandate 0 exists on all three of this office's markets, so a bare id is
+ * ambiguous in the one table that shows them together. Set in the register's
+ * quietest metal: it qualifies the number without competing with it.
+ */
+.mandate-row__dep {
+  font-family: var(--mono);
+  font-size: var(--t-mark);
+  letter-spacing: 0.06em;
+  color: var(--ink-4);
+}
+
+/* ----------------------------------------------------------------- office */
+
+/**
+ * The four offices, at equal depth.
+ *
+ * Agent Diversity is a third of the main-track score and its stated failure
+ * mode is treating one category as the event and the rest as an afterthought.
+ * One template renders all four, so a thin office looks thin rather than being
+ * quietly padded — the emptiness is the finding and the page says so in words.
+ */
+/*
+  The office identifies itself on the left and reports itself on the right.
+
+  It was one narrow stack: mark, name, description, method, then five figures
+  wrapped underneath — all of it inside about a third of the page, with the
+  rest empty and a 240px run of nothing before the book. The five figures are
+  the office's actual state and belong beside its name, not queued under it.
+*/
+.office-head {
+  display: grid;
+  grid-template-columns: minmax(0, 7fr) minmax(0, 5fr);
+  column-gap: var(--gutter);
+  row-gap: 12px;
+  align-items: start;
+}
+
+.office-head__mark,
+.office-head__title,
+.office-head__blurb,
+.office-head__method { grid-column: 1; }
+
+.office-head__mark { line-height: 0; }
+
+.office-head__title { margin: 0; }
+
+.office-head__blurb {
+  margin: 0;
+  font-family: var(--serif);
+  font-size: var(--t-h2);
+  line-height: 1.25;
+  color: var(--ink);
+  max-width: 34ch;
+  text-wrap: balance;
+}
+
+.office-head__method { max-width: 60ch; }
+
+.office-head__figs {
+  grid-column: 2;
+  grid-row: 1 / span 4;
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 20px 24px;
+  padding-left: 24px;
+  border-left: var(--hair) solid var(--score);
+}
+
+/*
+  These sit after the rule they override, not before it.
+
+  They were written next to `.office-head`, which is declared earlier in this
+  file than `.office-head__figs` — and at equal specificity the later rule
+  wins, so the base two-column grid overrode both media queries and the phone
+  layout silently never applied. The fix was ordering, not the queries.
+*/
+@media (max-width: 1040px) {
+  .office-head { grid-template-columns: minmax(0, 1fr); }
+  .office-head__figs {
+    grid-column: 1;
+    grid-row: auto;
+    padding-left: 0;
+    border-left: 0;
+    border-top: var(--hair) solid var(--score);
+    padding-top: 20px;
+  }
+}
+
+/*
+  On a phone the five figures go to one column.
+
+  Two columns of an `<Observation>` — a value, the block it was read at and its
+  age — do not fit in 390px, and the stamp was the eight pixels that pushed the
+  whole document sideways.
+*/
+@media (max-width: 560px) {
+  .office-head__figs { grid-template-columns: minmax(0, 1fr); }
+}
+
+.office-live { display: flex; flex-direction: column; border-top: var(--hair) solid var(--score); }
+
+.office-live__row {
+  display: grid;
+  /*
+    name · id · what the call returned · who runs it · the verb
+
+    The name column was `1fr` and everything after it was fixed, so on a wide
+    page the name took seven hundred pixels for a twenty-character string and
+    the rest of the row sat against the right edge with a void between. The
+    flexible columns are proportional now, so the slack is shared by the two
+    that can use it rather than pooling in one that cannot.
+  */
+  grid-template-columns: minmax(0, 3fr) 9ch minmax(0, 2fr) minmax(0, 1.4fr) max-content;
+  align-items: center;
+  gap: 16px;
+  min-height: var(--row);
+  border-bottom: var(--hair) solid var(--score);
+}
+
+@media (max-width: 900px) {
+  .office-live__row { grid-template-columns: minmax(0, 1fr) max-content; gap: 8px; }
+}
+
+.office-live__name { color: var(--ink); text-decoration: none; }
+.office-live__name:hover { color: var(--gold-999); }
+
+.office-live__id {
+  font-family: var(--mono);
+  font-size: var(--t-mark);
+  font-variant-numeric: tabular-nums;
+  color: var(--ink-4);
+  text-align: right;
+}
+
+.office-live__state { color: var(--ink-3); }
+
+/* Who runs it. Attributed rather than absorbed — these are other people's. */
+.office-live__op { color: var(--pewter-500); }
+
+.office-nav {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  border-top: var(--hair) solid var(--score);
+  border-left: var(--hair) solid var(--score);
+}
+
+.office-nav__door {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  padding: 20px;
+  border-right: var(--hair) solid var(--score);
+  border-bottom: var(--hair) solid var(--score);
+  text-decoration: none;
+  transition: background var(--d-hover) linear;
+}
+
+.office-nav__door:hover { background: var(--iron); }
+.office-nav__name { color: var(--ink); }
+.office-nav__blurb { font-size: var(--t-mark); color: var(--ink-3); }
+
+@media (max-width: 860px) {
+  .office-live__row { grid-template-columns: minmax(0, 1fr) max-content; }
+  .office-live__id,
+  .office-live__state { display: none; }
+  .office-nav { grid-template-columns: minmax(0, 1fr); }
+}
+
+/*
+  The office cell: the mark, then the name over its one-line description.
+
+  It was a wrapping flex row with the description at `flex-basis: 100%`, laid
+  into a cell the head rule had fixed at 32px — so the description fell out of
+  its own row and printed across the row below. The mark and the text are two
+  columns now, and the cell is allowed the height of what it contains.
+*/
+/* The cell keeps `table-cell`; the layout lives on the span inside it. */
+.offices-idx__cell { width: 34%; min-width: 280px; vertical-align: top; }
+
+.offices-idx__name {
+  display: grid;
+  grid-template-columns: 20px minmax(0, 1fr);
+  align-items: start;
+  gap: 12px;
+}
+
+.offices-idx__id { display: flex; flex-direction: column; gap: 4px; min-width: 0; }
+
+.offices-idx__blurb {
+  font-size: var(--t-note);
+  line-height: 1.5;
+  color: var(--ink-3);
+  font-weight: 400;
+  text-transform: none;
+  letter-spacing: 0;
+  white-space: normal;
+}
+
+/* The lede is a measure, not a column: it does not want the full 1440. */
+.offices-idx__lede { max-width: 76ch; }
+
+.offices-idx { margin-top: 32px; }
+.offices-idx__foot { max-width: 76ch; margin-top: 20px; }
+.offices-idx__go { text-align: right; }
+
+/** A deployment that is no longer canonical says so before anything else. */
+.superseded__flag { color: var(--gold-750); margin: 0 0 8px; }
+
+.superseded__parties {
+  display: grid;
+  grid-template-columns: max-content minmax(0, 1fr);
+  gap: 10px 24px;
+  align-items: baseline;
+  margin: 0;
+}
+
+.superseded__parties dd { margin: 0; overflow-wrap: anywhere; }
+
+/** The one action a rung permits, at the end of a register row. */
+.office-live__cta {
+  font-family: var(--mono);
+  font-size: var(--t-mark);
+  color: var(--ink-2);
+  text-decoration: none;
+  white-space: nowrap;
+}
+
+.office-live__cta:hover { color: var(--gold-999); }

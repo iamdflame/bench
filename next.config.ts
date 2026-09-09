@@ -27,46 +27,7 @@ const config: NextConfig = {
    */
   async redirects() {
     return [
-      /*
-        The rooms were renamed when the hall became the product, and every old
-        link has to land somewhere real. A dead end is worse than a redirect on
-        a site whose whole case is that its claims are checkable, and these are
-        the paths in circulation: earlier builds, preview cards, and the routes
-        an earlier plan named.
-
-        /hire changed meaning rather than moving. It used to be the board for a
-        job; it is now the ticket for one agent. The four job segments are
-        therefore redirected explicitly, and every other /hire/:id falls through
-        to the ticket, which is why these four entries are listed one by one
-        rather than as a pattern.
-      */
-      { source: "/hire/rebalancing", destination: "/jobs/rebalancing", permanent: false },
-      { source: "/hire/grid", destination: "/jobs/grid", permanent: false },
-      { source: "/hire/yield", destination: "/jobs/yield", permanent: false },
-      { source: "/hire/health", destination: "/jobs/health", permanent: false },
-
-      { source: "/activate/:id", destination: "/hire/:id", permanent: false },
-      { source: "/dashboard", destination: "/desk", permanent: false },
-      { source: "/agent/:chainId(\\d+)/:id", destination: "/agents/:id", permanent: false },
-      { source: "/agent/:id", destination: "/agents/:id", permanent: false },
-      { source: "/jobs", destination: "/", permanent: false },
-
-      { source: "/offices", destination: "/", permanent: false },
-      { source: "/office/rebalancing", destination: "/jobs/rebalancing", permanent: false },
-      { source: "/office/grid-trading", destination: "/jobs/grid", permanent: false },
-      { source: "/office/yield-optimisation", destination: "/jobs/yield", permanent: false },
-      { source: "/office/health-factor", destination: "/jobs/health", permanent: false },
-      { source: "/market", destination: "/jobs/rebalancing", permanent: false },
-      { source: "/floor", destination: "/desk", permanent: false },
-      { source: "/bench", destination: "/agents", permanent: false },
-      { source: "/authority", destination: "/desk", permanent: false },
-      { source: "/start", destination: "/", permanent: false },
-      { source: "/assay", destination: "/method", permanent: false },
-      { source: "/evidence", destination: "/method", permanent: false },
-      { source: "/list-your-agent", destination: "/agents", permanent: false },
-      { source: "/judge", destination: "/proof/judge", permanent: false },
-      { source: "/mandate/:id", destination: "/settlement/:id", permanent: false },
-      { source: "/ledger/:deployment/:id", destination: "/settlement/:id", permanent: false },
+      { source: "/method", destination: "/assay", permanent: false },
     ];
   },
   serverExternalPackages: [
