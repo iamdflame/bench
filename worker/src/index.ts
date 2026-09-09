@@ -6,7 +6,7 @@
  * the stalest endpoints, then the expensive chain reads. Each stage writes the
  * board back, so a failure late in a cycle keeps everything earlier in it.
  *
- * Probes run every fifteen minutes. A result nobody refreshed inside that
+ * Probes run on whatever interval the operator schedules. A result nobody refreshed inside that
  * window decays toward unavailable, which fails in the safe direction: the
  * worst outcome of decaying early is a row that says "not checked recently",
  * and the worst outcome of decaying late is selling a hire on a dead endpoint.

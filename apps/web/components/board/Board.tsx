@@ -139,7 +139,7 @@ export default function Board({
       <div className="panel" style={{ padding: 20, marginTop: 12 }}>
         <p className="prose">
           {emptyNote ??
-            "Nothing is listed for this filter yet. That is a state of the data rather than a state of the market: the worker probes every fifteen minutes and the board fills as results land."}
+            "Nothing is listed for this filter yet. That is a state of the data rather than a state of the market: the board fills as probe results land, and every row carries when it was last checked."}
         </p>
       </div>
     );

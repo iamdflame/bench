@@ -17,6 +17,15 @@ name: probe
 # than one interval stale.
 #
 # It commits only when something moved, so a quiet market produces no commits.
+#
+# NOT CURRENTLY RUNNING. Every job on this repository — this one and `ci` —
+# fails in about four seconds with "the job was not started because your account
+# is locked due to a billing issue". That is an account state, not a workflow
+# fault, and it is why `ci` shows red on commits whose eight gates and 47 tests
+# pass locally. This file is correct and will start working the moment Actions
+# is unlocked; until then the board is refreshed by running `npm run probe` and
+# pushing, and nothing on the site depends on the cadence — a rail whose check
+# has aged is drawn as unverified, never as closed.
 
 on:
   schedule:
