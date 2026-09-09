@@ -44,6 +44,16 @@ export interface Cohort {
   params: Record<string, string | number | boolean>;
 }
 
+/**
+ * How often a walk writes its place down, in pages.
+ *
+ * Ten pages is a thousand rows and roughly twenty seconds. Writing on every
+ * page would rewrite a multi-megabyte file 344 times per run for no benefit;
+ * writing only at the end of a cohort leaves nine minutes of work with nothing
+ * on disk behind it.
+ */
+const CHECKPOINT_EVERY = 10;
+
 export const COHORTS: readonly Cohort[] = [
   {
     key: "a2a",
@@ -149,7 +159,8 @@ export interface WalkReport {
  * `budget` bounds a run in requests rather than in rows, because requests are
  * what a rate limit counts. A run that hits the budget is not a failure: it
  * checkpoints and the next run continues, which is why the cursor is written
- * after every page rather than at the end.
+ * every `CHECKPOINT_EVERY` pages and again at the end of each cohort, rather
+ * than only when the whole job finishes.
  */
 export async function walkRegistry(
   chainId: SupportedChain,
@@ -221,6 +232,24 @@ export async function walkRegistry(
           state.cursor = null;
           break;
         }
+
+        // Checkpoint inside the cohort, not only at the end of it. A2A is 285
+        // requests — nine minutes — and a crash at request 284 that had
+        // written nothing would start again from the top. Every tenth page is
+        // about twenty seconds of exposure, against a file write of a few
+        // megabytes that is not worth doing on every single page.
+        if (state.pages % CHECKPOINT_EVERY === 0) {
+          state.updatedAt = new Date().toISOString();
+          writeRegistry({
+            version: 1,
+            chainId,
+            observedAt: new Date().toISOString(),
+            funnel: prior?.funnel ?? null,
+            cohorts: { ...states, [cohort.key]: state },
+            candidates: [...byToken.values()],
+          });
+        }
+
         if (requests >= budget) {
           say(`${cohort.key}: stopped on budget at ${state.fetched} rows`);
           break;

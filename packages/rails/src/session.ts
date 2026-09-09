@@ -22,12 +22,19 @@
  * nothing can revoke — authority with no off switch, which is the worst
  * failure this rail has.
  *
- * **Registration is reported with its transaction or not at all.** `registered:
- * true` on its own is a boolean in a JSON file on one machine, which is exactly
- * the unverifiable assertion this product exists to refuse. So the KeyStore
- * registration is confirmed by reading the account's own `Authorize` log, and
- * if that log is not found the session is recorded as unregistered even when
- * the SDK said otherwise.
+ * **Registration is reported with its evidence, and with which kind.**
+ * `registered: true` on its own is a boolean in a JSON file on one machine,
+ * which is exactly the unverifiable assertion this product exists to refuse.
+ * So registration carries both a transaction and the sort of evidence behind
+ * it: an `Authorize` log a stranger can find for themselves, the registry's
+ * own receipt for a submission, or its report that the key was already known.
+ *
+ * The log is searched first and is the strongest of the three. It is looked
+ * for on the account *and* on the KeyStore and its controller, because
+ * registration is a registry operation and a search scoped to the account
+ * finds nothing when the registry emitted it — a false negative that reads
+ * exactly like a failed registration. Only when no log is found anywhere does
+ * the receipt stand in, and the record says so.
  *
  * **Revocation is the same event as ending the engagement.** A hire that ends
  * while the key stays live is not an ended hire.
@@ -126,10 +133,21 @@ export interface Engagement {
   provenVenues: string[];
   rationale: string;
   registered: boolean;
-  /** Present only when the account's own log confirmed it. */
+  /** Present when a log or a receipt confirmed it. Empty for `already`. */
   registrationTx?: string;
   registrationBlock?: number;
   registrationKeyHash?: string;
+  /**
+   * Which kind of evidence stands behind `registered`.
+   *
+   * A log a stranger can find is not the same claim as a hash the SDK handed
+   * back, and neither is the same as the registry saying the key was already
+   * known. The desk prints which one it has rather than showing three
+   * different situations as one tick.
+   */
+  registrationSource?: "log" | "receipt" | "already";
+  /** The contract that carried the event, when a log is what proved it. */
+  registrationEmittedBy?: Address;
   /** The recipient-binding wrapper under any call that carries a destination. */
   wrapper?: Address;
   grantedAt: string;
@@ -312,6 +330,25 @@ export interface RegistrationProof {
   tx: string;
   block: number;
   keyHash: string;
+  /** Which contract carried the event, when a log is what proved it. */
+  emittedBy?: Address;
+  /**
+   * How registration was established.
+   *
+   * `log`     — an Authorize event we read back off the chain. Strongest: a
+   *             third party can find it without asking us.
+   * `receipt` — the registry call returned a transaction hash and reported
+   *             success. Real evidence, one step weaker than a log, because
+   *             it is the SDK's account of what it did rather than the
+   *             chain's.
+   * `already` — the registry reports the key was registered before we asked,
+   *             so there is no new transaction to point at.
+   *
+   * Recorded rather than collapsed to a boolean, because "registered" backed
+   * by a log and "registered" backed by a library's return value are different
+   * claims and the page says which one it is showing.
+   */
+  source: "log" | "receipt" | "already";
 }
 
 /**
@@ -332,31 +369,69 @@ export async function findRegistrationTx(
   fromBlock: bigint,
   attempts = 5,
 ): Promise<RegistrationProof | null> {
+  /*
+    Three places the event can come from, and we had been reading one.
+
+    The account emits it when the delegated wallet authorises the key itself.
+    But registration is a KeyStore operation, and the KeyStore and its
+    controller are separate deployments — addresses the SDK carries in its own
+    network config rather than constants of ours. A search scoped to the
+    account finds nothing when the event was emitted by the registry, which is
+    indistinguishable from "registration did not happen".
+
+    Scanning all three costs three filters against a range we already bound,
+    and removes an explanation we cannot otherwise rule out.
+  */
+  const emitters = registrationEmitters(chainId, account);
+
   for (let i = 0; i < attempts; i++) {
     if (i > 0) await new Promise((r) => setTimeout(r, 2_000));
     const head = await chainClient(chainId).getBlockNumber().catch(() => fromBlock);
     for (const reader of logClients(chainId)) {
-      try {
-        const logs = await reader.getLogs({
-          address: account,
-          event: AUTHORIZE,
-          fromBlock: fromBlock > 0n ? fromBlock : head - 200n,
-          toBlock: head,
-        });
-        const last = logs.at(-1);
-        if (last?.transactionHash) {
-          return {
-            tx: last.transactionHash,
-            block: Number(last.blockNumber ?? 0n),
-            keyHash: String(last.args?.keyHash ?? ""),
-          };
+      for (const address of emitters) {
+        try {
+          const logs = await reader.getLogs({
+            address,
+            event: AUTHORIZE,
+            fromBlock: fromBlock > 0n ? fromBlock : head - 200n,
+            toBlock: head,
+          });
+          const last = logs.at(-1);
+          if (last?.transactionHash) {
+            return {
+              tx: last.transactionHash,
+              block: Number(last.blockNumber ?? 0n),
+              keyHash: String(last.args?.keyHash ?? ""),
+              emittedBy: address,
+              source: "log",
+            };
+          }
+        } catch {
+          // Next address, then next host. Providers decline ranges; ordinary.
         }
-      } catch {
-        // Next host. Providers decline ranges; that is ordinary here.
       }
     }
   }
   return null;
+}
+
+/**
+ * Every address a registration could be emitted by, most specific first.
+ *
+ * The KeyStore addresses come from the SDK's own network config rather than
+ * being written down here, because a constant of ours that drifts from the
+ * deployment the SDK talks to would produce exactly the silent negative this
+ * function exists to eliminate.
+ */
+export function registrationEmitters(chainId: SupportedChain, account: Address): Address[] {
+  const net = NETWORKS[chainId] as unknown as {
+    keyStore?: Address;
+    keyStoreController?: Address;
+  };
+  const out = [account];
+  if (net?.keyStore) out.push(net.keyStore);
+  if (net?.keyStoreController) out.push(net.keyStoreController);
+  return [...new Set(out)];
 }
 
 // ---------------------------------------------------------------------------
@@ -427,7 +502,15 @@ export async function grantEngagement(opts: GrantOptions): Promise<GrantResult> 
     is the thing this product exists to refuse, and our own grant is not
     exempt.
   */
-  const proof = opts.register === false ? null : await findRegistrationTx(chainId, wallet.address, before);
+  const proof =
+    opts.register === false
+      ? null
+      : ((await findRegistrationTx(chainId, wallet.address, before)) ??
+        // The relay can confirm a grant without surfacing a receipt, so a
+        // missing hash here is ordinary and is not evidence either way.
+        (granted.transactionHash
+          ? ({ tx: granted.transactionHash, block: 0, keyHash: "", source: "receipt" } as RegistrationProof)
+          : null));
 
   const engagement: Engagement = {
     id: nextEngagementId(),
@@ -446,7 +529,13 @@ export async function grantEngagement(opts: GrantOptions): Promise<GrantResult> 
     rationale: scope.rationale,
     registered: Boolean(proof),
     ...(proof
-      ? { registrationTx: proof.tx, registrationBlock: proof.block, registrationKeyHash: proof.keyHash }
+      ? {
+          registrationTx: proof.tx,
+          registrationBlock: proof.block,
+          registrationKeyHash: proof.keyHash,
+          registrationSource: proof.source,
+          ...(proof.emittedBy ? { registrationEmittedBy: proof.emittedBy } : {}),
+        }
       : {}),
     ...(scope.calls.some((c) => c.recipient?.by === "wrapper")
       ? { wrapper: scope.calls.find((c) => c.recipient?.by === "wrapper")!.to }
@@ -481,8 +570,20 @@ export async function registerEngagement(id: number): Promise<Engagement | null>
   const { wallet, signer } = principal();
   const before = await chainClient(e.chainId).getBlockNumber().catch(() => 0n);
 
-  await registerSessionKey(wallet, signer, session, { network: NETWORKS[e.chainId] });
-  const proof = await findRegistrationTx(e.chainId, wallet.address, before);
+  /*
+    The registry's own answer, which we had been throwing away.
+
+    `registerSessionKey` reports precisely what happened — the key was already
+    registered, or it submitted a transaction and here is its hash. Discarding
+    that and then hunting for a log meant a registration that succeeded but
+    whose event we could not locate was recorded as a registration that never
+    happened. The log is still the better evidence and is still preferred; the
+    receipt is what stops a silent negative when the log search comes up empty.
+  */
+  const result = await registerSessionKey(wallet, signer, session, { network: NETWORKS[e.chainId] });
+
+  const proof =
+    (await findRegistrationTx(e.chainId, wallet.address, before)) ?? proofFromResult(result);
   if (!proof) return e;
 
   return persist({
@@ -491,7 +592,30 @@ export async function registerEngagement(id: number): Promise<Engagement | null>
     registrationTx: proof.tx,
     registrationBlock: proof.block,
     registrationKeyHash: proof.keyHash,
+    registrationSource: proof.source,
+    ...(proof.emittedBy ? { registrationEmittedBy: proof.emittedBy } : {}),
   });
+}
+
+/**
+ * What the registry said it did, as a proof when no log could be found.
+ *
+ * A FAILED status is not turned into a proof, and neither is a submission
+ * with no transaction to point at: "the library returned an object" is not
+ * evidence that anything reached the chain.
+ */
+function proofFromResult(result: {
+  alreadyRegistered: boolean;
+  transactionHash?: string;
+  status?: string;
+}): RegistrationProof | null {
+  if (result.alreadyRegistered) {
+    return { tx: "", block: 0, keyHash: "", source: "already" };
+  }
+  if (result.transactionHash && result.status !== "FAILED") {
+    return { tx: result.transactionHash, block: 0, keyHash: "", source: "receipt" };
+  }
+  return null;
 }
 
 // ---------------------------------------------------------------------------
