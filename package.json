@@ -52,7 +52,8 @@
     "grade": "tsx --env-file-if-exists=.env --env-file-if-exists=.env.local worker/src/cli.ts grade",
     "index": "tsx --env-file-if-exists=.env --env-file-if-exists=.env.local worker/src/cli.ts index",
     "prove-bond": "npm run contracts:build --silent && tsx --env-file-if-exists=.env --env-file-if-exists=.env.local apps/agents/src/scripts/prove-bond.ts",
-    "resolve": "tsx --env-file-if-exists=.env --env-file-if-exists=.env.local worker/src/cli.ts resolve"
+    "resolve": "tsx --env-file-if-exists=.env --env-file-if-exists=.env.local worker/src/cli.ts resolve",
+    "call-all": "tsx --env-file-if-exists=.env --env-file-if-exists=.env.local worker/src/cli.ts call-all"
   },
   "dependencies": {
     "@altananetwork/sdk": "^0.7.1",

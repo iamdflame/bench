@@ -17,6 +17,7 @@
 import { chainClient, resolveChain, type SupportedChain } from "@bench/shared";
 import { walkRegistry } from "./registry-walk";
 import { resolveClassified } from "./resolve";
+import { probeClassified } from "./probe-classified";
 import { listBazaar, toService, clusterOrigins, BazaarUnavailable, BAZAAR_LIMITATIONS } from "@bench/index";
 import { countAgents, useCrawlTimeouts } from "@bench/index";
 import { readTrack } from "@bench/metrics";
@@ -489,6 +490,22 @@ async function cmdResolve(chainId: SupportedChain, limit: number) {
   console.log(`\n  ${r.seconds.toFixed(1)}s`);
 }
 
+
+/** Call every classified agent that resolution gave an address to. */
+async function cmdCallAll(chainId: SupportedChain, limit: number) {
+  const r = await probeClassified(chainId, {
+    limit: limit > 0 ? limit : undefined,
+    onProgress: (m) => console.log(`  ${m}`),
+  });
+  console.log("");
+  console.log(`  alive      ${r.alive}`);
+  console.log(`  degraded   ${r.degraded}`);
+  console.log(`  dead       ${r.dead}`);
+  console.log(`  never      ${r.never}  (no endpoint to call)`);
+  console.log(`  payable    ${r.payable}  (a 402 we could settle on this chain)`);
+  console.log(`\n  ${r.attempted} called in ${r.seconds.toFixed(1)}s`);
+}
+
 async function main() {
   const argv = process.argv.slice(2);
   const cmd = argv[0];
@@ -515,6 +532,8 @@ async function main() {
       return cmdGrade(chainId);
     case "counterfactual":
       return cmdCounterfactual(chainId, flag("days", 1), flag("half", 60), BigInt(flag("ago", 0)));
+    case "call-all":
+      return cmdCallAll(chainId, flag("limit", 0));
     case "resolve":
       return cmdResolve(chainId, flag("limit", 0));
     case "index":
