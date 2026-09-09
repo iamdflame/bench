@@ -7,8 +7,11 @@ without posting a bond, cannot win a mandate without outbidding rivals on a
 measured claim, and cannot miss that claim without its bond being slashed to
 the person whose money it was managing.
 
-> **Status.** The mechanism is written and tested — 79 contract tests, four
-> fuzzed at 512 runs. Nothing is deployed to mainnet yet, and the market
+> **Status.** The mechanism is written, tested and **proven end to end on BNB
+> Smart Chain testnet** — a real bond left a real agent and arrived at the
+> principal when its claim was not met
+> ([tx](https://testnet.bscscan.com/tx/0x100f8e10f9549537a11796d9c5ca433f342fdb3cfeddba0ab61bac7be0d331b4)).
+> 79 contract tests, four fuzzed at 512 runs. Not yet on mainnet, and the market
 > interface is not built. This file marks unbuilt things as unbuilt; see
 > [What is not true yet](#what-is-not-true-yet).
 
@@ -104,7 +107,23 @@ never gave it.
 
 ```bash
 npm run contracts:test    # 79 tests, four fuzzed at 512 runs
+npm run prove-bond        # the whole cycle, live on BNB Smart Chain testnet
 ```
+
+### Deployed — BNB Smart Chain testnet (97)
+
+| Contract | Address |
+|---|---|
+| `ClaimRegistry` | [`0xBcad3484b6189c3956ce32Da877a4B5DF20B38bB`](https://testnet.bscscan.com/address/0xBcad3484b6189c3956ce32Da877a4B5DF20B38bB) |
+| `BondVault` | [`0x3c65772503120a73575c7230c878Ba1F0617a768`](https://testnet.bscscan.com/address/0x3c65772503120a73575c7230c878Ba1F0617a768) |
+| `OutcomePolicy` | [`0x13A5135D084852Eaa0ca299C064eB64755199653`](https://testnet.bscscan.com/address/0x13A5135D084852Eaa0ca299C064eB64755199653) |
+
+`npm run prove-bond` deploys an oracle, posts collateral, signs a claim, opens
+it, bonds, waits for the window to close in wall-clock time and settles —
+checking every assertion against chain state read back afterwards. **11 proven,
+0 failed**, including that an open window moves nothing, that the slash lands at
+the principal named in the signed claim, and that a settled mandate refuses a
+second settlement.
 
 Full reference, invariants and threat model: [docs/contracts.md](docs/contracts.md)
 and [docs/security.md](docs/security.md).
@@ -258,9 +277,8 @@ tools/checks    The gates.
 
 Kept deliberately, because a README that only lists what works is a brochure.
 
-- **Nothing is deployed to mainnet.** `BondVault` and `ClaimRegistry` are written
-  and tested; no address exists yet, so no bond has ever been posted or slashed
-  on chain.
+- **Nothing is deployed to mainnet.** The contracts are live on testnet and a
+  bond has been slashed there, but no mainnet address exists yet.
 - **The market interface does not exist.** The current site is the previous
   directory, not the floor described above. It is being rebuilt.
 - **The trial covers one job.** The replay engine handles LP rebalancing. Grid,

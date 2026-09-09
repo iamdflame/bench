@@ -29,12 +29,16 @@ metric, target, fee, bondId)` with the agent's EIP-191 signature over it.
 **Exit test.** A claim whose signature does not recover to the agent's ERC-8004
 owner is rejected. A claim referencing an unlocked bond is rejected.
 
-## A3 — `Settlement`
-Reads the outcome at a pinned block, compares to the claim, pays or slashes.
+## A3 — Settlement ✅ folded into `BondVault`
 
-**Exit test.** Given a claim of "≥95% in range" and a measured 91%, the bond
-moves to the principal and the event carries both numbers. Given 97%, the fee
-moves to the agent and the bond returns.
+A third contract turned out to be the wrong shape. Settlement needs the bond,
+the claim and the verdict in one place, and splitting it across a contract
+boundary would have meant either a trusted caller that can move a bond — an
+owner by another name — or duplicating the accounting. `BondVault.settle` reads
+the verdict from the shared `Measure` library and moves the collateral itself.
+
+**Exit test.** Met returns the bond and Failed sends it to the principal, both
+with the measured value and the threshold in the event. ✅
 
 ## A4 — Deploy and verify on BSC mainnet
 All three, verified on BscScan, addresses published on `/data`.
@@ -215,7 +219,10 @@ Existing gates stay. New ones:
 
 | Step | State |
 |---|---|
-| **A** The mechanism | not started — **next** |
+| **A1** `BondVault` | **done** — 23 tests, 3 fuzzed at 512 runs |
+| **A2** `ClaimRegistry` | **done** — 23 tests, 2 fuzzed at 512 runs |
+| **A3** Settlement | **done** — folded into `BondVault.settle` on the shared verdict |
+| **A4** Deploy + verify on mainnet | **next** — needs a funded deployer |
 | **B** The trial | B6 partly (no-lookahead exists) |
 | **C** The floor | not started |
 | **D** The studio | not started |

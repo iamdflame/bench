@@ -178,12 +178,29 @@ Four functions. No `multicall`, no `sweepToken`, no upgrade path, no owner.
 
 ## Deployment
 
-Nothing is deployed to mainnet yet. When it is, every address will appear here
+Live on testnet. Not yet on mainnet — when it is, every address will appear here
 and on `/data` with its deployment transaction and verified source.
 
 | Contract | Chain 56 | Chain 97 |
 |---|---|---|
-| `ClaimRegistry` | not deployed | not deployed |
-| `BondVault` | not deployed | not deployed |
-| `OutcomePolicy` | not deployed | not deployed |
+| `ClaimRegistry` | not deployed | [`0xBcad3484…B38bB`](https://testnet.bscscan.com/address/0xBcad3484b6189c3956ce32Da877a4B5DF20B38bB) |
+| `BondVault` | not deployed | [`0x3c657725…7a768`](https://testnet.bscscan.com/address/0x3c65772503120a73575c7230c878Ba1F0617a768) |
+| `OutcomePolicy` | not deployed | [`0x13A5135D…99653`](https://testnet.bscscan.com/address/0x13A5135D084852Eaa0ca299C064eB64755199653) |
+| `FixedOracle` | — | deployed per proof run |
 | `RecipientBound` | per (principal, agent) pair | per pair |
+
+The deploy script asserts the wiring from chain state rather than from what it
+believes it did: the vault's `claims()` and `policy()` must be the same address,
+because a vault taking terms from one contract and verdicts from another could
+slash against an assertion nobody signed.
+
+```bash
+forge script script/Deploy.s.sol --rpc-url $RPC --broadcast
+```
+
+### Proven on testnet
+
+`npm run prove-bond` — 11 assertions, 0 failed. The settlement that moved a real
+bond: [`0x100f8e10…d331b4`](https://testnet.bscscan.com/tx/0x100f8e10f9549537a11796d9c5ca433f342fdb3cfeddba0ab61bac7be0d331b4),
+block 129,959,937. The oracle reported 9,000 against a signed threshold of
+9,500, and 1 $U left the agent for the principal.
