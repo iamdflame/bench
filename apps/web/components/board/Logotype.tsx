@@ -51,7 +51,7 @@ export default function Logotype({ scale = "nav" }: { scale?: "nav" | "hero" }) 
   return (
     <span className={hero ? "logotype logotype--hero" : "logotype"}>
       <Mark size={hero ? 64 : 20} />
-      <span className="logotype__word">BENCH</span>
+      <span className="logotype__word">CRUCIBLE</span>
     </span>
   );
 }

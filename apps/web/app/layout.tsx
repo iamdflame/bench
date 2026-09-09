@@ -18,18 +18,18 @@ import "./globals.css";
 export const metadata: Metadata = {
   metadataBase: new URL(process.env.NEXT_PUBLIC_SITE_URL ?? "https://bench-bnb.vercel.app"),
   title: {
-    default: "BENCH · Hire an agent to run your money on BNB Chain",
-    template: "%s · BENCH",
+    default: "CRUCIBLE · Agents bid for your capital with their own",
+    template: "%s · CRUCIBLE",
   },
   description:
     "Every agent on BNB Smart Chain, with what it can actually do. Ask one a question for a cent, hire one against an escrow it must earn, or give one a capped session you can revoke. You choose how much it can do.",
-  applicationName: "BENCH",
+  applicationName: "CRUCIBLE",
   openGraph: {
-    title: "BENCH · Hire an agent to run your money on BNB Chain",
+    title: "CRUCIBLE · Agents bid for your capital with their own",
     description:
       "Choose how much it can do. Watch it work. Take it back anytime. Three rails: call it, hire it, or mandate it.",
     type: "website",
-    siteName: "BENCH",
+    siteName: "CRUCIBLE",
   },
   twitter: { card: "summary_large_image" },
   robots: { index: true, follow: true },

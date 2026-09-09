@@ -40,7 +40,7 @@ export default function Nav({ path = "/", q }: { path?: string; q?: string }) {
   return (
     <header className="nav">
       <div className="shell nav__inner">
-        <Link href="/" className="wordmark" aria-label="BENCH, home">
+        <Link href="/" className="wordmark" aria-label="CRUCIBLE, home">
           <Logotype />
         </Link>
 
