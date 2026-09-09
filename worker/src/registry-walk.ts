@@ -113,6 +113,21 @@ export interface CohortState {
   complete: boolean;
   pages: number;
   updatedAt: string;
+  /**
+   * The newest token this cohort had when it last completed.
+   *
+   * This is what an incremental pass stops at, and it has to be per cohort.
+   * Stopping at "any token we already hold" looks equivalent and is not: the
+   * cohorts overlap, so by the time the MCP walk starts, every agent that
+   * declares both A2A and MCP is already held from the A2A pass. Stopping at
+   * the first of those ended the MCP cohort after 111 of 5,578 rows and
+   * recorded it as complete — a walk that read two per cent of a population
+   * and reported that it had read all of it.
+   *
+   * The frontier is the boundary of *this* cohort's last pass, so a row it
+   * has never seen never stops it, whoever else has seen it.
+   */
+  frontier: string | null;
 }
 
 export interface RegistryIndex {
@@ -185,8 +200,8 @@ export async function walkRegistry(
     const prev = states[cohort.key];
 
     // A completed cohort is re-opened from the head rather than resumed: new
-    // registrations land at the top, and the walk stops at the first token
-    // already held. That makes an incremental pass one request, not 285.
+    // registrations land at the top, and the walk stops at this cohort's own
+    // frontier. That makes an incremental pass one request, not 285.
     const resuming = prev && !prev.complete && prev.cursor;
     const state: CohortState = {
       key: cohort.key,
@@ -196,12 +211,27 @@ export async function walkRegistry(
       complete: false,
       pages: prev?.pages ?? 0,
       updatedAt: new Date().toISOString(),
+      frontier: prev?.frontier ?? null,
     };
 
-    const known = new Set(byToken.keys());
-    const incremental = !resuming && before > 0;
+    // An incremental pass is only possible where a previous pass finished and
+    // left a frontier behind. Anything else is a full read of the cohort.
+    const frontier = prev?.complete ? (prev.frontier ?? null) : null;
+    const incremental = !resuming && frontier !== null;
 
-    say(`${cohort.key}: ${resuming ? `resuming at ${String(state.cursor).slice(0, 12)}…` : incremental ? "incremental from head" : "first pass"}`);
+    // The newest row of this pass becomes the next frontier. Captured from the
+    // first row of the first page, before any stop condition truncates it.
+    let newFrontier: string | null = null;
+
+    say(
+      `${cohort.key}: ${
+        resuming
+          ? `resuming at ${String(state.cursor).slice(0, 12)}…`
+          : incremental
+            ? `incremental from head, stopping at ${frontier}`
+            : "full pass"
+      }`,
+    );
 
     try {
       for await (const page of walkAgents(chainId, {
@@ -210,11 +240,12 @@ export async function walkRegistry(
         filters: cohort.params,
         // On an incremental pass, stop at the first row already held. On a
         // first or resumed pass, read to the end of the cohort.
-        ...(incremental ? { until: (a: ScanAgent) => known.has(a.token_id) } : {}),
+        ...(incremental ? { until: (a: ScanAgent) => a.token_id === frontier } : {}),
       })) {
         requests += 1;
         state.pages += 1;
         state.fetched += page.items.length;
+        if (newFrontier === null && page.items[0]) newFrontier = page.items[0].token_id;
         state.cursor = page.state.cursor;
         state.total = page.state.total ?? state.total;
 
@@ -230,6 +261,7 @@ export async function walkRegistry(
         if (!page.state.more) {
           state.complete = true;
           state.cursor = null;
+          state.frontier = newFrontier ?? state.frontier;
           break;
         }
 
