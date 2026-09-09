@@ -1,9 +1,8 @@
 name: ci
 
 # Eligibility requires the submission to be functional and publicly accessible
-# through the judging window. Nothing here guarantees that on its own, but a
-# build checked on every push is the floor — and the gates below are the ones
-# that stop the drift this project was rebuilt to escape.
+# through a fourteen-day judging window. Nothing here guarantees that on its
+# own, but a build that is checked on every push is the floor.
 
 on:
   push:
@@ -15,34 +14,31 @@ concurrency:
   group: ci-${{ github.ref }}
   cancel-in-progress: true
 
-env:
-  # Next mis-builds under a non-standard NODE_ENV and reports it as an
-  # unrelated prerender error about <Html>. Pinned so a runner's default
-  # cannot reintroduce it.
-  NODE_ENV: production
-
 jobs:
   contracts:
     name: contracts
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
+        with:
+          submodules: recursive
+
       - name: Install Foundry
         uses: foundry-rs/foundry-toolchain@v1
         with:
           version: stable
-      - name: Install forge-std
-        working-directory: contracts
-        run: forge install foundry-rs/forge-std --no-git
+
       - name: Build
         working-directory: contracts
         run: forge build --sizes
+
       - name: Test
         working-directory: contracts
         run: forge test -vv
-      # The cap invariant is the point of the suite, so it gets more runs here
-      # than it does locally.
-      - name: Fuzz the invariant harder
+
+      # The invariants are the point of the suite, so they get more runs than
+      # the default here than they do locally.
+      - name: Fuzz the invariants harder
         working-directory: contracts
         run: forge test --match-test "testFuzz_" --fuzz-runs 5000
 
@@ -51,37 +47,70 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
+
       - uses: actions/setup-node@v4
         with:
           node-version: 22
           cache: npm
+
       - run: npm ci --ignore-scripts
 
       - name: Typecheck
         run: npm run typecheck
 
-      - name: Test
+      # granted ⊆ proven is unsatisfiable if a category grants a call its own
+      # evidence list cannot reach. That was true of Venus vBNB and nothing
+      # caught it, so it is checked here.
+      - name: Every granted call must be provable
+        run: npm run check:config
+
+      # The house style is a set of claims about this product's own honesty:
+      # that every figure is tabular so columns compare, that nothing moves
+      # without a chain event, that no mark is struck below 375, and that red
+      # means defacement and nothing else. A README asserting those is worth
+      # nothing next to a build that fails when one stops being true.
+      - name: House style
+        run: npm run check:doctrine
+
+      - name: Unit tests
         run: npm test
 
-      # These are the gates that keep the promises. Each one is a rule that
-      # would otherwise be a sentence in a README somebody contradicts later.
-      - name: Gate — our agents never outrank a better third party
-        run: npm run check:ranking
-      - name: Gate — an unknown is never a zero
-        run: npm run check:absence
-      - name: Gate — every figure carries its block and method
-        run: npm run check:measurement
-      - name: Gate — chain 56 and 97 never mix
-        run: npm run check:network
-      - name: Gate — the four jobs are equal in depth
-        run: npm run check:diversity
-      - name: Gate — nothing links to a dead end
-        run: npm run check:routes
-      - name: Gate — nothing moves unless the data moved
-        run: npm run check:motion
-
       - name: Build
+        env:
+          # Pinned: an exported NODE_ENV=development in a shell silently
+          # mis-builds Next, and it cost an afternoon to find.
+          NODE_ENV: production
+          NEXT_PUBLIC_MARKET_ADDRESS: "0xeD331c44183EFF1e8eDc31f6C60AfDA187681544"
+          NEXT_PUBLIC_MARKET_CHAIN_ID: "56"
+          NEXT_PUBLIC_MARKET_DEPLOY_BLOCK: "119898276"
         run: npm run build
 
-      - name: Gate — first-load JavaScript stays near the baseline
+      # "The Instrument" is meant to read in ten seconds on a phone. That rots
+      # one heavy import at a time, so the first-load JS of every read path is
+      # summed from the build manifest and checked against a cap — a route that
+      # balloons past the framework floor fails the build.
+      - name: Performance budget
         run: npm run check:budget
+
+  verifier:
+    name: verifier
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+
+      - run: npm ci --ignore-scripts
+
+      # The package must read nothing but the chain. This fails the build if
+      # any file imports outside it, reads an environment variable, touches the
+      # filesystem, or contacts a host that is not a public BSC node.
+      - name: Isolation
+        run: npm run verify:isolation
+
+      - name: Build the package
+        working-directory: packages/mandate-verify
+        run: npm run build

@@ -1,0 +1,500 @@
+{
+  "taskId": "T5",
+  "sampled": 20,
+  "hireableByCard": 20,
+  "hireableByAssay": 0,
+  "contradicted": 20,
+  "inconclusiveChecks": 41,
+  "agentsWithInconclusive": 20,
+  "totalMs": 28527,
+  "msPerAgent": 1426.35,
+  "outcomes": [
+    {
+      "tokenId": "0",
+      "name": "dAi",
+      "fineness": 280,
+      "hallmarked": false,
+      "contradictions": [
+        "Identity: No endpoint of any kind. This registration points nowhere.",
+        "Custody: The agent wallet is the owner's wallet, byte for byte. There is no separation of custody — the autonomy is a label, not an arrangement."
+      ],
+      "inconclusive": [
+        "Capability",
+        "Reputation",
+        "Performance"
+      ],
+      "ms": 1669
+    },
+    {
+      "tokenId": "1",
+      "name": "ClawNews",
+      "fineness": 96,
+      "hallmarked": false,
+      "contradictions": [
+        "Identity: No endpoint of any kind. This registration points nowhere.",
+        "Custody: The agent wallet is the owner's wallet, byte for byte. There is no separation of custody — the autonomy is a label, not an arrangement.",
+        "Activity: Only 1 transaction in its entire history. That is a deployment, not an operating agent.",
+        "Reputation: 2 feedback records, none matching a coordination signature. They come from 1 wallet, which is too few to constitute a reputation whether or not it is honest."
+      ],
+      "inconclusive": [
+        "Capability",
+        "Performance"
+      ],
+      "ms": 2032
+    },
+    {
+      "tokenId": "2",
+      "name": "Agent #2",
+      "fineness": 308,
+      "hallmarked": false,
+      "contradictions": [
+        "Identity: No endpoint of any kind. This registration points nowhere.",
+        "Custody: The agent wallet is the owner's wallet, byte for byte. There is no separation of custody — the autonomy is a label, not an arrangement.",
+        "Reputation: 1 feedback record, none matching a coordination signature. They come from 1 wallet, which is too few to constitute a reputation whether or not it is honest."
+      ],
+      "inconclusive": [
+        "Capability",
+        "Performance"
+      ],
+      "ms": 1034
+    },
+    {
+      "tokenId": "3",
+      "name": "Agent #3",
+      "fineness": 308,
+      "hallmarked": false,
+      "contradictions": [
+        "Identity: No endpoint of any kind. This registration points nowhere.",
+        "Custody: The agent wallet is the owner's wallet, byte for byte. There is no separation of custody — the autonomy is a label, not an arrangement.",
+        "Reputation: 1 feedback record, none matching a coordination signature. They come from 1 wallet, which is too few to constitute a reputation whether or not it is honest."
+      ],
+      "inconclusive": [
+        "Capability",
+        "Performance"
+      ],
+      "ms": 999
+    },
+    {
+      "tokenId": "4",
+      "name": "Agent King",
+      "fineness": 96,
+      "hallmarked": false,
+      "contradictions": [
+        "Identity: No endpoint of any kind. This registration points nowhere.",
+        "Custody: The agent wallet is the owner's wallet, byte for byte. There is no separation of custody — the autonomy is a label, not an arrangement.",
+        "Activity: Only 1 transaction in its entire history, and it holds no BNB to send another. That is a deployment, not an operating agent.",
+        "Reputation: 1 feedback record, none matching a coordination signature. They come from 1 wallet, which is too few to constitute a reputation whether or not it is honest."
+      ],
+      "inconclusive": [
+        "Capability",
+        "Performance"
+      ],
+      "ms": 1486
+    },
+    {
+      "tokenId": "7",
+      "name": "NAMEAI",
+      "fineness": 183,
+      "hallmarked": false,
+      "contradictions": [
+        "Identity: No endpoint of any kind. This registration points nowhere.",
+        "Custody: The agent wallet is the owner's wallet, byte for byte. There is no separation of custody — the autonomy is a label, not an arrangement.",
+        "Reputation: 1 feedback record, none matching a coordination signature. They come from 1 wallet, which is too few to constitute a reputation whether or not it is honest."
+      ],
+      "inconclusive": [
+        "Capability",
+        "Performance"
+      ],
+      "ms": 1581
+    },
+    {
+      "tokenId": "8",
+      "name": "BSCAI",
+      "fineness": 183,
+      "hallmarked": false,
+      "contradictions": [
+        "Identity: No endpoint of any kind. This registration points nowhere.",
+        "Custody: The agent wallet is the owner's wallet, byte for byte. There is no separation of custody — the autonomy is a label, not an arrangement.",
+        "Reputation: 1 feedback record, none matching a coordination signature. They come from 1 wallet, which is too few to constitute a reputation whether or not it is honest."
+      ],
+      "inconclusive": [
+        "Capability",
+        "Performance"
+      ],
+      "ms": 1901
+    },
+    {
+      "tokenId": "9",
+      "name": "ONEAI",
+      "fineness": 183,
+      "hallmarked": false,
+      "contradictions": [
+        "Identity: No endpoint of any kind. This registration points nowhere.",
+        "Custody: The agent wallet is the owner's wallet, byte for byte. There is no separation of custody — the autonomy is a label, not an arrangement.",
+        "Reputation: 1 feedback record, none matching a coordination signature. They come from 1 wallet, which is too few to constitute a reputation whether or not it is honest."
+      ],
+      "inconclusive": [
+        "Capability",
+        "Performance"
+      ],
+      "ms": 1496
+    },
+    {
+      "tokenId": "10",
+      "name": "ETHAI",
+      "fineness": 183,
+      "hallmarked": false,
+      "contradictions": [
+        "Identity: No endpoint of any kind. This registration points nowhere.",
+        "Custody: The agent wallet is the owner's wallet, byte for byte. There is no separation of custody — the autonomy is a label, not an arrangement.",
+        "Reputation: 1 feedback record, none matching a coordination signature. They come from 1 wallet, which is too few to constitute a reputation whether or not it is honest."
+      ],
+      "inconclusive": [
+        "Capability",
+        "Performance"
+      ],
+      "ms": 1594
+    },
+    {
+      "tokenId": "11",
+      "name": "BNBAI",
+      "fineness": 133,
+      "hallmarked": false,
+      "contradictions": [
+        "Identity: No endpoint of any kind. This registration points nowhere.",
+        "Custody: The agent wallet is the owner's wallet, byte for byte. There is no separation of custody — the autonomy is a label, not an arrangement.",
+        "Activity: 9 transactions sent, holding 0.0097 BNB. Genuinely active.",
+        "Reputation: 1 feedback record, none matching a coordination signature. They come from 1 wallet, which is too few to constitute a reputation whether or not it is honest."
+      ],
+      "inconclusive": [
+        "Capability",
+        "Performance"
+      ],
+      "ms": 1783
+    },
+    {
+      "tokenId": "12",
+      "name": "LTCAI",
+      "fineness": 183,
+      "hallmarked": false,
+      "contradictions": [
+        "Identity: No endpoint of any kind. This registration points nowhere.",
+        "Custody: The agent wallet is the owner's wallet, byte for byte. There is no separation of custody — the autonomy is a label, not an arrangement.",
+        "Reputation: 1 feedback record, none matching a coordination signature. They come from 1 wallet, which is too few to constitute a reputation whether or not it is honest."
+      ],
+      "inconclusive": [
+        "Capability",
+        "Performance"
+      ],
+      "ms": 2133
+    },
+    {
+      "tokenId": "13",
+      "name": "BIGAI",
+      "fineness": 183,
+      "hallmarked": false,
+      "contradictions": [
+        "Identity: No endpoint of any kind. This registration points nowhere.",
+        "Custody: The agent wallet is the owner's wallet, byte for byte. There is no separation of custody — the autonomy is a label, not an arrangement.",
+        "Reputation: 1 feedback record, none matching a coordination signature. They come from 1 wallet, which is too few to constitute a reputation whether or not it is honest."
+      ],
+      "inconclusive": [
+        "Capability",
+        "Performance"
+      ],
+      "ms": 1436
+    },
+    {
+      "tokenId": "22",
+      "name": "DAAI",
+      "fineness": 183,
+      "hallmarked": false,
+      "contradictions": [
+        "Identity: No endpoint of any kind. This registration points nowhere.",
+        "Custody: The agent wallet is the owner's wallet, byte for byte. There is no separation of custody — the autonomy is a label, not an arrangement.",
+        "Reputation: 1 feedback record, none matching a coordination signature. They come from 1 wallet, which is too few to constitute a reputation whether or not it is honest."
+      ],
+      "inconclusive": [
+        "Capability",
+        "Performance"
+      ],
+      "ms": 1294
+    },
+    {
+      "tokenId": "23",
+      "name": "stepai",
+      "fineness": 183,
+      "hallmarked": false,
+      "contradictions": [
+        "Identity: No endpoint of any kind. This registration points nowhere.",
+        "Custody: The agent wallet is the owner's wallet, byte for byte. There is no separation of custody — the autonomy is a label, not an arrangement.",
+        "Reputation: 1 feedback record, none matching a coordination signature. They come from 1 wallet, which is too few to constitute a reputation whether or not it is honest."
+      ],
+      "inconclusive": [
+        "Capability",
+        "Performance"
+      ],
+      "ms": 1224
+    },
+    {
+      "tokenId": "25",
+      "name": "QuantPilot",
+      "fineness": 133,
+      "hallmarked": false,
+      "contradictions": [
+        "Identity: No endpoint of any kind. This registration points nowhere.",
+        "Custody: The agent wallet is the owner's wallet, byte for byte. There is no separation of custody — the autonomy is a label, not an arrangement.",
+        "Activity: 5 transactions sent, holding 0 BNB. Genuinely active.",
+        "Reputation: 1 feedback record, none matching a coordination signature. They come from 1 wallet, which is too few to constitute a reputation whether or not it is honest."
+      ],
+      "inconclusive": [
+        "Capability",
+        "Performance"
+      ],
+      "ms": 1111
+    },
+    {
+      "tokenId": "27",
+      "name": "AstraCore",
+      "fineness": 96,
+      "hallmarked": false,
+      "contradictions": [
+        "Identity: No endpoint of any kind. This registration points nowhere.",
+        "Custody: The agent wallet is the owner's wallet, byte for byte. There is no separation of custody — the autonomy is a label, not an arrangement.",
+        "Activity: Only 3 transactions in its entire history. That is a deployment, not an operating agent.",
+        "Reputation: 1 feedback record, none matching a coordination signature. They come from 1 wallet, which is too few to constitute a reputation whether or not it is honest."
+      ],
+      "inconclusive": [
+        "Capability",
+        "Performance"
+      ],
+      "ms": 1136
+    },
+    {
+      "tokenId": "29",
+      "name": "NeuroWeave",
+      "fineness": 96,
+      "hallmarked": false,
+      "contradictions": [
+        "Identity: No endpoint of any kind. This registration points nowhere.",
+        "Custody: The agent wallet is the owner's wallet, byte for byte. There is no separation of custody — the autonomy is a label, not an arrangement.",
+        "Activity: Only 3 transactions in its entire history. That is a deployment, not an operating agent.",
+        "Reputation: 1 feedback record, none matching a coordination signature. They come from 1 wallet, which is too few to constitute a reputation whether or not it is honest."
+      ],
+      "inconclusive": [
+        "Capability",
+        "Performance"
+      ],
+      "ms": 1275
+    },
+    {
+      "tokenId": "30",
+      "name": "Awan",
+      "fineness": 96,
+      "hallmarked": false,
+      "contradictions": [
+        "Identity: No endpoint of any kind. This registration points nowhere.",
+        "Custody: The agent wallet is the owner's wallet, byte for byte. There is no separation of custody — the autonomy is a label, not an arrangement.",
+        "Activity: Only 1 transaction in its entire history, and it holds no BNB to send another. That is a deployment, not an operating agent.",
+        "Reputation: 1 feedback record, none matching a coordination signature. They come from 1 wallet, which is too few to constitute a reputation whether or not it is honest."
+      ],
+      "inconclusive": [
+        "Capability",
+        "Performance"
+      ],
+      "ms": 1150
+    },
+    {
+      "tokenId": "31",
+      "name": "PulseAgent",
+      "fineness": 96,
+      "hallmarked": false,
+      "contradictions": [
+        "Identity: No endpoint of any kind. This registration points nowhere.",
+        "Custody: The agent wallet is the owner's wallet, byte for byte. There is no separation of custody — the autonomy is a label, not an arrangement.",
+        "Activity: Only 3 transactions in its entire history. That is a deployment, not an operating agent.",
+        "Reputation: 1 feedback record, none matching a coordination signature. They come from 1 wallet, which is too few to constitute a reputation whether or not it is honest."
+      ],
+      "inconclusive": [
+        "Capability",
+        "Performance"
+      ],
+      "ms": 1009
+    },
+    {
+      "tokenId": "32",
+      "name": "hunter",
+      "fineness": 96,
+      "hallmarked": false,
+      "contradictions": [
+        "Identity: No endpoint of any kind. This registration points nowhere.",
+        "Custody: The agent wallet is the owner's wallet, byte for byte. There is no separation of custody — the autonomy is a label, not an arrangement.",
+        "Activity: Only 1 transaction in its entire history, and it holds no BNB to send another. That is a deployment, not an operating agent.",
+        "Reputation: 1 feedback record, none matching a coordination signature. They come from 1 wallet, which is too few to constitute a reputation whether or not it is honest."
+      ],
+      "inconclusive": [
+        "Capability",
+        "Performance"
+      ],
+      "ms": 1182
+    }
+  ],
+  "cards": [
+    {
+      "tokenId": "0",
+      "name": "dAi",
+      "claims": [
+        "A specialized AI agent that performs advanced data analysis, chart generation, and automated reporting. Ideal for business intelligence, market research, and scientific data visualization. Supports CSV, JSON, and SQL databases. Pricing: 0.001 ETH per query or monthly subscription available."
+      ],
+      "endpointVerifiedByExplorer": false
+    },
+    {
+      "tokenId": "1",
+      "name": "ClawNews",
+      "claims": [
+        "Hacker News for AI agents - built by agents, for agents. ClawNews is the premier news aggregation and community platform where autonomous agents share, discover, and engage with content relevant to their development and operation. Features include an agent directory, skill showcases, job board with Dutch auction mechanics, daily digests, upvoting system, and API-first design for seamless agent-to-agent communication. Supports ERC-8004 agent identity verification and on-chain reputation tracking."
+      ],
+      "endpointVerifiedByExplorer": false
+    },
+    {
+      "tokenId": "2",
+      "name": "Agent #2",
+      "claims": [],
+      "endpointVerifiedByExplorer": false
+    },
+    {
+      "tokenId": "3",
+      "name": "Agent #3",
+      "claims": [],
+      "endpointVerifiedByExplorer": false
+    },
+    {
+      "tokenId": "4",
+      "name": "Agent King",
+      "claims": [
+        "King of purr-fect agents."
+      ],
+      "endpointVerifiedByExplorer": false
+    },
+    {
+      "tokenId": "7",
+      "name": "NAMEAI",
+      "claims": [
+        "NAMEAINAMEAINAMEAINAMEAINAMEAINAMEAINAMEAINAMEAINAMEAINAMEAINAMEAI"
+      ],
+      "endpointVerifiedByExplorer": false
+    },
+    {
+      "tokenId": "8",
+      "name": "BSCAI",
+      "claims": [
+        "BSCAIBSCAIBSCAIBSCAIBSCAIBSCAIBSCAIBSCAIBSCAIBSCAIBSCAIBSCAI"
+      ],
+      "endpointVerifiedByExplorer": false
+    },
+    {
+      "tokenId": "9",
+      "name": "ONEAI",
+      "claims": [
+        "ONEAIONEAIONEAIONEAIONEAIONEAIONEAIONEAIONEAIONEAIONEAIONEAI"
+      ],
+      "endpointVerifiedByExplorer": false
+    },
+    {
+      "tokenId": "10",
+      "name": "ETHAI",
+      "claims": [
+        "ETHAIETHAIETHAIETHAIETHAIETHAIETHAIETHAIETHAIETHAIETHAIETHAIETHAIETHAIETHAIETHAI"
+      ],
+      "endpointVerifiedByExplorer": false
+    },
+    {
+      "tokenId": "11",
+      "name": "BNBAI",
+      "claims": [
+        "BNBAIBNBAIBNBAIBNBAIBNBAIBNBAIBNBAIBNBAIBNBAIBNBAIBNBAIBNBAIBNBAIBNBAIBNBAIBNBAIBNBAIBNBAI"
+      ],
+      "endpointVerifiedByExplorer": false
+    },
+    {
+      "tokenId": "12",
+      "name": "LTCAI",
+      "claims": [
+        "LTCAILTCAILTCAILTCAILTCAILTCAILTCAILTCAILTCAILTCAILTCAILTCAILTCAILTCAILTCAILTCAILTCAI"
+      ],
+      "endpointVerifiedByExplorer": false
+    },
+    {
+      "tokenId": "13",
+      "name": "BIGAI",
+      "claims": [
+        "BIGAIBIGAIBIGAIBIGAIBIGAIBIGAIBIGAIBIGAIBIGAIBIGAIBIGAIBIGAIBIGAIBIGAIBIGAIBIGAIBIGAIBIGAIBIGAI"
+      ],
+      "endpointVerifiedByExplorer": false
+    },
+    {
+      "tokenId": "22",
+      "name": "DAAI",
+      "claims": [
+        "DAAIDAAIDAAIDAAIDAAIDAAIDAAIDAAIDAAIDAAIDAAIDAAIDAAIDAAI"
+      ],
+      "endpointVerifiedByExplorer": false
+    },
+    {
+      "tokenId": "23",
+      "name": "stepai",
+      "claims": [
+        "stepaistepaistepaistepaistepaistepaistepaistepaistepaistepaistepaistepaistepaistepai"
+      ],
+      "endpointVerifiedByExplorer": false
+    },
+    {
+      "tokenId": "25",
+      "name": "QuantPilot",
+      "claims": [
+        "A precision trading agent built for predictive financial execution."
+      ],
+      "endpointVerifiedByExplorer": false
+    },
+    {
+      "tokenId": "27",
+      "name": "AstraCore",
+      "claims": [
+        "A self-evolving intelligence engine for complex system coordination."
+      ],
+      "endpointVerifiedByExplorer": false
+    },
+    {
+      "tokenId": "29",
+      "name": "NeuroWeave",
+      "claims": [
+        "AI that connects fragmented data into actionable insight."
+      ],
+      "endpointVerifiedByExplorer": false
+    },
+    {
+      "tokenId": "30",
+      "name": "Awan",
+      "claims": [
+        "一万倍金狗都到我碗里来！"
+      ],
+      "endpointVerifiedByExplorer": false
+    },
+    {
+      "tokenId": "31",
+      "name": "PulseAgent",
+      "claims": [
+        "Real-time analytics AI for live operational monitoring."
+      ],
+      "endpointVerifiedByExplorer": false
+    },
+    {
+      "tokenId": "32",
+      "name": "hunter",
+      "claims": [
+        "do everything"
+      ],
+      "endpointVerifiedByExplorer": false
+    }
+  ]
+}

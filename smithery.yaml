@@ -1,0 +1,26 @@
+# The Smithery listing for the MANDATE assay office.
+#
+# Two ways in, and they serve the same eight tools:
+#
+#   stdio   npm run mcp                       — from a checkout, below
+#   http    https://<host>/api/mcp            — the hosted endpoint
+#
+# Nothing here needs a key, an account or a signature. The five read tools are
+# the product; the three write-shaped tools prepare an action and return the
+# transaction, payment challenge or command rather than performing it, because
+# this server holds no keys. That is stated in each tool's own description too,
+# so a client that never reads this file still cannot mistake one for a receipt.
+startCommand:
+  type: stdio
+  # No configuration: every tool reads public chain state and a public index.
+  # A server that asked for an API key it does not use would be asking for a
+  # secret it has no reason to hold.
+  configSchema:
+    type: object
+    properties: {}
+    additionalProperties: false
+  commandFunction: |-
+    () => ({
+      command: "npx",
+      args: ["-y", "tsx", "src/mcp/stdio.ts"]
+    })

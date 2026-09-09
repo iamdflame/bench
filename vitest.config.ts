@@ -1,31 +1,23 @@
 import { defineConfig } from "vitest/config";
-import { fileURLToPath } from "node:url";
+import { resolve } from "node:path";
 
 /**
- * Tests run against the workspace source, not a build artifact.
+ * Tests for the logic that decides things.
  *
- * Every package ships TypeScript, so there is one source of truth per module
- * and no build step between an edit and a test. The aliases mirror what the
- * workspace symlinks already provide, so a test and the app resolve the same
- * file.
+ * The contracts have 83 tests and the application had none, which is the wrong
+ * way round for a product whose off-chain half decides what an agent is allowed
+ * to do and what its reputation really is. These cover the pure functions:
+ * given these inputs, this decision — no network, no chain, no clock.
  */
-const p = (rel: string) => fileURLToPath(new URL(rel, import.meta.url));
-
 export default defineConfig({
-  resolve: {
-    alias: {
-      "@bench/measure": p("./packages/measure/src/index.ts"),
-      "@bench/shared": p("./packages/shared/src/index.ts"),
-      "@bench/index": p("./packages/index/src/index.ts"),
-      "@bench/probe": p("./packages/probe/src/index.ts"),
-      "@bench/metrics": p("./packages/metrics/src/index.ts"),
-      "@bench/rails": p("./packages/rails/src/index.ts"),
-      "@bench/agents": p("./apps/agents/src/index.ts"),
-    },
-  },
   test: {
-    include: ["packages/**/*.test.ts", "apps/**/*.test.ts", "worker/**/*.test.ts"],
-    exclude: ["**/node_modules/**", "**/dist/**", "**/.next/**"],
+    // The verifier's own tests live inside the isolated package, which cannot
+    // import the application. They run in the same suite so a change to either
+    // side is caught by one command.
+    include: ["src/**/*.test.ts", "packages/*/src/**/*.test.ts"],
     environment: "node",
+  },
+  resolve: {
+    alias: { "@": resolve(__dirname, "src") },
   },
 });

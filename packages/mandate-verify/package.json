@@ -1,0 +1,55 @@
+{
+  "name": "mandate-verify",
+  "version": "0.3.0",
+  "description": "Re-derive and check a MANDATE settlement on BNB Smart Chain from public chain state alone. Reads no database, no API and no file the operator controls.",
+  "type": "module",
+  "bin": {
+    "mandate-verify": "./dist/cli.js"
+  },
+  "main": "./dist/verify.js",
+  "types": "./dist/verify.d.ts",
+  "exports": {
+    ".": {
+      "types": "./dist/verify.d.ts",
+      "default": "./dist/verify.js"
+    },
+    "./cli": "./dist/cli.js"
+  },
+  "files": [
+    "dist",
+    "README.md"
+  ],
+  "scripts": {
+    "check:isolation": "node scripts/check-isolation.mjs",
+    "prebuild": "npm run check:isolation",
+    "build": "tsc -p tsconfig.json",
+    "start": "tsx src/cli.ts",
+    "prepublishOnly": "npm run build"
+  },
+  "keywords": [
+    "bnb",
+    "bsc",
+    "bnb-chain",
+    "erc-8004",
+    "agents",
+    "verification",
+    "attestation"
+  ],
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/iamdflame/mandate-bnb.git",
+    "directory": "packages/mandate-verify"
+  },
+  "dependencies": {
+    "viem": "^2.56.3"
+  },
+  "devDependencies": {
+    "typescript": "^5.9.3",
+    "@types/node": "^24.10.1",
+    "tsx": "^4.20.7"
+  },
+  "engines": {
+    "node": ">=20"
+  }
+}

@@ -1,0 +1,12 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 180 180" width="180" height="180">
+  <rect width="180" height="180" fill="#08090b"/>
+  <g transform="translate(30 30) scale(5)">
+    <path d="M4 2 H20 V15 L15 20 H9 L4 15 Z" fill="#e8a317"/>
+    <g fill="#08090b">
+      <rect x="5.8" y="7.4" width="12.4" height="1.5"/>
+      <rect x="5.2" y="10.4" width="3" height="1.3"/>
+      <rect x="15.8" y="10.4" width="3" height="1.3"/>
+      <path d="M12 9.4 L14.6 16.3 H9.4 Z"/>
+    </g>
+  </g>
+</svg>

@@ -1,0 +1,574 @@
+{
+  "at": "2026-09-06T03:55:42.546Z",
+  "probed": 63,
+  "answered": 48,
+  "results": [
+    {
+      "tokenId": "153662",
+      "endpoint": "https://api.bortagent.xyz/.well-known/agent-card.json",
+      "answered": false,
+      "status": null,
+      "latencyMs": 6001,
+      "error": "no answer in 6s",
+      "at": "2026-09-06T03:55:23.365Z"
+    },
+    {
+      "tokenId": "153666",
+      "endpoint": null,
+      "answered": false,
+      "status": null,
+      "latencyMs": null,
+      "error": "the card advertises no endpoint",
+      "at": "2026-09-06T03:55:23.428Z"
+    },
+    {
+      "tokenId": "153672",
+      "endpoint": "https://api.bortagent.xyz/.well-known/agent-card.json",
+      "answered": false,
+      "status": null,
+      "latencyMs": 6004,
+      "error": "no answer in 6s",
+      "at": "2026-09-06T03:55:23.428Z"
+    },
+    {
+      "tokenId": "153674",
+      "endpoint": "https://api.bortagent.xyz/.well-known/agent-card.json",
+      "answered": false,
+      "status": null,
+      "latencyMs": 6003,
+      "error": "no answer in 6s",
+      "at": "2026-09-06T03:55:24.609Z"
+    },
+    {
+      "tokenId": "153677",
+      "endpoint": "https://api.bortagent.xyz/.well-known/agent-card.json",
+      "answered": false,
+      "status": null,
+      "latencyMs": 6000,
+      "error": "no answer in 6s",
+      "at": "2026-09-06T03:55:24.656Z"
+    },
+    {
+      "tokenId": "153691",
+      "endpoint": "https://api.bortagent.xyz/.well-known/agent-card.json",
+      "answered": false,
+      "status": null,
+      "latencyMs": 6001,
+      "error": "no answer in 6s",
+      "at": "2026-09-06T03:55:24.691Z"
+    },
+    {
+      "tokenId": "153692",
+      "endpoint": "https://api.bortagent.xyz/.well-known/agent-card.json",
+      "answered": false,
+      "status": null,
+      "latencyMs": 6004,
+      "error": "no answer in 6s",
+      "at": "2026-09-06T03:55:25.076Z"
+    },
+    {
+      "tokenId": "153696",
+      "endpoint": "https://api.bortagent.xyz/.well-known/agent-card.json",
+      "answered": false,
+      "status": null,
+      "latencyMs": 6001,
+      "error": "no answer in 6s",
+      "at": "2026-09-06T03:55:29.366Z"
+    },
+    {
+      "tokenId": "153698",
+      "endpoint": "https://api.bortagent.xyz/.well-known/agent-card.json",
+      "answered": false,
+      "status": null,
+      "latencyMs": 6001,
+      "error": "no answer in 6s",
+      "at": "2026-09-06T03:55:29.432Z"
+    },
+    {
+      "tokenId": "153700",
+      "endpoint": "https://api.bortagent.xyz/.well-known/agent-card.json",
+      "answered": false,
+      "status": null,
+      "latencyMs": 6000,
+      "error": "no answer in 6s",
+      "at": "2026-09-06T03:55:30.612Z"
+    },
+    {
+      "tokenId": "153704",
+      "endpoint": "https://api.bortagent.xyz/.well-known/agent-card.json",
+      "answered": false,
+      "status": null,
+      "latencyMs": 6002,
+      "error": "no answer in 6s",
+      "at": "2026-09-06T03:55:30.656Z"
+    },
+    {
+      "tokenId": "153705",
+      "endpoint": "https://api.bortagent.xyz/.well-known/agent-card.json",
+      "answered": false,
+      "status": null,
+      "latencyMs": 6001,
+      "error": "no answer in 6s",
+      "at": "2026-09-06T03:55:30.692Z"
+    },
+    {
+      "tokenId": "153710",
+      "endpoint": "https://api.bortagent.xyz/.well-known/agent-card.json",
+      "answered": false,
+      "status": null,
+      "latencyMs": 6001,
+      "error": "no answer in 6s",
+      "at": "2026-09-06T03:55:31.080Z"
+    },
+    {
+      "tokenId": "153713",
+      "endpoint": "https://api.bortagent.xyz/.well-known/agent-card.json",
+      "answered": true,
+      "status": 200,
+      "latencyMs": 5151,
+      "error": null,
+      "at": "2026-09-06T03:55:35.367Z"
+    },
+    {
+      "tokenId": "153714",
+      "endpoint": "https://api.bortagent.xyz/.well-known/agent-card.json",
+      "answered": true,
+      "status": 200,
+      "latencyMs": 4691,
+      "error": null,
+      "at": "2026-09-06T03:55:35.433Z"
+    },
+    {
+      "tokenId": "153725",
+      "endpoint": "https://api.bortagent.xyz/.well-known/agent-card.json",
+      "answered": true,
+      "status": 200,
+      "latencyMs": 3393,
+      "error": null,
+      "at": "2026-09-06T03:55:36.612Z"
+    },
+    {
+      "tokenId": "153726",
+      "endpoint": "https://api.bortagent.xyz/.well-known/agent-card.json",
+      "answered": true,
+      "status": 200,
+      "latencyMs": 3335,
+      "error": null,
+      "at": "2026-09-06T03:55:36.658Z"
+    },
+    {
+      "tokenId": "153727",
+      "endpoint": "https://api.bortagent.xyz/.well-known/agent-card.json",
+      "answered": true,
+      "status": 200,
+      "latencyMs": 3425,
+      "error": null,
+      "at": "2026-09-06T03:55:36.693Z"
+    },
+    {
+      "tokenId": "153728",
+      "endpoint": "https://api.bortagent.xyz/.well-known/agent-card.json",
+      "answered": true,
+      "status": 200,
+      "latencyMs": 3460,
+      "error": null,
+      "at": "2026-09-06T03:55:37.081Z"
+    },
+    {
+      "tokenId": "153730",
+      "endpoint": "https://api.bortagent.xyz/.well-known/agent-card.json",
+      "answered": true,
+      "status": 200,
+      "latencyMs": 420,
+      "error": null,
+      "at": "2026-09-06T03:55:39.993Z"
+    },
+    {
+      "tokenId": "153732",
+      "endpoint": "https://api.bortagent.xyz/.well-known/agent-card.json",
+      "answered": true,
+      "status": 200,
+      "latencyMs": 411,
+      "error": null,
+      "at": "2026-09-06T03:55:40.005Z"
+    },
+    {
+      "tokenId": "153733",
+      "endpoint": "https://api.bortagent.xyz/.well-known/agent-card.json",
+      "answered": true,
+      "status": 200,
+      "latencyMs": 418,
+      "error": null,
+      "at": "2026-09-06T03:55:40.118Z"
+    },
+    {
+      "tokenId": "153744",
+      "endpoint": "https://api.bortagent.xyz/.well-known/agent-card.json",
+      "answered": true,
+      "status": 200,
+      "latencyMs": 429,
+      "error": null,
+      "at": "2026-09-06T03:55:40.124Z"
+    },
+    {
+      "tokenId": "153745",
+      "endpoint": "https://api.bortagent.xyz/.well-known/agent-card.json",
+      "answered": true,
+      "status": 200,
+      "latencyMs": 436,
+      "error": null,
+      "at": "2026-09-06T03:55:40.413Z"
+    },
+    {
+      "tokenId": "153749",
+      "endpoint": "https://api.bortagent.xyz/.well-known/agent-card.json",
+      "answered": true,
+      "status": 200,
+      "latencyMs": 424,
+      "error": null,
+      "at": "2026-09-06T03:55:40.416Z"
+    },
+    {
+      "tokenId": "153753",
+      "endpoint": "https://api.bortagent.xyz/.well-known/agent-card.json",
+      "answered": true,
+      "status": 200,
+      "latencyMs": 448,
+      "error": null,
+      "at": "2026-09-06T03:55:40.518Z"
+    },
+    {
+      "tokenId": "153760",
+      "endpoint": null,
+      "answered": false,
+      "status": null,
+      "latencyMs": null,
+      "error": "the card advertises no endpoint",
+      "at": "2026-09-06T03:55:40.536Z"
+    },
+    {
+      "tokenId": "153763",
+      "endpoint": "https://api.bortagent.xyz/.well-known/agent-card.json",
+      "answered": true,
+      "status": 200,
+      "latencyMs": 419,
+      "error": null,
+      "at": "2026-09-06T03:55:40.536Z"
+    },
+    {
+      "tokenId": "153769",
+      "endpoint": "https://api.bortagent.xyz/.well-known/agent-card.json",
+      "answered": true,
+      "status": 200,
+      "latencyMs": 447,
+      "error": null,
+      "at": "2026-09-06T03:55:40.541Z"
+    },
+    {
+      "tokenId": "153770",
+      "endpoint": "https://api.bortagent.xyz/.well-known/agent-card.json",
+      "answered": true,
+      "status": 200,
+      "latencyMs": 430,
+      "error": null,
+      "at": "2026-09-06T03:55:40.553Z"
+    },
+    {
+      "tokenId": "153771",
+      "endpoint": "https://api.bortagent.xyz/.well-known/agent-card.json",
+      "answered": true,
+      "status": 200,
+      "latencyMs": 417,
+      "error": null,
+      "at": "2026-09-06T03:55:40.840Z"
+    },
+    {
+      "tokenId": "153774",
+      "endpoint": "https://api.bortagent.xyz/.well-known/agent-card.json",
+      "answered": true,
+      "status": 200,
+      "latencyMs": 376,
+      "error": null,
+      "at": "2026-09-06T03:55:40.849Z"
+    },
+    {
+      "tokenId": "153776",
+      "endpoint": "https://api.bortagent.xyz/.well-known/agent-card.json",
+      "answered": true,
+      "status": 200,
+      "latencyMs": 516,
+      "error": null,
+      "at": "2026-09-06T03:55:40.955Z"
+    },
+    {
+      "tokenId": "153786",
+      "endpoint": "https://api.bortagent.xyz/.well-known/agent-card.json",
+      "answered": true,
+      "status": 200,
+      "latencyMs": 397,
+      "error": null,
+      "at": "2026-09-06T03:55:40.966Z"
+    },
+    {
+      "tokenId": "153790",
+      "endpoint": "https://api.bortagent.xyz/.well-known/agent-card.json",
+      "answered": true,
+      "status": 200,
+      "latencyMs": 396,
+      "error": null,
+      "at": "2026-09-06T03:55:40.983Z"
+    },
+    {
+      "tokenId": "153795",
+      "endpoint": "https://api.bortagent.xyz/.well-known/agent-card.json",
+      "answered": true,
+      "status": 200,
+      "latencyMs": 504,
+      "error": null,
+      "at": "2026-09-06T03:55:40.988Z"
+    },
+    {
+      "tokenId": "153798",
+      "endpoint": "https://api.bortagent.xyz/.well-known/agent-card.json",
+      "answered": true,
+      "status": 200,
+      "latencyMs": 406,
+      "error": null,
+      "at": "2026-09-06T03:55:41.225Z"
+    },
+    {
+      "tokenId": "153804",
+      "endpoint": "https://api.bortagent.xyz/.well-known/agent-card.json",
+      "answered": true,
+      "status": 200,
+      "latencyMs": 409,
+      "error": null,
+      "at": "2026-09-06T03:55:41.257Z"
+    },
+    {
+      "tokenId": "153809",
+      "endpoint": "https://api.bortagent.xyz/.well-known/agent-card.json",
+      "answered": true,
+      "status": 200,
+      "latencyMs": 429,
+      "error": null,
+      "at": "2026-09-06T03:55:41.363Z"
+    },
+    {
+      "tokenId": "153811",
+      "endpoint": null,
+      "answered": false,
+      "status": null,
+      "latencyMs": null,
+      "error": "the card advertises no endpoint",
+      "at": "2026-09-06T03:55:41.379Z"
+    },
+    {
+      "tokenId": "153816",
+      "endpoint": "https://api.bortagent.xyz/.well-known/agent-card.json",
+      "answered": true,
+      "status": 200,
+      "latencyMs": 956,
+      "error": null,
+      "at": "2026-09-06T03:55:41.379Z"
+    },
+    {
+      "tokenId": "153817",
+      "endpoint": "https://api.bortagent.xyz/.well-known/agent-card.json",
+      "answered": true,
+      "status": 200,
+      "latencyMs": 393,
+      "error": null,
+      "at": "2026-09-06T03:55:41.471Z"
+    },
+    {
+      "tokenId": "153818",
+      "endpoint": "https://api.bortagent.xyz/.well-known/agent-card.json",
+      "answered": true,
+      "status": 200,
+      "latencyMs": 423,
+      "error": null,
+      "at": "2026-09-06T03:55:41.492Z"
+    },
+    {
+      "tokenId": "153820",
+      "endpoint": "https://api.bortagent.xyz/.well-known/agent-card.json",
+      "answered": true,
+      "status": 200,
+      "latencyMs": 394,
+      "error": null,
+      "at": "2026-09-06T03:55:41.631Z"
+    },
+    {
+      "tokenId": "265375",
+      "endpoint": "https://bnb-lp.172-104-171-139.nip.io/.well-known/agent-card.json",
+      "answered": true,
+      "status": 200,
+      "latencyMs": 2748,
+      "error": null,
+      "at": "2026-09-06T03:55:22.328Z"
+    },
+    {
+      "tokenId": "269703",
+      "endpoint": "https://continuous-locator-four-christine.trycloudflare.com/grid/status",
+      "answered": true,
+      "status": 402,
+      "latencyMs": 1271,
+      "error": null,
+      "at": "2026-09-06T03:55:21.028Z"
+    },
+    {
+      "tokenId": "269704",
+      "endpoint": "https://continuous-locator-four-christine.trycloudflare.com/health-factor/status",
+      "answered": true,
+      "status": 402,
+      "latencyMs": 1116,
+      "error": null,
+      "at": "2026-09-06T03:55:21.212Z"
+    },
+    {
+      "tokenId": "269705",
+      "endpoint": "https://continuous-locator-four-christine.trycloudflare.com/yield/status",
+      "answered": true,
+      "status": 402,
+      "latencyMs": 1130,
+      "error": null,
+      "at": "2026-09-06T03:55:21.225Z"
+    },
+    {
+      "tokenId": "269706",
+      "endpoint": "https://continuous-locator-four-christine.trycloudflare.com/lp-range/status",
+      "answered": true,
+      "status": 402,
+      "latencyMs": 718,
+      "error": null,
+      "at": "2026-09-06T03:55:22.300Z"
+    },
+    {
+      "tokenId": "293902",
+      "endpoint": "https://gvwyso8occ.execute-api.us-east-1.amazonaws.com/.well-known/agent-card.json",
+      "answered": true,
+      "status": 200,
+      "latencyMs": 1086,
+      "error": null,
+      "at": "2026-09-06T03:55:22.342Z"
+    },
+    {
+      "tokenId": "302257",
+      "endpoint": "https://agent.brainonbnb.com/a2a",
+      "answered": true,
+      "status": 200,
+      "latencyMs": 1006,
+      "error": null,
+      "at": "2026-09-06T03:55:22.355Z"
+    },
+    {
+      "tokenId": "302258",
+      "endpoint": "https://agent.brainonbnb.com/a2a",
+      "answered": true,
+      "status": 200,
+      "latencyMs": 874,
+      "error": null,
+      "at": "2026-09-06T03:55:22.460Z"
+    },
+    {
+      "tokenId": "304493",
+      "endpoint": "https://agent.brainonbnb.com/a2a",
+      "answered": true,
+      "status": 200,
+      "latencyMs": 612,
+      "error": null,
+      "at": "2026-09-06T03:55:22.753Z"
+    },
+    {
+      "tokenId": "304494",
+      "endpoint": "https://agent.brainonbnb.com/a2a",
+      "answered": true,
+      "status": 200,
+      "latencyMs": 332,
+      "error": null,
+      "at": "2026-09-06T03:55:23.018Z"
+    },
+    {
+      "tokenId": "307485",
+      "endpoint": "https://continuous-locator-four-christine.trycloudflare.com/grid-b/status",
+      "answered": true,
+      "status": 402,
+      "latencyMs": 1252,
+      "error": null,
+      "at": "2026-09-06T03:55:21.208Z"
+    },
+    {
+      "tokenId": "307486",
+      "endpoint": "https://continuous-locator-four-christine.trycloudflare.com/venus-guardian/status",
+      "answered": true,
+      "status": 402,
+      "latencyMs": 1120,
+      "error": null,
+      "at": "2026-09-06T03:55:21.222Z"
+    },
+    {
+      "tokenId": "307487",
+      "endpoint": "https://continuous-locator-four-christine.trycloudflare.com/yield-b/status",
+      "answered": true,
+      "status": 402,
+      "latencyMs": 1094,
+      "error": null,
+      "at": "2026-09-06T03:55:21.228Z"
+    },
+    {
+      "tokenId": "307488",
+      "endpoint": "https://continuous-locator-four-christine.trycloudflare.com/weight-rebalancer/status",
+      "answered": true,
+      "status": 402,
+      "latencyMs": 431,
+      "error": null,
+      "at": "2026-09-06T03:55:22.322Z"
+    },
+    {
+      "tokenId": "331625",
+      "endpoint": "https://smeai-dev.vercel.app/api/a2a",
+      "answered": true,
+      "status": 200,
+      "latencyMs": 1275,
+      "error": null,
+      "at": "2026-09-06T03:55:23.334Z"
+    },
+    {
+      "tokenId": "331698",
+      "endpoint": "https://smeai-dev.vercel.app/api/a2a/lp",
+      "answered": true,
+      "status": 200,
+      "latencyMs": 1306,
+      "error": null,
+      "at": "2026-09-06T03:55:23.350Z"
+    },
+    {
+      "tokenId": "331794",
+      "endpoint": "https://smeai-dev.vercel.app/api/a2a/grid",
+      "answered": true,
+      "status": 200,
+      "latencyMs": 1330,
+      "error": null,
+      "at": "2026-09-06T03:55:23.361Z"
+    },
+    {
+      "tokenId": "house:keeper-a",
+      "endpoint": "https://mandate-coral.vercel.app/api/house/keeper-a/status",
+      "answered": true,
+      "status": 200,
+      "latencyMs": 880,
+      "error": null,
+      "at": "2026-09-06T03:55:41.666Z"
+    },
+    {
+      "tokenId": "house:keeper-b",
+      "endpoint": "https://mandate-coral.vercel.app/api/house/keeper-b/status",
+      "answered": true,
+      "status": 200,
+      "latencyMs": 694,
+      "error": null,
+      "at": "2026-09-06T03:55:41.792Z"
+    }
+  ]
+}
