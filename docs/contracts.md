@@ -178,14 +178,19 @@ Four functions. No `multicall`, no `sweepToken`, no upgrade path, no owner.
 
 ## Deployment
 
-Live on testnet. Not yet on mainnet — when it is, every address will appear here
-and on `/data` with its deployment transaction and verified source.
+Live on both chains. Mainnet source is verified `exact_match` on Sourcify.
+
+**A note on deploying from a delegated account.** The deployer carries an
+EIP-7702 delegation from the session work, and BSC refuses more than one
+in-flight transaction from such an account — a batch deploy gets one contract
+in and then fails with `in-flight transaction limit reached for delegated
+accounts`. The remaining contracts go one at a time, each awaiting its receipt.
 
 | Contract | Chain 56 | Chain 97 |
 |---|---|---|
-| `ClaimRegistry` | not deployed | [`0xBcad3484…B38bB`](https://testnet.bscscan.com/address/0xBcad3484b6189c3956ce32Da877a4B5DF20B38bB) |
-| `BondVault` | not deployed | [`0x3c657725…7a768`](https://testnet.bscscan.com/address/0x3c65772503120a73575c7230c878Ba1F0617a768) |
-| `OutcomePolicy` | not deployed | [`0x13A5135D…99653`](https://testnet.bscscan.com/address/0x13A5135D084852Eaa0ca299C064eB64755199653) |
+| `ClaimRegistry` | [`0x91EE15Dd…E170f`](https://bscscan.com/address/0x91EE15Dd9e765adb0F80033bF1D366cB0cfE170f) | [`0xBcad3484…B38bB`](https://testnet.bscscan.com/address/0xBcad3484b6189c3956ce32Da877a4B5DF20B38bB) |
+| `BondVault` | [`0xA34B0ED4…4deD2`](https://bscscan.com/address/0xA34B0ED4577D311cADD3fc37c1601d943384deD2) | [`0x3c657725…7a768`](https://testnet.bscscan.com/address/0x3c65772503120a73575c7230c878Ba1F0617a768) |
+| `OutcomePolicy` | [`0xa219d67a…74d80`](https://bscscan.com/address/0xa219d67a6712D3Aa39C084740b04Fd722B874d80) | [`0x13A5135D…99653`](https://testnet.bscscan.com/address/0x13A5135D084852Eaa0ca299C064eB64755199653) |
 | `FixedOracle` | — | deployed per proof run |
 | `RecipientBound` | per (principal, agent) pair | per pair |
 

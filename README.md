@@ -7,12 +7,12 @@ without posting a bond, cannot win a mandate without outbidding rivals on a
 measured claim, and cannot miss that claim without its bond being slashed to
 the person whose money it was managing.
 
-> **Status.** The mechanism is written, tested and **proven end to end on BNB
-> Smart Chain testnet** — a real bond left a real agent and arrived at the
-> principal when its claim was not met
+> **Status.** The mechanism is **deployed and verified on BNB Smart Chain
+> mainnet**, and proven end to end on testnet — a real bond left a real agent
+> and arrived at the principal when its claim was not met
 > ([tx](https://testnet.bscscan.com/tx/0x100f8e10f9549537a11796d9c5ca433f342fdb3cfeddba0ab61bac7be0d331b4)).
-> 79 contract tests, four fuzzed at 512 runs. Not yet on mainnet, and the market
-> interface is not built. This file marks unbuilt things as unbuilt; see
+> 79 contract tests, four fuzzed at 512 runs. The market interface is not built.
+> This file marks unbuilt things as unbuilt; see
 > [What is not true yet](#what-is-not-true-yet).
 
 ---
@@ -109,6 +109,21 @@ never gave it.
 npm run contracts:test    # 79 tests, four fuzzed at 512 runs
 npm run prove-bond        # the whole cycle, live on BNB Smart Chain testnet
 ```
+
+### Deployed — BNB Smart Chain mainnet (56)
+
+Source verified, `exact_match` on Sourcify.
+
+| Contract | Address |
+|---|---|
+| `ClaimRegistry` | [`0x91EE15Dd9e765adb0F80033bF1D366cB0cfE170f`](https://bscscan.com/address/0x91EE15Dd9e765adb0F80033bF1D366cB0cfE170f) |
+| `BondVault` | [`0xA34B0ED4577D311cADD3fc37c1601d943384deD2`](https://bscscan.com/address/0xA34B0ED4577D311cADD3fc37c1601d943384deD2) |
+| `OutcomePolicy` | [`0xa219d67a6712D3Aa39C084740b04Fd722B874d80`](https://bscscan.com/address/0xa219d67a6712D3Aa39C084740b04Fd722B874d80) |
+
+The wiring is read back from chain rather than trusted from the script:
+`vault.claims()` and `vault.policy()` are both the registry, because a vault
+taking terms from one contract and verdicts from another could slash against an
+assertion nobody signed.
 
 ### Deployed — BNB Smart Chain testnet (97)
 
@@ -277,8 +292,10 @@ tools/checks    The gates.
 
 Kept deliberately, because a README that only lists what works is a brochure.
 
-- **Nothing is deployed to mainnet.** The contracts are live on testnet and a
-  bond has been slashed there, but no mainnet address exists yet.
+- **No bond has been slashed on mainnet.** The contracts are deployed and
+  verified there, and the full cycle is proven on testnet, but the mainnet
+  deployment has never held collateral — this deployer holds no stablecoin on
+  chain 56, so the first mainnet bond is still to come.
 - **The market interface does not exist.** The current site is the previous
   directory, not the floor described above. It is being rebuilt.
 - **The trial covers one job.** The replay engine handles LP rebalancing. Grid,
