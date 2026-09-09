@@ -167,7 +167,22 @@ async function main() {
   console.log(`  the principal holds ${formatEther(bnb)} BNB\n`);
 
   /* ------------------------------------------------- 1. derive the authority */
-  const scope = await scopeFor(CHAIN, subject, job);
+  /*
+    `--lookback` widens the capability scan.
+
+    The default window is about two days of BNB Smart Chain, which is what a
+    free RPC will serve without an archive. A wallet whose venue activity is
+    older than that scans clean and is refused — correctly, because the rail's
+    whole invariant is `granted ⊆ proven` and an unseen venue is an ungranted
+    one. But "we did not look far enough" and "it never happened" are different
+    facts, and only the second is about the wallet.
+
+    So the window is a parameter rather than a constant. Widening it cannot
+    widen a grant: it can only find evidence that was always there.
+  */
+  const lookbackArg = arg("lookback", "");
+  const lookback = /^\d+$/.test(lookbackArg) ? BigInt(lookbackArg) : undefined;
+  const scope = await scopeFor(CHAIN, subject, job, lookback === undefined ? {} : { lookback });
   if (isRefused(scope)) {
     record(1, "authority is derived from on-chain evidence", "proven", `refused — ${scope.reason.slice(0, 60)}`);
     console.log(`\n  The scan refused, which is the rail working: ${scope.reason}`);
@@ -325,34 +340,60 @@ async function main() {
   }
 
   /* ------------------------------------------------------------ 9. revocation */
-  try {
-    const revoked = await revokeEngagement(engagementId);
+  /*
+    `--keep` stops here and leaves the session standing.
+ 
+    The full proof revokes, because "revoke → the same call now fails" is the
+    claim worth proving and a proof that skipped it would be worthless. But a
+    session that is always revoked by the script that made it means the desk
+    never has a live one, and the desk's Revoke button — Altana's own
+    qualification line, "a user can see what their agent may do, and revoke it"
+    — has nothing to end.
+ 
+    So the default is unchanged and this is opt-in. A kept session is real
+    standing authority on mainnet: capped, expiring, and endable by a person
+    clicking the button rather than by this script tidying up after itself.
+  */
+  const keep = process.argv.includes("--keep");
+
+  if (keep) {
     record(
       9,
       "revocation completes and is recorded",
-      revoked.revokedAt ? "proven" : "failed",
-      revoked.revokedTx ? txUrl(CHAIN, revoked.revokedTx) : "revoked, no transaction hash surfaced",
+      "inconclusive",
+      `left live on purpose: engagement ${engagementId} stands, capped and expiring, so the desk has a session to end`,
     );
-  } catch (e) {
-    record(9, "revocation completes and is recorded", "failed", classify(e).message.slice(0, 70));
-  }
+    record(10, "the same in-scope call now fails", "inconclusive", "not attempted; the session was deliberately not revoked");
+  } else {
+    try {
+      const revoked = await revokeEngagement(engagementId);
+      record(
+        9,
+        "revocation completes and is recorded",
+        revoked.revokedAt ? "proven" : "failed",
+        revoked.revokedTx ? txUrl(CHAIN, revoked.revokedTx) : "revoked, no transaction hash surfaced",
+      );
+    } catch (e) {
+      record(9, "revocation completes and is recorded", "failed", classify(e).message.slice(0, 70));
+    }
 
-  /* ------------------------- 10. the same call, after revocation, must fail */
-  const after = await attempt(session, [{ to: inScope.to, data: inScopeSelector, value: 0n }]);
-  record(
-    10,
-    "the same in-scope call now fails",
-    after.ok
-      ? "failed"
-      : after.kind === "revoked" || after.kind === "policy"
-        ? "proven"
-        : "inconclusive",
-    after.ok
-      ? "IT STILL EXECUTED — revocation did not take effect"
-      : after.kind === "revoked" || after.kind === "policy"
-        ? after.message.slice(0, 60)
-        : `${after.kind}: ${after.message.slice(0, 92)}`,
-  );
+    /* ----------------------- 10. the same call, after revocation, must fail */
+    const after = await attempt(session, [{ to: inScope.to, data: inScopeSelector, value: 0n }]);
+    record(
+      10,
+      "the same in-scope call now fails",
+      after.ok
+        ? "failed"
+        : after.kind === "revoked" || after.kind === "policy"
+          ? "proven"
+          : "inconclusive",
+      after.ok
+        ? "IT STILL EXECUTED — revocation did not take effect"
+        : after.kind === "revoked" || after.kind === "policy"
+          ? after.message.slice(0, 60)
+          : `${after.kind}: ${after.message.slice(0, 92)}`,
+    );
+  }
 
   const e = readEngagement(engagementId);
   const proven = rows.filter((r) => r.result === "proven").length;

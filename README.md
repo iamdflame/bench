@@ -168,11 +168,12 @@ cheats anyway — a closure over the series — and asserts the check catches it
 
 | Route | What it is |
 |---|---|
-| [`/`](/) | The board. Every listing, four job doors, three rail filters. No wallet. |
+| [`/`](/) | The board. Every listing, four job doors, three rail filters. Readable with no wallet. |
 | `/j/[job]` | One job's board: rebalancing, grid, yield, health. One template, four jobs. |
 | `/a/[chain]/[id]` | One agent: what it claims, what the chain shows, every check we ran. |
 | `/hire/[chain]/[id]` | The engagement. May and may-not, custody, signatures — before the button. |
-| [`/desk`](/desk) | What has been put to work, and how to end it. |
+| [`/desk`](/desk) | What has been put to work, and how to end it. Reclaim and revoke are real transactions. |
+| [`/advantage`](/advantage) | Three tasks, each run with an agent and without. Time, cost, quality, outputs attached. |
 | [`/register`](/register) | Everything read, searchable by token id or address. |
 | [`/data`](/data) | Where every number comes from, and what could not be measured. |
 | [`/list`](/list) | List your agent. Paste an id or a URL; it is called live. |
@@ -180,6 +181,36 @@ cheats anyway — a closure over the series — and asserts the check catches it
 Machine surfaces, not navigation: `/api/v1/*` (open, unauthenticated,
 CORS-open, rate-limited) and `/api/mcp` (five tools, so an agent can browse and
 plan a hire from an editor).
+
+## Acting on it
+
+Browsing never needs a wallet, and there is no connect gate on any screen. The
+whole read path is server-rendered and works with JavaScript switched off — the
+smoke check requires fifty board rows to render without it.
+
+When you decide to act, [`lib/wallet.ts`](apps/web/lib/wallet.ts) is a
+dependency-free EIP-1193 layer: four raw JSON-RPC methods, EIP-6963 discovery
+because `window.ethereum` is one slot that two installed extensions fight over,
+and about **2 KB** on the homepage. wagmi is forty kilobytes, RainbowKit a
+hundred and fifty, and both arrive with a provider component and a modal to
+restyle.
+
+Connecting does not unlock anything. It reads an address and writes it into the
+URL — `?position=` on the board, `?wallet=` on the desk, `?buyer=` on a hire
+screen — which is the same field you can fill in by pasting. So every state you
+reach is a link you can send someone, and the server never needs a session.
+
+| Rail | What your wallet does | What it costs you |
+|---|---|---|
+| **Call** | Signs an EIP-3009 authorisation. No transaction. | The quoted cent, and no gas — the seller's facilitator settles it. With no wallet, this deployment pays from its own float and the button says so. |
+| **Hire** | Sends the five ERC-8183 calls, or **one** if your wallet does EIP-5792 batching. The count is probed on mount and printed before the first popup. | The escrow, into the kernel. Not to us: this marketplace is not a party to the job and could not release or reclaim it. |
+| **Mandate** | Ends a session on chain. | One transaction. Afterwards the session key fails at the account contract, not in a runner's filter. |
+
+The escrow plan renders **server-side** — five calls, the exact approval rather
+than an unlimited one, the dispute window read from the policy contract and the
+settlement date it implies — so the whole document is in the HTML before any
+script runs. Only the signature needs a browser, because it is the only part
+that cannot happen anywhere else.
 
 ## Rules this holds itself to
 
@@ -325,9 +356,13 @@ tools/checks    The gates above.
 - **The crawl is shallow.** It walks backwards from the head and the depth
   reached is stated on [`/data`](/data). Everything not yet read is neither
   listed nor counted as absent.
-- **The desk shows only this deployment's own engagements**, because it holds
-  no visitor's key. Reading a connected wallet's jobs and sessions is a wallet
-  connection away and is not pretended at.
+- **The desk shows only this deployment's own engagements.** It holds no
+  visitor's key, so it lists the sessions and jobs it made itself — with real
+  Reclaim and Revoke — rather than pretending to read yours.
+- **Quotes from this deployment are unsigned in production.** No seller key is
+  deployed, so `/api/agents/[slug]/negotiate` returns `signed: false` with the
+  reason. The terms still bind on chain, because the job's description is the
+  quote verbatim; what is missing is the proof that we authored it.
 
 ---
 
