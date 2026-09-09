@@ -23,16 +23,28 @@ vi.mock("@bench/index", () => ({
   readFunnel: () => readFunnel(),
   useCrawlTimeouts: () => {},
   SCAN_PAGE_MAX: 100,
+  TEMPLATE_REPORT_AT: 25,
+  // The real classifier and clusterer are exercised by their own tests. Here
+  // they only need to be present, so the walk's own behaviour is what fails.
+  classify: () => ({ job: { known: false, reason: "not classified in this test" }, matched: [] }),
+  clusterTemplates: () => ({ rows: 0, empty: 0, distinct: 0, clustered: 0, groups: [] }),
 }));
 
-/** An in-memory stand-in for the checkpoint file. */
-let stored: unknown = null;
+/**
+ * An in-memory stand-in for the data directory, keyed by path.
+ *
+ * A single slot will not do: the walk writes two documents — the working set
+ * it resumes from and the summary the site serves — and a mock that keeps
+ * only the last one hands the summary back when the walk asks for its own
+ * checkpoint.
+ */
+const files = new Map<string, unknown>();
 vi.mock("../store", () => ({
-  DATA_DIR: "/tmp",
-  writeAtomicJson: (_p: string, v: unknown) => {
-    stored = v;
+  DATA_DIR: "/data",
+  writeAtomicJson: (p: string, v: unknown) => {
+    files.set(p, v);
   },
-  readJson: () => stored,
+  readJson: (p: string) => files.get(p) ?? null,
 }));
 
 const { walkRegistry } = await import("../registry-walk");
@@ -72,7 +84,7 @@ function pagesFor(rows: Row[], pageSize = 2) {
 const rows = (...ids: string[]) => ids.map((token_id) => ({ token_id }));
 
 beforeEach(() => {
-  stored = null;
+  files.clear();
   walkAgents.mockReset();
   readFunnel.mockReset().mockResolvedValue(null);
 });
@@ -106,7 +118,9 @@ describe("walkRegistry", () => {
     );
 
     await walkRegistry(56);
-    const saved = stored as { candidates: Array<{ tokenId: string; cohorts: string[] }> };
+    const saved = files.get("/data/registry-56.json") as {
+      candidates: Array<{ tokenId: string; cohorts: string[] }>;
+    };
     const agent = saved.candidates.find((c) => c.tokenId === "10")!;
 
     expect(agent.cohorts).toEqual(["a2a", "mcp"]);

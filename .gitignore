@@ -29,3 +29,8 @@ out/
 *.tsbuildinfo
 .vercel
 .vercel/
+
+# The registry working set: 33,813 rows and fifteen megabytes, rewritten on
+# every worker run. The site serves registry-summary-*.json, which is derived
+# from it and two orders of magnitude smaller.
+apps/web/data/registry-[0-9]*.json

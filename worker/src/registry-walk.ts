@@ -26,7 +26,19 @@
  * disturbs the others. That is the only reason this is restartable at all.
  */
 
-import { walkAgents, useCrawlTimeouts, readFunnel, SCAN_PAGE_MAX, type ScanAgent, type Funnel } from "@bench/index";
+import {
+  walkAgents,
+  useCrawlTimeouts,
+  readFunnel,
+  classify,
+  clusterTemplates,
+  TEMPLATE_REPORT_AT,
+  SCAN_PAGE_MAX,
+  type ScanAgent,
+  type Funnel,
+  type TemplateReport,
+} from "@bench/index";
+import type { JobSlug } from "@bench/shared";
 import type { SupportedChain } from "@bench/shared";
 import { DATA_DIR, writeAtomicJson, readJson } from "./store";
 import { join } from "node:path";
@@ -99,6 +111,18 @@ export interface Candidate {
   createdAt: string | null;
   feedbacks: number | null;
   score: number | null;
+  /**
+   * Which of the four jobs this agent's own words claim, or null.
+   *
+   * Derived here rather than at render time so the count on a category page
+   * and the count in the snapshot cannot disagree, and so `check:classified`
+   * has something to assert against. It is a claim and is stored beside the
+   * phrases that produced it — never blended with whether the endpoint
+   * answered, which is a different question with a different answer.
+   */
+  job: JobSlug | null;
+  /** The phrases that decided it, or the reason nothing did. */
+  jobReason: string;
 }
 
 /** Where a cohort's walk had got to, and what it cost. */
@@ -139,25 +163,51 @@ export interface RegistryIndex {
   candidates: Candidate[];
 }
 
-export const registryPath = (chainId: SupportedChain) => join(DATA_DIR, `registry-${chainId}.json`);
+export const registryPath = (chainId: SupportedChain) =>
+  join(DATA_DIR, `registry-${chainId}.json`);
 
 export function readRegistry(chainId: SupportedChain): RegistryIndex | null {
   return readJson<RegistryIndex>(registryPath(chainId));
 }
 
-const project = (a: ScanAgent, cohort: string): Candidate => ({
-  tokenId: a.token_id,
-  owner: a.owner_address ?? null,
-  name: a.name ?? null,
-  // Long enough to classify a job from, short enough that the file stays small.
-  description: a.description ? a.description.slice(0, 400) : null,
-  cohorts: [cohort],
-  claimsX402: (a as { x402_supported?: boolean }).x402_supported === true,
-  protocols: (a as { supported_protocols?: string[] }).supported_protocols ?? [],
-  createdAt: a.created_at ?? null,
-  feedbacks: (a as { total_feedbacks?: number }).total_feedbacks ?? null,
-  score: (a as { total_score?: number }).total_score ?? null,
-});
+const project = (a: ScanAgent, cohort: string): Candidate => {
+  const verdict = classify({ name: a.name, description: a.description });
+  return {
+    tokenId: a.token_id,
+    owner: a.owner_address ?? null,
+    name: a.name ?? null,
+    // Long enough to classify a job from, short enough that the file stays small.
+    description: a.description ? a.description.slice(0, 400) : null,
+    cohorts: [cohort],
+    claimsX402: (a as { x402_supported?: boolean }).x402_supported === true,
+    protocols:
+      (a as { supported_protocols?: string[] }).supported_protocols ?? [],
+    createdAt: a.created_at ?? null,
+    feedbacks: (a as { total_feedbacks?: number }).total_feedbacks ?? null,
+    score: (a as { total_score?: number }).total_score ?? null,
+    job: verdict.job.known ? verdict.job.value : null,
+    jobReason: verdict.job.known
+      ? verdict.matched.join(", ")
+      : verdict.job.reason,
+  };
+};
+
+/**
+ * Re-derive a stored row's job label with the current classifier.
+ *
+ * Only the label is touched. Everything else on the row came from the index
+ * and is left exactly as it was read.
+ */
+function relabel(c: Candidate): Candidate {
+  const verdict = classify({ name: c.name, description: c.description });
+  return {
+    ...c,
+    job: verdict.job.known ? verdict.job.value : null,
+    jobReason: verdict.job.known
+      ? verdict.matched.join(", ")
+      : verdict.job.reason,
+  };
+}
 
 export interface WalkReport {
   chainId: SupportedChain;
@@ -166,6 +216,67 @@ export interface WalkReport {
   added: number;
   requests: number;
   seconds: number;
+}
+
+/**
+ * What the site actually serves, as opposed to what the worker holds.
+ *
+ * The working set is 33,813 rows and eleven megabytes, and it does not belong
+ * in a repository: it grows on every run and would produce a multi-megabyte
+ * diff each time. Nor does the site need it. Of those rows, 245 claim one of
+ * the four jobs and can therefore appear on a category page; the other 33,568
+ * are needed as *counts*, which is exactly what the funnel and the template
+ * report already are.
+ *
+ * So the summary carries every classified row in full, and everything else as
+ * arithmetic. It is a few hundred kilobytes, it is committed, and the front
+ * door renders from it without a network call — which is why the board does
+ * not go blank when a third party is having a bad day.
+ */
+export interface RegistrySummary {
+  version: 1;
+  chainId: SupportedChain;
+  observedAt: string;
+  funnel: Funnel | null;
+  cohorts: Record<string, CohortState>;
+  /** Every row that claims one of the four jobs. */
+  classified: Candidate[];
+  /** How many rows claim each job, including none. */
+  perJob: Record<string, number>;
+  /** The batch-registration finding, computed over every reachable row. */
+  templates: TemplateReport;
+  /** How many rows the summary is derived from, so the shares can be checked. */
+  reachable: number;
+}
+
+export const summaryPath = (chainId: SupportedChain) =>
+  join(DATA_DIR, `registry-summary-${chainId}.json`);
+
+export function readRegistrySummary(chainId: SupportedChain): RegistrySummary | null {
+  return readJson<RegistrySummary>(summaryPath(chainId));
+}
+
+/** Derive the committed summary from the working set. */
+export function summarise(index: RegistryIndex): RegistrySummary {
+  const classified = index.candidates.filter((c) => c.job !== null);
+
+  const perJob: Record<string, number> = { unclassified: 0 };
+  for (const c of index.candidates) {
+    const key = c.job ?? "unclassified";
+    perJob[key] = (perJob[key] ?? 0) + 1;
+  }
+
+  return {
+    version: 1,
+    chainId: index.chainId,
+    observedAt: index.observedAt,
+    funnel: index.funnel,
+    cohorts: index.cohorts,
+    classified,
+    perJob,
+    templates: clusterTemplates(index.candidates, { reportAt: TEMPLATE_REPORT_AT }),
+    reachable: index.candidates.length,
+  };
 }
 
 /**
@@ -179,7 +290,7 @@ export interface WalkReport {
  */
 export async function walkRegistry(
   chainId: SupportedChain,
-  opts: { budget?: number; onProgress?: (msg: string) => void } = {},
+  opts: { budget?: number; onProgress?: (msg: string) => void } = {}
 ): Promise<WalkReport> {
   useCrawlTimeouts();
 
@@ -188,8 +299,19 @@ export async function walkRegistry(
   const say = opts.onProgress ?? (() => {});
 
   const prior = readRegistry(chainId);
+
+  /*
+    Every stored row is re-labelled on load, not just the new ones.
+
+    The label is derived from the agent's own words by a classifier that
+    changes — a phrase gets added, a false positive gets guarded against. Rows
+    written under an older version would keep an older answer, so a category
+    page would show a mixture of verdicts from different rules and no reader
+    could tell which. Re-running it is thirty thousand regex passes and costs
+    nothing next to a single request.
+  */
   const byToken = new Map<string, Candidate>(
-    (prior?.candidates ?? []).map((c) => [c.tokenId, c]),
+    (prior?.candidates ?? []).map((c) => [c.tokenId, relabel(c)])
   );
   const before = byToken.size;
   const states: Record<string, CohortState> = { ...(prior?.cohorts ?? {}) };
@@ -216,7 +338,7 @@ export async function walkRegistry(
 
     // An incremental pass is only possible where a previous pass finished and
     // left a frontier behind. Anything else is a full read of the cohort.
-    const frontier = prev?.complete ? (prev.frontier ?? null) : null;
+    const frontier = prev?.complete ? prev.frontier ?? null : null;
     const incremental = !resuming && frontier !== null;
 
     // The newest row of this pass becomes the next frontier. Captured from the
@@ -228,9 +350,9 @@ export async function walkRegistry(
         resuming
           ? `resuming at ${String(state.cursor).slice(0, 12)}…`
           : incremental
-            ? `incremental from head, stopping at ${frontier}`
-            : "full pass"
-      }`,
+          ? `incremental from head, stopping at ${frontier}`
+          : "full pass"
+      }`
     );
 
     try {
@@ -240,19 +362,23 @@ export async function walkRegistry(
         filters: cohort.params,
         // On an incremental pass, stop at the first row already held. On a
         // first or resumed pass, read to the end of the cohort.
-        ...(incremental ? { until: (a: ScanAgent) => a.token_id === frontier } : {}),
+        ...(incremental
+          ? { until: (a: ScanAgent) => a.token_id === frontier }
+          : {}),
       })) {
         requests += 1;
         state.pages += 1;
         state.fetched += page.items.length;
-        if (newFrontier === null && page.items[0]) newFrontier = page.items[0].token_id;
+        if (newFrontier === null && page.items[0])
+          newFrontier = page.items[0].token_id;
         state.cursor = page.state.cursor;
         state.total = page.state.total ?? state.total;
 
         for (const a of page.items) {
           const existing = byToken.get(a.token_id);
           if (existing) {
-            if (!existing.cohorts.includes(cohort.key)) existing.cohorts.push(cohort.key);
+            if (!existing.cohorts.includes(cohort.key))
+              existing.cohorts.push(cohort.key);
           } else {
             byToken.set(a.token_id, project(a, cohort.key));
           }
@@ -295,7 +421,11 @@ export async function walkRegistry(
 
     state.updatedAt = new Date().toISOString();
     states[cohort.key] = state;
-    say(`${cohort.key}: ${state.fetched}/${state.total ?? "?"} rows, ${state.complete ? "complete" : "incomplete"}`);
+    say(
+      `${cohort.key}: ${state.fetched}/${state.total ?? "?"} rows, ${
+        state.complete ? "complete" : "incomplete"
+      }`
+    );
 
     // Checkpoint after every cohort, not at the end of the run.
     writeRegistry({
@@ -322,14 +452,18 @@ export async function walkRegistry(
   }
 
   const candidates = [...byToken.values()];
-  writeRegistry({
+  const index: RegistryIndex = {
     version: 1,
     chainId,
     observedAt: new Date().toISOString(),
     funnel,
     cohorts: states,
     candidates,
-  });
+  };
+  writeRegistry(index);
+
+  // The working set stays on the worker's disk; the summary is what ships.
+  writeAtomicJson(summaryPath(chainId), summarise(index));
 
   return {
     chainId,
