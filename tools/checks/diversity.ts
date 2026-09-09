@@ -136,9 +136,51 @@ console.log("\ndiversity: the four jobs are surfaced at equal depth\n");
   }
 }
 
+
+/* ------------------ 11. every job has real third-party supply behind it */
+{
+  /*
+    Structure is necessary and not sufficient. Every check above can pass on
+    four identically-built category pages with nothing on them, which is
+    exactly the state this board was in: four doors reading "2 hireable",
+    every one of them a house agent.
+
+    So this asserts supply, from the summary the site actually serves. What it
+    cannot assert is a ratio. The spread between the fullest job and the
+    emptiest is the registry's fact, not ours — 123 agents claim yield and 26
+    claim health factor, and no amount of effort here changes that. Failing
+    the build over it would only encourage padding the thin ones.
+
+    What is ours is whether a job is empty, because an empty category is
+    almost always a classifier that has no phrases for it rather than a world
+    with no such agents. That fails. The spread is printed either way, so it
+    cannot drift unnoticed.
+  */
+  const summary = new URL("../../apps/web/data/registry-summary-56.json", import.meta.url).pathname;
+  if (!existsSync(summary)) {
+    fail("no registry summary has been published, so the doors have nothing behind them");
+  } else {
+    const perJob: Record<string, number> = JSON.parse(readFileSync(summary, "utf8")).perJob ?? {};
+    const counts = JOB_SLUGS.map((s2) => [s2, perJob[s2] ?? 0] as const);
+    const empty = counts.filter(([, n]) => n === 0);
+
+    if (empty.length > 0) {
+      fail(
+        `these jobs have no classified agent at all: ${empty.map(([s2]) => s2).join(", ")} — the classifier has no phrases that fire for them`,
+      );
+    } else {
+      const ns = counts.map(([, n]) => n);
+      const spread = Math.max(...ns) / Math.min(...ns);
+      pass(
+        `all four jobs have third-party supply (${counts.map(([s2, n]) => `${s2}=${n}`).join(", ")}); widest is ${spread.toFixed(1)}x the thinnest`,
+      );
+    }
+  }
+}
+
 console.log(
   failed === 0
-    ? "\n  10 passed. No category can be built shallower than the others without failing the build.\n"
+    ? "\n  11 passed. No category can be built shallower than the others, or left with nothing behind it, without failing the build.\n"
     : `\n  ${failed} failed.\n`,
 );
 process.exit(failed > 0 ? 1 : 0);

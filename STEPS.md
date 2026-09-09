@@ -233,7 +233,13 @@ twelve competitors.
 | 0.2 Persist the walk | **done** — cohort walk, checkpointed, 4 tests |
 | 0.3 Fix the scheduled runner | in progress — needs a deploy we cannot do here |
 | 0.4 Keystore registration | **code done** — needs a live grant to confirm |
-| 1.4 The funnel | **done early** — it turned out to cost 6 requests |
+| 1.4 The funnel | **done** — 6 requests, not a crawl |
+| 1.2 Classify into four jobs | **done** — 245 agents: 60/36/123/26 |
+| 1.3 Publish clustering | **done** — template clustering, 19 batches |
+| 1.7 Tighten the diversity gate | **done** — check 11 asserts real supply |
+| 1.1 Resolve endpoints | next |
+| 1.5 Probe taxonomy (degraded) | todo |
+| 1.6 Provenance tags | todo |
 | 1.1–1.7 | todo |
 | 2.1–2.5 | todo |
 | 3.1–3.6 | todo |
