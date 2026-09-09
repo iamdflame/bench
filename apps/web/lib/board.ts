@@ -17,6 +17,7 @@
 
 import { readFileSync, existsSync } from "node:fs";
 import { readSummary, type Candidate as RegistryCandidate } from "./registry";
+import { callRecord } from "./probed";
 import { join } from "node:path";
 import {
   DEFAULT_CHAIN,
@@ -29,7 +30,7 @@ import {
   type Snapshot,
   type SupportedChain,
 } from "@bench/shared";
-import { collapseByOrigin } from "@bench/index";
+import { collapseByOrigin, hostOf } from "@bench/index";
 
 /** How long a probe result stays authoritative. Fifteen minutes is the cycle. */
 export const FRESH_MS = 15 * 60_000;
@@ -491,8 +492,30 @@ export function agentRow(a: Agent): Row {
  * see `mergeCandidates` — so a probed row is never replaced by a thinner one.
  */
 export function candidateRow(c: RegistryCandidate): Row {
+  const { probed, resolved } = callRecord(DEFAULT_CHAIN);
+  const call = probed.get(c.tokenId);
+  const res = resolved.get(c.tokenId);
+
+  /*
+    A rail opens on evidence and closes with a reason, and the reason is the
+    agent's state rather than ours wherever we have looked. An endpoint that
+    answered gets its Call rail opened as unverified — we reached it, we have
+    not paid it — and every other rail says exactly what is missing.
+  */
   const unprobed = "This deployment has not called this agent yet.";
-  const rail = { open: false, reason: unprobed, detail: null, price: null };
+  const why =
+    call?.refusal ??
+    res?.refusal ??
+    (call?.liveness === "alive" ? null : unprobed);
+
+  const alive = call?.liveness === "alive";
+  const callRail = alive
+    ? { open: true, unverified: !call?.payable, reason: null, detail: call?.endpoint ?? null, price: null }
+    : { open: false, reason: why, detail: null, price: null };
+
+  const noQuote = alive
+    ? "It answered, but named no price we could settle on this chain."
+    : (why ?? unprobed);
 
   return {
     key: `c:${DEFAULT_CHAIN}:${c.tokenId}`,
@@ -500,21 +523,25 @@ export function candidateRow(c: RegistryCandidate): Row {
     name: c.name?.trim() || `Agent ${c.tokenId}`,
     description: trim(c.description?.trim() || ""),
     tokenId: c.tokenId,
-    address: c.owner,
+    address: res?.owner ?? c.owner,
     href: `/a/${DEFAULT_CHAIN}/${encodeURIComponent(c.tokenId)}`,
     job: c.job,
     jobReason: c.jobReason || null,
-    rails: { call: { ...rail }, hire: { ...rail }, mandate: { ...rail } },
+    rails: {
+      call: callRail,
+      hire: { open: false, reason: noQuote, detail: null, price: null },
+      mandate: { open: false, reason: noQuote, detail: null, price: null },
+    },
     track: null,
-    trackMissing: unprobed,
+    trackMissing: call ? "Nothing measurable on chain for this wallet yet." : unprobed,
     metrics: {},
-    probedAt: null,
-    latencyMs: null,
-    freshness: "never",
-    originHost: null,
+    probedAt: call?.probedAt ?? null,
+    latencyMs: call?.latencyMs ?? null,
+    freshness: call ? freshnessOf(call.probedAt) : "never",
+    originHost: res?.endpoint ? hostOf(res.endpoint) : null,
     originCohortSize: 1,
     isOurs: false,
-    mismatch: null,
+    mismatch: call?.mismatch ?? null,
   };
 }
 

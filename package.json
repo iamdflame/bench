@@ -17,7 +17,7 @@
     "dev": "npm run dev --workspace=@bench/web",
     "build": "NODE_ENV=production npm run build --workspace=@bench/web",
     "start": "NODE_ENV=production npm run start --workspace=@bench/web",
-    "typecheck": "tsc --build --force",
+    "typecheck": "tsc --build --force && tsc --noEmit -p apps/web/tsconfig.json",
     "test": "vitest run",
     "test:watch": "vitest",
     "sweep": "tsx --env-file-if-exists=.env --env-file-if-exists=.env.local worker/src/cli.ts sweep",

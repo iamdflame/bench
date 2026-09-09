@@ -46,14 +46,30 @@ function doorLine(counts: Snapshot["perJob"][JobSlug]): {
   reach: string;
   rail?: "call" | "hire" | "mandate";
 } {
-  const reach =
+  /*
+    Every reachable state that is non-zero, not just the strongest one.
+
+    Picking one meant a market with 26 callable agents and 2 hireable ones
+    advertised itself as "2 hireable now" — the same under-reporting that made
+    a 65-agent market read as empty, one level down. The rails are a ladder,
+    not a ranking, and a reader deciding what they can do today needs the whole
+    rung they are standing on.
+  */
+  const parts: string[] = [];
+  if (counts.callable > 0) parts.push(`${counts.callable} callable`);
+  if (counts.hireable > 0) parts.push(`${counts.hireable} hireable`);
+  if (counts.mandatable > 0) parts.push(`${counts.mandatable} can hold a session`);
+
+  const rail =
     counts.hireable > 0
-      ? { text: `${counts.hireable} hireable now`, rail: "hire" as const }
+      ? ("hire" as const)
       : counts.callable > 0
-        ? { text: `${counts.callable} callable now`, rail: "call" as const }
+        ? ("call" as const)
         : counts.mandatable > 0
-          ? { text: `${counts.mandatable} can hold a session`, rail: "mandate" as const }
-          : { text: "none reachable yet", rail: undefined };
+          ? ("mandate" as const)
+          : undefined;
+
+  const reach = { text: parts.length > 0 ? parts.join(" · ") : "none reachable yet", rail };
 
   if (counts.listed === 0) return { value: "none", label: "listed yet", reach: "" };
   return { value: String(counts.listed), label: "listed", reach: reach.text, rail: reach.rail };
