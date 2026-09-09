@@ -3,7 +3,7 @@
  *
  * Nothing is sent. The strategy is a pure function from chain state to the
  * calls it is permitted to make, so a simulation is the real decision with the
- * execution withheld, which is exactly what a buyer wants before hiring.
+ * execution withheld — which is exactly what a buyer wants before hiring.
  */
 
 import { NextResponse } from "next/server";

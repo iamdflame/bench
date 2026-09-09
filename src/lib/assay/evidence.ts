@@ -169,7 +169,7 @@ export function exclusionsFor(a: ExclusionInput): Exclusion[] {
   if (!a.name && !a.description) {
     out.push({
       code: "no-card",
-      reason: "No agent card resolves: the registration carries no name and no description.",
+      reason: "No agent card resolves — the registration carries no name and no description.",
       remedy: "Publish a card at the URI in your ERC-8004 registration.",
       blocks: 1,
     });
@@ -192,7 +192,7 @@ export function exclusionsFor(a: ExclusionInput): Exclusion[] {
   if (a.endpoint && /\{agent[_-]?id\}|\{tokenId\}|%7BagentId%7D/i.test(a.endpoint)) {
     out.push({
       code: "endpoint-template",
-      reason: "The registered endpoint is an unsubstituted template: it still contains a literal {agentId} placeholder.",
+      reason: "The registered endpoint is an unsubstituted template — it still contains a literal {agentId} placeholder.",
       remedy: "Register the resolved URL rather than the template it was generated from.",
       blocks: 2,
     });
@@ -208,7 +208,7 @@ export function exclusionsFor(a: ExclusionInput): Exclusion[] {
   if (a.owner && a.agentWallet && a.owner.toLowerCase() === a.agentWallet.toLowerCase()) {
     out.push({
       code: "custody-not-separated",
-      reason: "The agent wallet is the owner's wallet, byte for byte, so there is no separation of custody.",
+      reason: "The agent wallet is the owner's wallet, byte for byte — there is no separation of custody.",
       remedy: "Register a distinct wallet for the agent to transact from.",
       blocks: 3,
     });
@@ -227,7 +227,7 @@ export function exclusionsFor(a: ExclusionInput): Exclusion[] {
     out.push({
       code: "unclassified",
       reason: "Nothing in its description or its on-chain activity matches any of the four market functions.",
-      remedy: "Describe what it does, or use the protocols the job implies. Either is enough.",
+      remedy: "Describe what it does, or use the protocols the job implies — either is enough.",
       blocks: 3,
     });
   }

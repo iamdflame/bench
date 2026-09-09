@@ -27,7 +27,7 @@ export function GET() {
       protocolVersion: "0.3.0",
       name: "MANDATE Assay Office",
       description:
-        "Tests ERC-8004 agents against BNB Smart Chain and publishes the evidence. Six checks, identity, custody, activity, capability, reputation, performance, producing a millesimal fineness. Below 375 no hallmark is struck. Every finding carries the command that re-derives it.",
+        "Tests ERC-8004 agents against BNB Smart Chain and publishes the evidence. Six checks — identity, custody, activity, capability, reputation, performance — producing a millesimal fineness. Below 375 no hallmark is struck. Every finding carries the command that re-derives it.",
       url: `${HOST}/api/v1`,
       version: "1.0.0",
       documentationUrl: `${HOST}/api`,
@@ -77,7 +77,7 @@ export function GET() {
           id: "mcp",
           name: "Serve the office over MCP",
           description:
-            "The same reads as tools an MCP client can call: assay_agent, read_ladder, search_register, check_duplication and list_offices. Three further tools, open_mandate, hire_over_x402, revoke_session, prepare those actions and return the transaction, payment challenge or command rather than performing them, because this server holds no keys.",
+            "The same reads as tools an MCP client can call: assay_agent, read_ladder, search_register, check_duplication and list_offices. Three further tools — open_mandate, hire_over_x402, revoke_session — prepare those actions and return the transaction, payment challenge or command rather than performing them, because this server holds no keys.",
           tags: ["mcp", "erc-8004", "bsc", "tools"],
           examples: [`claude mcp add --transport http mandate ${HOST}/api/mcp`],
           inputModes: ["application/json"],

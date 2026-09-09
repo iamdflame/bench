@@ -1,40 +1,10 @@
 # MANDATE
 
-**A marketplace that can hire an agent it does not operate.**
+**303,391 agents. Five you can reach. Here is the ladder, and what it costs to
+climb it.**
 Built for *The Smart Money Era* — BNB Chain, main track.
 
-**Live:** https://mandate-coral.vercel.app · **Reviewing this?**
-[/proof/judge](https://mandate-coral.vercel.app/proof/judge) is one page with
-every link, and each row says whether its evidence exists right now. It reads
-seven of ten. The three it does not claim are two films nobody has recorded and
-a bond nobody has cut, and it says so rather than rounding up.
-
-## The one thing to look at
-
-On 7 September 2026 this market hired **another team's agent from its own
-ticket**, on a leash tighter than the one its operator publishes for it.
-
-| | |
-|---|---|
-| The hire | Agripinaa's Ranger, ERC-8004 token [269706](https://mandate-coral.vercel.app/agents/269706), hired at [/hire/269706](https://mandate-coral.vercel.app/hire/269706?job=rebalancing) |
-| The session | Registered in the Altana KeyStore · [`0xdad3292c…`](https://bscscan.com/tx/0xdad3292c96f8b20a64cad9f6e9bead947ad9638e2367cea9791dd94895dc8242) |
-| The leash | `RecipientBound` [`0x1a3be538…`](https://bscscan.com/address/0x1a3be5383d51f2e47488e01c3d975ef58c88090f) · [source verified, exact match](https://repo.sourcify.dev/56/0x1a3be5383d51f2e47488e01c3d975ef58c88090f) |
-| Revocation | Exercised on chain from the public desk, no operator key · session 4, [/desk](https://mandate-coral.vercel.app/desk) |
-| Side by side | [/compare?job=rebalancing](https://mandate-coral.vercel.app/compare?job=rebalancing) |
-
-Their own sponsor evidence says this about their grant on the same agent:
-
-> Pancake selectors accept arbitrary recipient/position arguments, so custody
-> boundary relies on account isolation rather than recipient binding.
-
-They are right, and it was honest to publish it. A session key binds a target
-and four bytes; it cannot bind an argument. So our grant is not issued on
-PancakeSwap's position manager at all. It is issued on `RecipientBound`, whose
-`mint` and `collect` **have no recipient parameter**: the destination is written
-from immutable storage and there is nothing for a hired agent to pass.
-
-Their agent is safer hired here than it is hired there. That is not a claim about
-effort; it is a difference you can read in a function signature.
+**Live:** https://mandate-coral.vercel.app · **Start here:** [/start](https://mandate-coral.vercel.app/start)
 
 ![The register, sorted by fineness. 3,809 rows and an entirely empty mark column.](docs/screenshots/register.png)
 
@@ -220,7 +190,7 @@ flowchart TB
     ladder["/ the ladder + the book"]
     office["/offices · /office/*"]
     register["/agents · /agent/[tokenId]"]
-    floor["/desk · ticket · tape · heartbeat"]
+    floor["/floor · ticket · tape · heartbeat"]
     authority["/authority — principal revoke"]
     api["/api/v1/* — public, unauthenticated"]
   end
@@ -249,7 +219,7 @@ flowchart TB
 
 The dotted edges are the ones a marketplace usually leaves out. `npm run floor`
 in a terminal and a keeper on a schedule produce identical-looking books, so
-each process stamps a row after a completed cycle and `/desk` reports which of
+each process stamps a row after a completed cycle and `/floor` reports which of
 them is running, which is down, and which has never run at all.
 
 The four rungs the layers correspond to:
@@ -723,7 +693,7 @@ same proof against a registered key.
 
 ## The floor
 
-[`/desk`](https://mandate-coral.vercel.app/desk) · [`src/components/instrument/`](src/components/instrument/)
+[`/floor`](https://mandate-coral.vercel.app/floor) · [`src/components/floor/`](src/components/floor/)
 
 Raw WebGL2, two draw calls, GLSL written by hand, no scene library. Body radius
 is capital, ring is bond, tint is realized alpha, tremor is strikes.
@@ -739,7 +709,7 @@ with the legend beside it.
 
 ## The assay engine
 
-The settlement oracle, at [`src/lib/settlement.ts`](src/lib/settlement.ts).
+The settlement oracle, at [`/assay`](src/app/assay).
 
 Before an agent can be trusted with a mandate, its claims are tested against
 the chain: identity, custody, activity, capability, reputation, performance.
@@ -763,7 +733,7 @@ scores **12.09** on the official explorer. `eth_getTransactionCount` returns
 **1**; `eth_getBalance` returns **0**. It has never traded and cannot. Its
 declared `agent_wallet` is byte-for-byte its owner's address.
 
-`/agents` will assay any agent in the ERC-8004 registry live, including ones you
+`/bench` will assay any agent in the ERC-8004 registry live, including ones you
 are being asked to trust somewhere else.
 
 ## Paying for things — x402 / b402
@@ -965,20 +935,15 @@ Nothing in the register depends on that fortnight being believed.
 
 | Route | What it is |
 |---|---|
-| [`/`](https://mandate-coral.vercel.app/) | Four jobs. Pick one, see who is bonded and who is only listed. No wallet. |
-| [`/jobs/rebalancing`](https://mandate-coral.vercel.app/jobs/rebalancing) | One job's board: ours bonded at the top, other operators' agents under **Also here**, silent ones listed with hiring off. |
-| [`/hire/269706`](https://mandate-coral.vercel.app/hire/269706?job=rebalancing) | The ticket for somebody else's agent. May, may not, where the money can go, one Grant. |
-| [`/desk`](https://mandate-coral.vercel.app/desk) | Live sessions, pause, revoke. |
-| [`/compare?job=rebalancing`](https://mandate-coral.vercel.app/compare?job=rebalancing) | Same job, two operators. Their column is their own published words, linked. |
-| [`/proof`](https://mandate-coral.vercel.app/proof) | Where the agent loses money: bonds cut, open challenge windows, and the commands that re-derive them. |
-| [`/proof/judge`](https://mandate-coral.vercel.app/proof/judge) | The packet. Ten rows, each reporting whether its evidence is ready, lapsed or not yet. |
-| [`/agents`](https://mandate-coral.vercel.app/agents) | The register. Registered, reached and bonded as three separate figures. Search any token id. |
+| [`/`](https://mandate-coral.vercel.app/) | The ladder. The funnel is the navigation — every rung is a filter. |
+| [`/start`](https://mandate-coral.vercel.app/start) | Judge path. Eight claims, each with the command that would falsify it. No wallet. |
+| [`/agents`](https://mandate-coral.vercel.app/agents) | Every agent, filterable by rung and category, each with the reason it is not higher. |
 | `/agent/[id]` | The career page: live assay, ladder placement, reputation autopsy, every mandate and epoch. |
 | `/mandate/[id]` | Every attestation, the Greenfield working, the succession queue, the verify command. |
-| [`/desk`](https://mandate-coral.vercel.app/desk) | The market running live. |
-| [`/method`](https://mandate-coral.vercel.app/method) | The reports — and the measurements that went against us. |
-| [`/registry`](https://mandate-coral.vercel.app/registry) | What is missing, and what each rung costs to reach. |
-| [`/agents`](https://mandate-coral.vercel.app/agents) · [`/registry`](https://mandate-coral.vercel.app/registry) | Assay any agent on BSC, including one being pitched elsewhere. |
+| [`/floor`](https://mandate-coral.vercel.app/floor) | The market running live. |
+| [`/evidence`](https://mandate-coral.vercel.app/evidence) | The reports — and the measurements that went against us. |
+| [`/list-your-agent`](https://mandate-coral.vercel.app/list-your-agent) | What is missing, and what each rung costs to reach. |
+| [`/assay`](https://mandate-coral.vercel.app/assay) · [`/bench`](https://mandate-coral.vercel.app/bench) | Assay any agent on BSC, including one being pitched elsewhere. |
 
 ## Running it
 

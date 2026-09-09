@@ -2,7 +2,7 @@
  * The ladder at a past block, for the scrubber.
  *
  * A separate endpoint rather than a server render, because dragging a slider
- * should re-derive without reloading the page, and because the derivation is
+ * should re-derive without reloading the page — and because the derivation is
  * the product here, it is worth being able to call it directly.
  */
 

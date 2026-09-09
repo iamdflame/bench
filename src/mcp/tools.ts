@@ -4,7 +4,7 @@
  * The register is a website, and a judge or a buyer reaches it by opening a
  * browser and reading it. An agent cannot. This is the same office served over
  * JSON-RPC so that Claude Code, Cursor, or any other MCP client can ask the
- * questions directly, which is also how BNB Agent Studio expects a skill to
+ * questions directly — which is also how BNB Agent Studio expects a skill to
  * arrive.
  *
  * --- what this server can and cannot do ---------------------------------
@@ -15,7 +15,7 @@
  *
  * The writes are the honest part. Opening a mandate escrows capital, hiring
  * over x402 spends money, and revoking a session is an authorised action on
- * chain, none of which a public server can do on a caller's behalf without
+ * chain — none of which a public server can do on a caller's behalf without
  * holding their keys, and this office does not hold anyone's keys. So the
  * write tools return the exact transaction, challenge or command that performs
  * the action, and say plainly that they have not performed it.
@@ -40,24 +40,8 @@ import {
   type Category,
 } from "@/lib/config";
 import { MARKET_ADDRESS } from "@/lib/chain/market";
-import { allowlistFor, allowlistIndex } from "@/lib/chain/allowlist";
-import { allShops, SHOP_OPERATORS } from "@/lib/shops";
 
 const HOST = process.env.NEXT_PUBLIC_HOST ?? "https://mandate-coral.vercel.app";
-
-/**
- * Category to the URL segment a person reaches it at.
- *
- * The machine door used to hand out /office/<category>, a room that no longer
- * exists under a name nobody types. A tool result that links to a redirect is
- * a tool result that will eventually link to a 404.
- */
-const JOB_SEGMENT: Record<Category, string> = {
-  rebalancing: "rebalancing",
-  "grid-trading": "grid",
-  "yield-optimisation": "yield",
-  "health-factor": "health",
-};
 
 /** A tool as the MCP `tools/list` response wants it. */
 export interface ToolSpec {
@@ -98,7 +82,7 @@ const listOffices: Handler = async () => {
         name: h.name,
         wallet: h.wallet,
       })),
-      url: `${HOST}/jobs/${JOB_SEGMENT[c]}`,
+      url: `${HOST}/office/${c}`,
     })),
     note: "Classification is derived from each agent's own words and says what it claims to be. Whether the chain agrees is the Capability check in assay_agent, which is a separate question.",
   };
@@ -233,7 +217,7 @@ const checkDuplication: Handler = async (a) => {
     duplicateShare: Number((d.duplicateShare * 100).toFixed(1)),
     collapseRatio: Number(d.collapse.toFixed(3)),
     method:
-      "Collapsed on name and description, normalised for case and whitespace, and blind to the owner. One product minted once per user wallet has a different owner on every copy, so keying on the owner would report an almost clean register, 1.02x against 1.23x. Nothing is stemmed and no near-matches are clustered, so every figure here is a floor.",
+      "Collapsed on name and description, normalised for case and whitespace, and blind to the owner. One product minted once per user wallet has a different owner on every copy, so keying on the owner would report an almost clean register — 1.02x against 1.23x. Nothing is stemmed and no near-matches are clustered, so every figure here is a floor.",
     scope: `Measured over the ${d.counted.toLocaleString()} rows this office has read, not the ${index.registry.registered.toLocaleString()} registered. The ratio is not extrapolated, because a ratio measured on a crawl ordered by token id need not hold across the whole registry.`,
     mostRegistered: d.clusters.slice(0, top).map((c) => ({
       name: c.name,
@@ -249,64 +233,11 @@ const checkDuplication: Handler = async (a) => {
   };
 };
 
-
-/**
- * The published allowlist, over MCP.
- *
- * An agent deciding whether to hire another agent needs the leash before the
- * signature, and it should not have to scrape a ticket page to get it. This is
- * the same document the ticket renders and `/api/v1/allowlist` serves.
- */
-const readAllowlist: Handler = async (a) => {
-  const categoryArg = str(a, "category");
-  if (categoryArg && !(CATEGORIES as readonly string[]).includes(categoryArg)) {
-    throw new Error(`category must be one of: ${CATEGORIES.join(", ")}`);
-  }
-  const docs = categoryArg ? [allowlistFor(categoryArg as Category)] : allowlistIndex();
-  return {
-    allowlists: docs,
-    note: "may and mayNot are both published. An allowlist that lists only its permissions tells you half of what it does.",
-    verify: `curl ${HOST}/api/v1/allowlist/${categoryArg ?? "all"}`,
-  };
-};
-
-/**
- * Who else has an agent on these boards.
- *
- * The whole claim of the register is that it is a hall rather than a shop, and
- * the machine-readable form of that claim is this list: other operators, their
- * agents, and the honest state of each one, including the ones nothing has
- * heard from.
- */
-const listShopsTool: Handler = async () => {
-  const shops = allShops();
-  return {
-    operators: SHOP_OPERATORS.filter((o) => shops.some((s) => s.operator.slug === o.slug)).map((o) => ({
-      name: o.name,
-      site: o.site,
-      agents: shops
-        .filter((s) => s.operator.slug === o.slug)
-        .map((s) => ({
-          tokenId: s.tokenId,
-          name: s.name,
-          job: s.category,
-          reachable: !s.silent,
-          contractVerified: s.verified,
-          bondPostedHere: false,
-          publishedCaveat: s.caveat,
-          caveatSource: s.caveatSource,
-          hire: s.silent ? null : `${HOST}/hire/${s.tokenId}`,
-        })),
-    })),
-    note: "These are other people's agents, hireable from this desk on our allowlist. None has posted a bond here, so none can be slashed by us; every row says so. Caveats are quoted from the operator's own published material.",
-  };
-};
-
 /* ----------------------------------------------------------------- writes */
 
 /*
   These do not execute. Each returns what performing the action requires, and
-  says so in the payload rather than only in the tool description, a client
+  says so in the payload rather than only in the tool description — a client
   that ignores descriptions still cannot mistake the result for a receipt.
 */
 
@@ -335,7 +266,7 @@ const openMandate: Handler = async (a) => {
     command: `npm run market -- open --category ${category}`,
     thenWhat:
       "Agents bid by posting their own bond. Award the mandate, and each epoch settles against a benchmark committed to chain before the outcome is known.",
-    web: `${HOST}/desk`,
+    web: `${HOST}/floor`,
   };
 };
 
@@ -400,7 +331,7 @@ const revokeSession: Handler = async (a) => {
       header: "x-operator-token",
       note: "In this deployment the principal, the operator and the adjudicator are one party, so the HTTP route is authorised by an operator token. A market with third-party principals would have the principal sign revocation from their own wallet, which is how the contract already treats dismissal.",
     },
-    web: `${HOST}/desk`,
+    web: `${HOST}/authority`,
   };
 };
 
@@ -410,14 +341,14 @@ export const TOOLS: Array<ToolSpec & { handler: Handler }> = [
   {
     name: "list_offices",
     description:
-      "The four offices this market runs, grid trading, rebalancing, yield optimisation and health factor, with how many registered agents are classified into each and which house agents work there. No key required.",
+      "The four offices this market runs — grid trading, rebalancing, yield optimisation and health factor — with how many registered agents are classified into each and which house agents work there. No key required.",
     inputSchema: { type: "object", properties: {}, additionalProperties: false },
     handler: listOffices,
   },
   {
     name: "assay_agent",
     description:
-      "Run the full assay against any ERC-8004 agent on BNB Smart Chain: six checks, identity, custody, activity, capability, reputation, performance, returning a millesimal fineness. Below 375 no hallmark is struck. Works for any token id, including agents being pitched elsewhere. Free, no key, nothing to sign.",
+      "Run the full assay against any ERC-8004 agent on BNB Smart Chain: six checks — identity, custody, activity, capability, reputation, performance — returning a millesimal fineness. Below 375 no hallmark is struck. Works for any token id, including agents being pitched elsewhere. Free, no key, nothing to sign.",
     inputSchema: {
       type: "object",
       properties: {
@@ -467,29 +398,9 @@ export const TOOLS: Array<ToolSpec & { handler: Handler }> = [
     handler: checkDuplication,
   },
   {
-    name: "read_allowlist",
-    description:
-      "The exact authority a hire grants, per job: the calls it may make, the calls it may not, where the money can go and what enforces each clause. This is the document the ticket renders, so a caller can read the leash before deciding to sign one. Free, no key.",
-    inputSchema: {
-      type: "object",
-      properties: {
-        category: { type: "string", enum: [...CATEGORIES], description: "One job. Omit for all four." },
-      },
-      additionalProperties: false,
-    },
-    handler: readAllowlist,
-  },
-  {
-    name: "list_shops",
-    description:
-      "Agents other operators run that are hireable from this market, with the honest state of each: whether it answered a call, whether its contract is verified, whether it has posted a bond here (none has), and any caveat its operator has published about it. Free, no key.",
-    inputSchema: { type: "object", properties: {}, additionalProperties: false },
-    handler: listShopsTool,
-  },
-  {
     name: "open_mandate",
     description:
-      "PREPARES a mandate. Returns the contract call and command that open one, and does NOT send a transaction, this server holds no keys. Opening a mandate escrows the principal's own capital.",
+      "PREPARES a mandate. Returns the contract call and command that open one, and does NOT send a transaction — this server holds no keys. Opening a mandate escrows the principal's own capital.",
     inputSchema: {
       type: "object",
       properties: {
@@ -503,7 +414,7 @@ export const TOOLS: Array<ToolSpec & { handler: Handler }> = [
   {
     name: "hire_over_x402",
     description:
-      "PREPARES a paid hire. Reads the live x402 payment challenge from the agent's endpoint and returns its terms. Does NOT pay, this server holds no keys and cannot spend on your behalf.",
+      "PREPARES a paid hire. Reads the live x402 payment challenge from the agent's endpoint and returns its terms. Does NOT pay — this server holds no keys and cannot spend on your behalf.",
     inputSchema: {
       type: "object",
       properties: {
@@ -518,7 +429,7 @@ export const TOOLS: Array<ToolSpec & { handler: Handler }> = [
   {
     name: "revoke_session",
     description:
-      "PREPARES a revocation of an agent's session authority. Returns the command and the authorised HTTP route, and does NOT revoke, that is an authorised action this server cannot take for you.",
+      "PREPARES a revocation of an agent's session authority. Returns the command and the authorised HTTP route, and does NOT revoke — that is an authorised action this server cannot take for you.",
     inputSchema: {
       type: "object",
       properties: {

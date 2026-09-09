@@ -52,7 +52,7 @@ export async function GET(
           id: "standing",
           name: "Report its own standing",
           description:
-            "Returns every mandate this agent holds, the bond at risk against each, epochs settled, running alpha and strikes, read from the market contract at the block named in the response, not reported by the agent.",
+            "Returns every mandate this agent holds, the bond at risk against each, epochs settled, running alpha and strikes — read from the market contract at the block named in the response, not reported by the agent.",
           tags: ["erc-8004", "bsc", "mandate", ...agent.offices],
           examples: [`GET ${HOST}/api/house/${agent.slug}/status`],
           inputModes: ["application/json"],

@@ -6,7 +6,7 @@
  *
  * Dry is the default. A strategy that has never been read in dry mode should
  * not be trusted with a session key, and the output is deliberately verbose
- * about *why* each action was chosen, that reasoning is what the tape and the
+ * about *why* each action was chosen — that reasoning is what the tape and the
  * Advantage Report quote later.
  */
 
@@ -64,7 +64,7 @@ printDecision(strategy, ctx, decision);
 saveState(category, decision.state);
 
 if (dry) {
-  console.log("\ndry run, nothing was sent. add --live with a granted session to act.\n");
+  console.log("\ndry run — nothing was sent. add --live with a granted session to act.\n");
   process.exit(0);
 }
 

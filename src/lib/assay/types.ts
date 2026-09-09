@@ -66,7 +66,7 @@ export const HALLMARK_LADDER = [
   { min: 750, mark: "750", name: "18 carat", note: "High purity." },
   { min: 585, mark: "585", name: "14 carat", note: "Sound." },
   { min: 375, mark: "375", name: "9 carat", note: "Lowest hallmarkable grade." },
-  { min: 0, mark: "none", name: "Base metal", note: "Below hallmarking standard." },
+  { min: 0, mark: "—", name: "Base metal", note: "Below hallmarking standard." },
 ] as const;
 
 export type Hallmark = (typeof HALLMARK_LADDER)[number];

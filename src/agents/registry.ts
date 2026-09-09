@@ -2,8 +2,8 @@
  * The strategy registry and the context they evaluate against.
  *
  * Kept separate from the CLI: `run.ts` parses argv and calls `process.exit`
- * at module scope, so anything importing it, the API route that shows the
- * agents we operate, for instance, would execute the command line parser
+ * at module scope, so anything importing it — the API route that shows the
+ * agents we operate, for instance — would execute the command line parser
  * during a page build and abort it. Library and entry point are different
  * things and this file is the library.
  */

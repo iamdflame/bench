@@ -69,7 +69,7 @@ async function readSnapshot(): Promise<FloorSnapshot> {
 
     The page is now server-rendered from every deployment this office has run,
     so a stream that read only the canonical market would have replaced eight
-    rows with one the instant it connected, the floor filling in correctly and
+    rows with one the instant it connected — the floor filling in correctly and
     then emptying itself in front of the visitor, which is worse than never
     having rendered.
 
