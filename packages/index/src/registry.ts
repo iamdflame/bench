@@ -119,6 +119,16 @@ export function parseCard(text: string): AgentCard | null {
  * into a public contract and pointing our server at it unguarded is the
  * attack, not the feature.
  */
+/**
+ * Gateways for `ipfs://`, in the order they are tried.
+ *
+ * Two, because one is a single point of failure for the forty per cent of this
+ * market that pins its card on IPFS. Both are read through the same SSRF guard
+ * as any other URL — the content id is interpolated into a host we chose, so a
+ * hostile `ipfs://` value cannot redirect the fetch anywhere.
+ */
+const IPFS_GATEWAYS = ["https://ipfs.io/ipfs/", "https://cloudflare-ipfs.com/ipfs/"] as const;
+
 export async function fetchCard(
   tokenURI: string,
 ): Promise<{ card: AgentCard; via: "inline" | "http" } | { card: null; reason: string }> {
@@ -139,6 +149,36 @@ export async function fetchCard(
     }
     const card = parseCard(text);
     return card ? { card, via: "inline" } : { card: null, reason: "Its inline card is not parseable JSON." };
+  }
+
+  /*
+    `ipfs://` is a URL we can fetch, through a gateway.
+
+    It used to be refused as "not a URL we can fetch", and that sentence was
+    about us rather than about the agent: 98 of the 245 agents that claim one
+    of the four jobs — forty per cent of the entire addressable market —
+    pinned their card on IPFS and were recorded as unreachable because this
+    code declined to look. A refusal that describes our own gap as the
+    counterparty's defect is the exact failure this codebase exists to avoid.
+
+    Two gateways, tried in order, because one gateway is a single point of
+    failure for forty per cent of the market. The CID is taken verbatim: a
+    path is allowed after it, a host is not — `ipfs://evil.com/x` must not
+    become a fetch of evil.com, and the guard below is what stops it.
+  */
+  if (/^ipfs:\/\//i.test(uri)) {
+    const cid = uri.slice(7).replace(/^ipfs\//, "").trim();
+    if (!/^[A-Za-z0-9][A-Za-z0-9._-]*(\/[^\s]*)?$/.test(cid)) {
+      return { card: null, reason: "Its ipfs:// tokenURI does not name a content id we can resolve." };
+    }
+    for (const gateway of IPFS_GATEWAYS) {
+      const res = await safeFetch(gateway + cid, { timeoutMs: 8_000, maxBytes: 256 * 1024 });
+      if (!res.ok || res.status >= 400) continue;
+      const card = parseCard(res.body);
+      if (card) return { card, via: "http" };
+      return { card: null, reason: "Its IPFS card resolved, with something that is not a parseable card." };
+    }
+    return { card: null, reason: "Its IPFS card could not be fetched from any gateway we tried." };
   }
 
   if (!/^https?:\/\//i.test(uri)) {
@@ -170,6 +210,14 @@ export interface Registration {
   card: AgentCard | null;
   /** Why there is no card, when there is none. Never left blank. */
   cardRefusal: string | null;
+  /**
+   * True when the chain read failed rather than answering.
+   *
+   * The caller needs this to tell "this agent has no tokenURI" from "we could
+   * not ask", because only the first is a fact about the agent and only the
+   * second should be retried.
+   */
+  unread: boolean;
   /** The block the reads were pinned to. */
   block: bigint;
 }
@@ -191,14 +239,50 @@ export async function readRegistration(
   const block = opts.block ?? (await client.getBlockNumber());
   const id = BigInt(tokenId);
 
-  const [owner, uri] = await Promise.all([
-    client
-      .readContract({ address: registry, abi: IDENTITY_ABI, functionName: "ownerOf", args: [id], blockNumber: block })
-      .catch(() => null),
-    client
-      .readContract({ address: registry, abi: IDENTITY_ABI, functionName: "tokenURI", args: [id], blockNumber: block })
-      .catch(() => null),
+  /*
+    A failed read is not an empty answer.
+
+    Both calls used to collapse to null on any error, so an RPC that timed out
+    produced a record indistinguishable from an agent that genuinely registered
+    no tokenURI — and the sentence a reader saw was "the registry returns no
+    tokenURI for this id", which is a claim about the agent made from evidence
+    about our own connection. Measured: a heavier pass rate-limited the node and
+    73 of 245 agents were relabelled as having no URI, when a run minutes
+    earlier had read one for every single one of them.
+
+    So the two failures are kept apart. `ownerOf` reverting is the registry's
+    way of saying a token does not exist and stays a null; a transport failure
+    is recorded as one, and the caller is told it could not look rather than
+    told what it found.
+  */
+  const [ownerR, uriR] = await Promise.allSettled([
+    client.readContract({
+      address: registry,
+      abi: IDENTITY_ABI,
+      functionName: "ownerOf",
+      args: [id],
+      blockNumber: block,
+    }),
+    client.readContract({
+      address: registry,
+      abi: IDENTITY_ABI,
+      functionName: "tokenURI",
+      args: [id],
+      blockNumber: block,
+    }),
   ]);
+
+  const owner = ownerR.status === "fulfilled" ? ownerR.value : null;
+
+  /*
+    Distinguishing "reverted" from "could not reach the node" from the error
+    itself: viem wraps a revert as ContractFunctionExecutionError and a
+    transport problem as an HTTP or timeout error, and only the first is the
+    chain answering.
+  */
+  const uriFailed =
+    uriR.status === "rejected" && !/revert|execution reverted/i.test(String(uriR.reason ?? ""));
+  const uri = uriR.status === "fulfilled" ? uriR.value : null;
 
   let card: AgentCard | null = null;
   let cardRefusal: string | null = null;
@@ -206,6 +290,8 @@ export async function readRegistration(
     const r = await fetchCard(uri);
     if (r.card) card = r.card;
     else cardRefusal = r.reason;
+  } else if (uriFailed) {
+    cardRefusal = "The registry could not be read for this id, so nothing is known about its card.";
   } else if (!uri) {
     cardRefusal = "The registry does not return a tokenURI for this id.";
   }
@@ -216,6 +302,7 @@ export async function readRegistration(
     registry,
     owner: (owner as Address | null) ?? null,
     tokenURI: typeof uri === "string" ? uri : null,
+    unread: uriFailed,
     card,
     cardRefusal,
     block,

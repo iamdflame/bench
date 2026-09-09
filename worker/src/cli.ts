@@ -16,6 +16,7 @@
 
 import { chainClient, resolveChain, type SupportedChain } from "@bench/shared";
 import { walkRegistry } from "./registry-walk";
+import { resolveClassified } from "./resolve";
 import { listBazaar, toService, clusterOrigins, BazaarUnavailable, BAZAAR_LIMITATIONS } from "@bench/index";
 import { countAgents, useCrawlTimeouts } from "@bench/index";
 import { readTrack } from "@bench/metrics";
@@ -466,6 +467,28 @@ async function cmdIndex(chainId: SupportedChain, budget: number) {
   );
 }
 
+
+/**
+ * Resolve endpoints for every classified agent.
+ *
+ * Only the classified set: 33,813 rows declare an endpoint, 245 claim one of
+ * the four jobs, and resolving the rest is sixty thousand chain reads to learn
+ * the address of an agent nobody can hire here.
+ */
+async function cmdResolve(chainId: SupportedChain, limit: number) {
+  const r = await resolveClassified(chainId, {
+    limit: limit > 0 ? limit : undefined,
+    onProgress: (m) => console.log(`  ${m}`),
+  });
+  console.log("");
+  console.log(`  ${r.withEndpoint} of ${r.attempted} resolved to an endpoint we can call`);
+  console.log(`  ${r.withoutEndpoint} carry a stated reason instead`);
+  for (const [k, n] of Object.entries(r.byUriKind).sort((a, b) => b[1] - a[1])) {
+    console.log(`    ${k.padEnd(14)} ${n}`);
+  }
+  console.log(`\n  ${r.seconds.toFixed(1)}s`);
+}
+
 async function main() {
   const argv = process.argv.slice(2);
   const cmd = argv[0];
@@ -492,6 +515,8 @@ async function main() {
       return cmdGrade(chainId);
     case "counterfactual":
       return cmdCounterfactual(chainId, flag("days", 1), flag("half", 60), BigInt(flag("ago", 0)));
+    case "resolve":
+      return cmdResolve(chainId, flag("limit", 0));
     case "index":
       return cmdIndex(chainId, flag("budget", 0));
     case "snapshot":
