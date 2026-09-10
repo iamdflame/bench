@@ -14,7 +14,7 @@
 
 import type { IndexedAgent } from "@/lib/data/agents";
 import {
-  MANDATE_MARKET_ABI,
+  MARKET_ABI,
   MARKET_ADDRESS,
   marketClient,
   readAllMandates,
@@ -116,7 +116,7 @@ async function readMarketSetsUncached(): Promise<MarketSets> {
     for (const a of bonded) {
       const f = (await marketClient.readContract({
         address: MARKET_ADDRESS,
-        abi: MANDATE_MARKET_ABI,
+        abi: MARKET_ABI,
         functionName: "fineness",
         args: [a as Address],
       })) as number;

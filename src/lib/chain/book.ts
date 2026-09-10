@@ -18,7 +18,8 @@
 import { createPublicClient, http, type Address, type PublicClient } from "viem";
 import { bsc } from "viem/chains";
 import { MANDATE_MARKET_ABI } from "./abi";
-import { DEPLOYMENTS, type Deployment } from "./deployments";
+import { MANDATE_MARKET_V2_ABI } from "./abiV2";
+import { DEPLOYMENTS, MARKET_V2, type Deployment } from "./deployments";
 import { memo } from "@/lib/cache";
 import { withTimeout } from "@/lib/cache";
 
@@ -63,12 +64,25 @@ const clientFor = (d: Deployment): PublicClient =>
     }),
   });
 
+/*
+  The ABI a deployment actually answers.
+
+  V2's Mandate is V1's struct with four fields appended, so a V1 decode of a V2
+  read happens to give the right answer for the shared prefix — and that is
+  luck, not design. `getBids` under the same assumption is wrong outright,
+  because its element stride changed. Reading each contract through its own ABI
+  costs one line and removes the class of bug entirely.
+*/
+const abiFor = (d: Deployment) =>
+  d.address.toLowerCase() === MARKET_V2.toLowerCase() ? MANDATE_MARKET_V2_ABI : MANDATE_MARKET_ABI;
+
 async function readDeployment(d: Deployment): Promise<BookRow[]> {
   const client = clientFor(d);
+  const abi = abiFor(d);
   const count = Number(
     await client.readContract({
       address: d.address,
-      abi: MANDATE_MARKET_ABI,
+      abi,
       functionName: "mandateCount",
     }),
   );
@@ -79,7 +93,7 @@ async function readDeployment(d: Deployment): Promise<BookRow[]> {
     ids.map((id) =>
       client.readContract({
         address: d.address,
-        abi: MANDATE_MARKET_ABI,
+        abi,
         functionName: "getMandate",
         args: [BigInt(id)],
       }),

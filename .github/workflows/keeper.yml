@@ -1,0 +1,37 @@
+name: keeper
+
+# The book must not be empty when somebody opens a job.
+#
+# The hire flow asks the keeper to bid the moment a mandate opens, which is what
+# actually delivers a bid inside a minute on the path a buyer walks. This is the
+# net underneath it, for mandates opened by a script, from a wallet directly, or
+# while a deployment was mid-rollout. Five minutes is the floor GitHub offers,
+# and Vercel's hobby crons run once a day, so neither of them is the mechanism —
+# they are the backstop.
+
+on:
+  schedule:
+    - cron: "*/5 * * * *"
+  workflow_dispatch:
+
+concurrency:
+  group: keeper
+  cancel-in-progress: false
+
+jobs:
+  sweep:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Sweep open mandates for missing bids
+        run: |
+          BASE="${KEEPER_BASE:-https://mandate-coral.vercel.app}"
+          echo "sweeping $BASE"
+          code=$(curl -sS -o /tmp/keeper.json -w '%{http_code}' --max-time 60 "$BASE/api/keeper/bid")
+          cat /tmp/keeper.json
+          echo
+          # 503 means no keeper key is configured on that deployment, which is a
+          # deliberate state rather than a failure. Anything else non-2xx is real.
+          if [ "$code" = "503" ]; then echo "no keeper configured; nothing to do"; exit 0; fi
+          case "$code" in 2*) exit 0 ;; *) echo "keeper sweep returned $code"; exit 1 ;; esac
+        env:
+          KEEPER_BASE: ${{ vars.KEEPER_BASE }}

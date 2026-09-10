@@ -170,7 +170,7 @@ export default function Certificate({
       <section className="panel cert__assay" aria-labelledby="assay-title">
         <div className="panel__head">
           <h2 id="assay-title" className="mark-label">
-            Assay — six tests against BNB Smart Chain
+            Assay, six tests against BNB Smart Chain
           </h2>
           <Observation
             size="small"
@@ -184,7 +184,7 @@ export default function Certificate({
               The assay stopped: {error}. The six tests read the ERC-8004 index and the
               chain; when the index is unavailable the identity claim cannot be fetched
               and nothing downstream of it can be tested. Nothing is assumed in its
-              place — the dimensions below are marked unrun, not failed.
+              place, the dimensions below are marked unrun, not failed.
             </p>
           ) : null}
           <AssayBar
@@ -206,8 +206,8 @@ export default function Certificate({
               fineness === null
                 ? `Agent ${tokenId} is being assayed against BNB Smart Chain.`
                 : grade.shape
-                  ? `${fineness} fineness — hallmarked ${grade.label}.`
-                  : `${fineness} fineness — below 375, so no hallmark is struck.`
+                  ? `${fineness} fineness, hallmarked ${grade.label}.`
+                  : `${fineness} fineness, below 375, so no hallmark is struck.`
             }
             command={`npm run assay -- ${tokenId}`}
             artifacts={[

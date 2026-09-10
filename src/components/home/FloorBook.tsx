@@ -102,7 +102,7 @@ export default function FloorBook({ book, rows = 4 }: { book: Book; rows?: numbe
                         <span className="mark-label fbook__dep"> {r.deployment.label}</span>
                       )}
                     </td>
-                    <td>{c ? CATEGORY_LABEL[c] : "—"}</td>
+                    <td>{c ? CATEGORY_LABEL[c] : "none"}</td>
                     <td className="r num">{bnb(r.capitalWei)}</td>
                     {/*
                       A mandate nobody has taken has no holder, and printing the
@@ -118,8 +118,8 @@ export default function FloorBook({ book, rows = 4 }: { book: Book; rows?: numbe
                         <span className="mark-label">open for bids</span>
                       )}
                     </td>
-                    <td className="r num">{held ? bnb(r.bondWei) : "—"}</td>
-                    <td className="r num">{held ? alpha(r.cumulativeAlphaBps) : "—"}</td>
+                    <td className="r num">{held ? bnb(r.bondWei) : "none"}</td>
+                    <td className="r num">{held ? alpha(r.cumulativeAlphaBps) : "none"}</td>
                     <td className="r num">
                       {held ? `${r.epochsSettled}/${r.epochsTotal}` : `0/${r.epochsTotal}`}
                     </td>
@@ -140,7 +140,7 @@ export default function FloorBook({ book, rows = 4 }: { book: Book; rows?: numbe
               : "nothing open"}
           {book.unread.length ? ` · ${book.unread.join(", ")} unread` : ""}
         </span>
-        <a className="btn btn--sm" href="/floor">
+        <a className="btn btn--sm" href="/activity">
           Open the market floor →
         </a>
       </div>

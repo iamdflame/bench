@@ -14,7 +14,7 @@
 
 import { formatEther, parseEther, type Address, type Hex } from "viem";
 import {
-  MANDATE_MARKET_ABI,
+  MARKET_ABI,
   MARKET_ADDRESS,
   marketChain,
   marketClient,
@@ -159,7 +159,7 @@ async function makeBucket() {
 async function buildBreakdown(mandateId: number, epoch: number | "open"): Promise<Breakdown | null> {
   const att = (await marketClient.readContract({
     address: MARKET_ADDRESS,
-    abi: MANDATE_MARKET_ABI,
+    abi: MARKET_ABI,
     functionName: epoch === "open" ? "openAttestation" : "epochAttestation",
     args: epoch === "open" ? [BigInt(mandateId)] : [BigInt(mandateId), epoch],
   })) as readonly [string, bigint, bigint, bigint];
@@ -191,7 +191,7 @@ async function publish() {
   const count = Number(
     await marketClient.readContract({
       address: MARKET_ADDRESS,
-      abi: MANDATE_MARKET_ABI,
+      abi: MARKET_ABI,
       functionName: "mandateCount",
     }),
   );
@@ -260,7 +260,7 @@ async function check() {
   const count = Number(
     await marketClient.readContract({
       address: MARKET_ADDRESS,
-      abi: MANDATE_MARKET_ABI,
+      abi: MARKET_ABI,
       functionName: "mandateCount",
     }),
   );

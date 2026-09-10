@@ -220,7 +220,7 @@ export default function Bench({
           <Command note="The same six tests, from a terminal. Neither run reads anything the other wrote.">
             {`npm run assay -- ${report.tokenId}`}
           </Command>
-          <a className="btn" href={`/agent/${report.tokenId}`}>
+          <a className="btn" href={`/agents/${report.tokenId}`}>
             Full certificate →
           </a>
         </div>

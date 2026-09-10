@@ -18,7 +18,7 @@ BNB Smart Chain at a block fixed in advance by
 [an on-chain input lock](AGENT_ADVANTAGE_REPORT.md):
 
 > Of **1,102 live V3 positions** that someone had touched in the preceding
-> three hours, across **141 pools**, **267 — 24.2% — were sitting outside their
+> three hours, across **141 pools**, **267, 24.2%, were sitting outside their
 > range**, earning nothing.
 
 By fee tier:
@@ -31,7 +31,7 @@ By fee tier:
 | **1.00%** | 496 | **166 (33.5%)** |
 
 A third of the 1% tier is idle. These are positions whose owners were active
-enough to touch them within the window, so this is not abandoned liquidity —
+enough to touch them within the window, so this is not abandoned liquidity ,
 it is attended liquidity that has drifted.
 
 `src/agents/rebalance.ts` watches a position's ticks against the pool's current
@@ -81,7 +81,7 @@ behaviour:
 
 - a **spend cap** no larger than the mandate's capital;
 - an **expiry** that ends with the mandate's term;
-- an **allowlist bound to target *and* selector** — an agent permitted to swap
+- an **allowlist bound to target *and* selector**, an agent permitted to swap
   through the V3 router still cannot call `sweepToken` on it.
 
 That last point is provable, not asserted:
@@ -94,12 +94,12 @@ npm run prove-session
 
 And the allowlist is not a category default. It is the intersection of what the
 category permits with **the protocols the chain has actually shown that agent
-using** — `granted ⊆ proven`, enforced by the type system, so a grant that has
+using**, `granted ⊆ proven`, enforced by the type system, so a grant that has
 not been through an assay does not compile. Our own agent had to perform a real
 V3 swap on mainnet before it could be granted the authority to swap:
 
 ```
-before   REFUSED — this agent has not been shown using any Grid Trading contract
+before   REFUSED, this agent has not been shown using any Grid Trading contract
 swapped  https://bscscan.com/tx/0x55add56703fb08f0e002df2758136e19abca84168d61b3347d4d992e7bf7fb7c
 after    2 of 2 Grid Trading calls granted, on PancakeSwap V3 Router
 ```
@@ -114,7 +114,7 @@ npm run pool-gap
 ```
 
 reads every V3 `Swap` in a window, aggregates volume and standing liquidity per
-pool, and ranks by **turnover** — volume crossing per unit of depth. A sample
+pool, and ranks by **turnover**, volume crossing per unit of depth. A sample
 run over one hour: 136,964 swaps across 1,077 pools.
 
 | Pair | Fee | Swaps | Turnover |
@@ -133,16 +133,16 @@ High turnover means demand is arriving faster than depth is being supplied.
 liquidity there would be profitable, or that its fee tier is wrong. Those need
 a view on the pair. This is a measurement, and it is reported as one. Pools
 with fewer than 20 swaps in the window are excluded, and that exclusion is
-deliberate — turnover on a handful of trades is noise.
+deliberate, turnover on a handful of trades is noise.
 
 ## Contracts touched
 
 | | |
 |---|---|
-| V3 SwapRouter | [`0x13f4ea83…68dd4`](https://bscscan.com/address/0x13f4ea83d0bd40e75c8222255bc855a974568dd4) — `exactInputSingle`, `exactInput` |
-| NonfungiblePositionManager | [`0x46A15B0b…F4364`](https://bscscan.com/address/0x46A15B0b27311cedF172AB29E4f4766fbE7F4364) — `decreaseLiquidity`, `collect` |
-| V3 Factory | [`0x0BFbCF9f…91865`](https://bscscan.com/address/0x0BFbCF9fa4f9C56B0F40a671Ad40E0805A091865) — pool discovery |
-| WBNB/USDT 0.05% | [`0x36696169…52050`](https://bscscan.com/address/0x36696169C63e42cd08ce11f5deeBbCeBae652050) — the price reference |
+| V3 SwapRouter | [`0x13f4ea83…68dd4`](https://bscscan.com/address/0x13f4ea83d0bd40e75c8222255bc855a974568dd4), `exactInputSingle`, `exactInput` |
+| NonfungiblePositionManager | [`0x46A15B0b…F4364`](https://bscscan.com/address/0x46A15B0b27311cedF172AB29E4f4766fbE7F4364), `decreaseLiquidity`, `collect` |
+| V3 Factory | [`0x0BFbCF9f…91865`](https://bscscan.com/address/0x0BFbCF9fa4f9C56B0F40a671Ad40E0805A091865), pool discovery |
+| WBNB/USDT 0.05% | [`0x36696169…52050`](https://bscscan.com/address/0x36696169C63e42cd08ce11f5deeBbCeBae652050), the price reference |
 
 ## Reproducing all of it
 

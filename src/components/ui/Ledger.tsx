@@ -77,8 +77,8 @@ export default function Ledger({ events }: { events: LedgerEvent[] }) {
 
 /** HH:MM in UTC, so two readers in two timezones see the same ledger. */
 function clock(at: LedgerEvent["at"]): string {
-  if (at === null || at === undefined) return "—";
+  if (at === null || at === undefined) return "not recorded";
   const d = new Date(at);
-  if (!Number.isFinite(d.getTime())) return "—";
+  if (!Number.isFinite(d.getTime())) return "not recorded";
   return `${String(d.getUTCHours()).padStart(2, "0")}:${String(d.getUTCMinutes()).padStart(2, "0")}`;
 }

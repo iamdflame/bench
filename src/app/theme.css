@@ -1,0 +1,2296 @@
+/*
+  The marketplace's own design system.
+
+  Namespaced `m-` and grounded on `.m-app` rather than on `body`, because the
+  verification area still runs on the older dark sheet and the two have to
+  coexist while the technical pages keep working. That separation is not an
+  accident of migration — a proof archive that reads like a different kind of
+  document from a shopfront is correct, and the hub says as much when it hands
+  you over.
+
+  The ground is paper. Almost every project in this field is dark with a neon
+  accent, and a marketplace where a person is about to commit money reads
+  better as something printed than as something glowing.
+*/
+
+/*
+  The document ground follows whichever sheet the page is on.
+
+  Without this, overscroll and any area the app does not paint would show the
+  archive's near-black through the paper, which reads as a rendering fault
+  rather than as a choice.
+*/
+html:has(.m-app),
+html:has(.m-app) body {
+  background: #f6f3ec;
+  color-scheme: light;
+}
+
+.m-app {
+  /* --- ground ---------------------------------------------------------- */
+  --paper: #f6f3ec;
+  --paper-raised: #fffefb;
+  --paper-sunken: #eee9de;
+  --paper-ink: #14161a;
+
+  /* --- ink ------------------------------------------------------------- */
+  --ink: #14161a;
+  --ink-2: #4b5058;
+  --ink-3: #787d85;
+
+  /* --- rules ----------------------------------------------------------- */
+  --rule: #ded7c8;
+  --rule-strong: #c6bdaa;
+  --rule-hair: #e8e2d6;
+
+  /*
+    Two colours carry meaning and nothing else does.
+
+    Orange is only ever an action a person can take. Green is only ever
+    something we checked ourselves and it passed. Once those two are spent,
+    every other distinction has to be made with type, weight and space, which
+    is the discipline that keeps the page from turning into a dashboard.
+  */
+  --signal: #c8431c;
+  --signal-deep: #9e3312;
+  --signal-wash: #fbeae4;
+  --verified: #1c6b4a;
+  --verified-wash: #e4efe9;
+  --caution: #8a5a12;
+  --caution-wash: #f6eeda;
+
+  --focus: #1f5fbf;
+
+  /* --- type ------------------------------------------------------------ */
+  --m-serif: var(--font-display-loaded), "Instrument Serif", Georgia, serif;
+  --m-sans: var(--font-sans-loaded), "IBM Plex Sans", system-ui, sans-serif;
+  --m-mono: var(--font-mono-loaded), "IBM Plex Mono", ui-monospace, monospace;
+
+  --m-display: clamp(2.9rem, 7.2vw, 5.6rem);
+  --m-h1: clamp(2.1rem, 4.6vw, 3.4rem);
+  --m-h2: clamp(1.55rem, 3vw, 2.15rem);
+  --m-h3: 1.25rem;
+  --m-body: 1.0625rem;
+  --m-small: 0.875rem;
+  --m-tiny: 0.78125rem;
+
+  --m-max: 1240px;
+  --m-gut: clamp(1.25rem, 4vw, 3rem);
+
+  background: var(--paper);
+  color: var(--ink);
+  font-family: var(--m-sans);
+  font-size: var(--m-body);
+  line-height: 1.55;
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+  -webkit-font-smoothing: antialiased;
+}
+
+.m-app *,
+.m-app *::before,
+.m-app *::after {
+  box-sizing: border-box;
+}
+
+.m-app :focus-visible {
+  outline: 2px solid var(--focus);
+  outline-offset: 2px;
+  border-radius: 1px;
+}
+
+/* --------------------------------------------------------------- type --- */
+
+.m-app h1,
+.m-app h2,
+.m-app h3,
+.m-app h4 {
+  margin: 0;
+  font-weight: 400;
+  letter-spacing: -0.012em;
+}
+
+.m-display {
+  font-family: var(--m-serif);
+  font-size: var(--m-display);
+  line-height: 0.96;
+  letter-spacing: -0.028em;
+}
+
+.m-h1 {
+  font-family: var(--m-serif);
+  font-size: var(--m-h1);
+  line-height: 1.03;
+  letter-spacing: -0.022em;
+}
+
+.m-h2 {
+  font-family: var(--m-serif);
+  font-size: var(--m-h2);
+  line-height: 1.1;
+  letter-spacing: -0.018em;
+}
+
+.m-h3 {
+  font-family: var(--m-sans);
+  font-size: var(--m-h3);
+  font-weight: 500;
+  line-height: 1.3;
+  letter-spacing: -0.008em;
+}
+
+.m-app p {
+  margin: 0;
+}
+
+.m-lede {
+  font-size: clamp(1.125rem, 1.9vw, 1.4rem);
+  line-height: 1.45;
+  color: var(--ink-2);
+  max-width: 34ch;
+}
+
+.m-lede--wide {
+  max-width: 52ch;
+}
+
+.m-body {
+  font-size: var(--m-body);
+  line-height: 1.6;
+  color: var(--ink-2);
+  max-width: 62ch;
+}
+
+.m-small {
+  font-size: var(--m-small);
+  line-height: 1.5;
+  color: var(--ink-2);
+}
+
+.m-note {
+  font-size: var(--m-tiny);
+  line-height: 1.5;
+  color: var(--ink-3);
+}
+
+/*
+  The one label style.
+
+  Everything that names a field rather than stating one uses this, so a reader
+  learns the shape once: small, tracked, upright, never a sentence.
+*/
+.m-label {
+  font-family: var(--m-sans);
+  font-size: 0.6875rem;
+  font-weight: 500;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--ink-3);
+  display: block;
+}
+
+/* Mono is for things that are literally strings of characters: hashes,
+   addresses, ids, and figures that have to line up in a column. Nowhere else. */
+.m-mono {
+  font-family: var(--m-mono);
+  font-size: 0.875em;
+  letter-spacing: -0.01em;
+}
+
+.m-fig {
+  font-family: var(--m-mono);
+  font-variant-numeric: tabular-nums;
+  letter-spacing: -0.02em;
+}
+
+.m-app a {
+  color: inherit;
+  text-decoration: none;
+}
+
+.m-link {
+  color: var(--signal-deep);
+  text-decoration: underline;
+  text-underline-offset: 0.2em;
+  text-decoration-thickness: 1px;
+  text-decoration-color: color-mix(in srgb, var(--signal) 40%, transparent);
+}
+
+.m-link:hover {
+  text-decoration-color: var(--signal);
+}
+
+/* ------------------------------------------------------------- layout --- */
+
+.m-wrap {
+  width: 100%;
+  max-width: var(--m-max);
+  margin-inline: auto;
+  padding-inline: var(--m-gut);
+}
+
+.m-wrap--narrow {
+  max-width: 880px;
+}
+
+.m-section {
+  padding-block: clamp(3.5rem, 8vw, 7rem);
+}
+
+.m-section--tight {
+  padding-block: clamp(2.25rem, 5vw, 3.5rem);
+}
+
+.m-rule {
+  border: 0;
+  border-top: 1px solid var(--rule);
+  margin: 0;
+}
+
+.m-main {
+  flex: 1;
+}
+
+/*
+  The section head: a serif heading on the left, a note on the right, a rule
+  under both. It repeats often enough to be a component, and repeating it is
+  the point — it is the page's punctuation.
+*/
+.m-head {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: flex-end;
+  justify-content: space-between;
+  gap: 1rem 2rem;
+  padding-bottom: 0.85rem;
+  border-bottom: 1px solid var(--ink);
+  margin-bottom: clamp(1.5rem, 3vw, 2.5rem);
+}
+
+.m-head__note {
+  font-size: var(--m-small);
+  color: var(--ink-3);
+  max-width: 40ch;
+}
+
+/* ------------------------------------------------------------ buttons --- */
+
+.m-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.55em;
+  font: inherit;
+  font-size: var(--m-small);
+  font-weight: 500;
+  letter-spacing: 0.005em;
+  padding: 0.72em 1.25em;
+  border: 1px solid var(--ink);
+  border-radius: 2px;
+  background: transparent;
+  color: var(--ink);
+  cursor: pointer;
+  text-align: center;
+  transition:
+    background 120ms ease,
+    color 120ms ease,
+    border-color 120ms ease,
+    transform 80ms ease;
+}
+
+.m-btn:hover {
+  background: var(--ink);
+  color: var(--paper);
+}
+
+.m-btn:active {
+  transform: translateY(1px);
+}
+
+.m-btn--primary {
+  background: var(--signal);
+  border-color: var(--signal);
+  color: #fff;
+}
+
+.m-btn--primary:hover {
+  background: var(--signal-deep);
+  border-color: var(--signal-deep);
+  color: #fff;
+}
+
+.m-btn--lg {
+  font-size: 1rem;
+  padding: 0.95em 1.6em;
+}
+
+.m-btn--sm {
+  font-size: var(--m-tiny);
+  padding: 0.5em 0.85em;
+}
+
+.m-btn--quiet {
+  border-color: var(--rule-strong);
+  color: var(--ink-2);
+}
+
+.m-btn--quiet:hover {
+  background: var(--ink);
+  border-color: var(--ink);
+  color: var(--paper);
+}
+
+.m-btn--block {
+  width: 100%;
+}
+
+.m-btn[disabled],
+.m-btn[aria-disabled="true"] {
+  cursor: not-allowed;
+  opacity: 0.45;
+}
+
+.m-btn[disabled]:hover,
+.m-btn[aria-disabled="true"]:hover {
+  background: transparent;
+  color: var(--ink);
+}
+
+.m-btn--primary[disabled]:hover {
+  background: var(--signal);
+  color: #fff;
+}
+
+.m-btns {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.75rem;
+  align-items: center;
+}
+
+/* ------------------------------------------------------------- fields --- */
+
+.m-field {
+  display: block;
+}
+
+.m-field__label {
+  margin-bottom: 0.4rem;
+}
+
+.m-input,
+.m-select,
+.m-textarea {
+  width: 100%;
+  font: inherit;
+  font-size: var(--m-small);
+  color: var(--ink);
+  background: var(--paper-raised);
+  border: 1px solid var(--rule-strong);
+  border-radius: 2px;
+  padding: 0.65em 0.8em;
+}
+
+.m-input:focus,
+.m-select:focus {
+  border-color: var(--ink);
+}
+
+.m-input--fig {
+  font-family: var(--m-mono);
+  font-variant-numeric: tabular-nums;
+}
+
+.m-field__hint {
+  margin-top: 0.4rem;
+  font-size: var(--m-tiny);
+  color: var(--ink-3);
+}
+
+/* --------------------------------------------------------------- tags --- */
+
+/*
+  Deliberately not pills.
+
+  A rounded, filled, coloured pill is the single most overused object in this
+  category, and forty of them on a page turn every distinction into noise. This
+  is a hairline box with a flat corner, and it is used sparingly.
+*/
+.m-tag {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4em;
+  font-size: 0.6875rem;
+  font-weight: 500;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  padding: 0.28em 0.5em;
+  border: 1px solid var(--rule-strong);
+  border-radius: 2px;
+  color: var(--ink-2);
+  white-space: nowrap;
+}
+
+.m-tag--verified {
+  border-color: color-mix(in srgb, var(--verified) 45%, transparent);
+  background: var(--verified-wash);
+  color: var(--verified);
+}
+
+.m-tag--caution {
+  border-color: color-mix(in srgb, var(--caution) 40%, transparent);
+  background: var(--caution-wash);
+  color: var(--caution);
+}
+
+.m-tag--signal {
+  border-color: color-mix(in srgb, var(--signal) 45%, transparent);
+  background: var(--signal-wash);
+  color: var(--signal-deep);
+}
+
+.m-tag--solid {
+  background: var(--ink);
+  border-color: var(--ink);
+  color: var(--paper);
+}
+
+/* --------------------------------------------------------------- dots --- */
+
+.m-dot {
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: var(--ink-3);
+  flex: none;
+}
+
+.m-dot--live {
+  background: var(--verified);
+}
+
+.m-dot--cold {
+  background: var(--rule-strong);
+}
+
+/* --------------------------------------------------------------- stat --- */
+
+.m-stat__k {
+  margin-bottom: 0.3rem;
+}
+
+.m-stat__v {
+  display: block;
+  font-family: var(--m-serif);
+  font-size: clamp(1.6rem, 3vw, 2.4rem);
+  line-height: 1;
+  letter-spacing: -0.02em;
+  font-variant-numeric: tabular-nums;
+}
+
+.m-stat__n {
+  display: block;
+  margin-top: 0.35rem;
+  font-size: var(--m-tiny);
+  color: var(--ink-3);
+  line-height: 1.4;
+}
+
+.m-stats {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+  gap: 1px;
+  background: var(--rule);
+  border-block: 1px solid var(--rule);
+}
+
+.m-stats > * {
+  background: var(--paper);
+  padding: 1.25rem clamp(0.9rem, 2vw, 1.5rem);
+}
+
+/* --------------------------------------------------------- disclosure --- */
+
+.m-disclose {
+  border-top: 1px solid var(--rule);
+}
+
+.m-disclose > summary {
+  cursor: pointer;
+  list-style: none;
+  padding: 0.9rem 0;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+  font-size: var(--m-small);
+  font-weight: 500;
+}
+
+.m-disclose > summary::-webkit-details-marker {
+  display: none;
+}
+
+.m-disclose > summary::after {
+  content: "+";
+  font-family: var(--m-mono);
+  color: var(--ink-3);
+  font-size: 1rem;
+  line-height: 1;
+}
+
+.m-disclose[open] > summary::after {
+  content: "–";
+}
+
+.m-disclose__body {
+  padding-bottom: 1.25rem;
+}
+
+/* ------------------------------------------------------------- header --- */
+
+.m-header {
+  position: sticky;
+  top: 0;
+  z-index: 40;
+  background: color-mix(in srgb, var(--paper) 92%, transparent);
+  backdrop-filter: saturate(1.4) blur(8px);
+  border-bottom: 1px solid var(--rule);
+}
+
+.m-header__in {
+  display: flex;
+  align-items: center;
+  gap: clamp(1rem, 3vw, 2.25rem);
+  height: 62px;
+}
+
+.m-logo {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.55rem;
+  flex: none;
+}
+
+.m-logo__word {
+  font-family: var(--m-serif);
+  font-size: 1.4rem;
+  line-height: 1;
+  letter-spacing: -0.02em;
+  color: var(--ink);
+  /* The serif sits high in its box next to a full-height mark; this drops it
+     onto the mark's optical centre rather than its geometric one. */
+  transform: translateY(1px);
+}
+
+.m-nav {
+  display: flex;
+  align-items: center;
+  gap: clamp(0.85rem, 2vw, 1.6rem);
+  font-size: var(--m-small);
+  margin-right: auto;
+}
+
+.m-nav a {
+  color: var(--ink-2);
+  padding-block: 0.35rem;
+  border-bottom: 1px solid transparent;
+}
+
+.m-nav a:hover {
+  color: var(--ink);
+}
+
+.m-nav a[aria-current="page"] {
+  color: var(--ink);
+  border-bottom-color: var(--signal);
+}
+
+.m-header__right {
+  display: flex;
+  align-items: center;
+  gap: 0.6rem;
+  flex: none;
+}
+
+@media (max-width: 860px) {
+  .m-nav {
+    display: none;
+  }
+  .m-header__right {
+    margin-left: auto;
+  }
+}
+
+/* A bar under the header for pages that need it (marketplace filters). */
+.m-subbar {
+  position: sticky;
+  top: 62px;
+  z-index: 30;
+  background: var(--paper);
+  border-bottom: 1px solid var(--rule);
+}
+
+/* ------------------------------------------------------------- footer --- */
+
+.m-footer {
+  border-top: 1px solid var(--ink);
+  padding-block: 2.5rem 3rem;
+  margin-top: 4rem;
+}
+
+.m-footer__grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
+  gap: 2rem;
+}
+
+.m-footer h4 {
+  font-size: 0.6875rem;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--ink-3);
+  margin-bottom: 0.75rem;
+  font-weight: 500;
+}
+
+.m-footer ul {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: grid;
+  gap: 0.45rem;
+  font-size: var(--m-small);
+}
+
+.m-footer a {
+  color: var(--ink-2);
+}
+
+.m-footer a:hover {
+  color: var(--signal-deep);
+}
+
+/* ------------------------------------------------------- category mark --- */
+
+/*
+  Each category is drawn rather than iconified.
+
+  Four marks, all built from the same stroke weight and the same 48-unit box,
+  each one a picture of what the strategy actually does: bars converging on a
+  target, a ladder of levels, a curve that compounds, an arc with a needle.
+  They are what stops the marketplace from being a wall of identical tiles.
+*/
+.m-mark {
+  display: block;
+  color: var(--ink);
+}
+
+.m-mark path,
+.m-mark line,
+.m-mark circle,
+.m-mark rect,
+.m-mark polyline {
+  vector-effect: non-scaling-stroke;
+}
+
+.m-mark--signal {
+  color: var(--signal);
+}
+
+/* -------------------------------------------------------- agent cards --- */
+
+/*
+  Rules drawn inside the cells, not behind them.
+
+  The usual trick — a 1px gap over a coloured background — paints any cell the
+  grid does not fill, so a row of two cards in a four-column grid ends in two
+  solid rectangles that read as a rendering fault. Insetting the hairlines into
+  each cell leaves the unfilled remainder as paper, which is what it is.
+*/
+.m-grid {
+  display: grid;
+  gap: 0;
+  border: 1px solid var(--rule);
+  background: var(--paper);
+  grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+}
+
+.m-grid > * {
+  background: var(--paper);
+  box-shadow:
+    inset 1px 0 0 var(--rule),
+    inset 0 1px 0 var(--rule);
+}
+
+/* The card. Flat corners, hairline separation, no shadow, no glass. */
+.m-card {
+  display: flex;
+  flex-direction: column;
+  gap: 0.9rem;
+  padding: 1.4rem clamp(1.1rem, 2vw, 1.5rem) 1.25rem;
+  position: relative;
+  transition: background 120ms ease;
+}
+
+.m-card:hover {
+  background: var(--paper-raised);
+}
+
+.m-card__top {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 1rem;
+}
+
+.m-card__name {
+  font-family: var(--m-serif);
+  font-size: 1.5rem;
+  line-height: 1.08;
+  letter-spacing: -0.015em;
+  display: block;
+}
+
+.m-card:hover .m-card__name {
+  text-decoration: underline;
+  text-underline-offset: 0.14em;
+  text-decoration-thickness: 1px;
+}
+
+.m-card__cat {
+  font-size: 0.6875rem;
+  letter-spacing: 0.09em;
+  text-transform: uppercase;
+  color: var(--ink-3);
+  margin-bottom: 0.5rem;
+  display: block;
+}
+
+.m-card__what {
+  font-size: var(--m-small);
+  line-height: 1.5;
+  color: var(--ink-2);
+  display: -webkit-box;
+  -webkit-line-clamp: 3;
+  line-clamp: 3;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+
+.m-card__foot {
+  margin-top: auto;
+  padding-top: 0.9rem;
+  border-top: 1px solid var(--rule-hair);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.75rem;
+  flex-wrap: wrap;
+}
+
+.m-card__signals {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  flex-wrap: wrap;
+  font-size: var(--m-tiny);
+  color: var(--ink-3);
+}
+
+.m-card__signal {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35em;
+}
+
+/*
+  The feature card spans two columns and gives the grid a top-left anchor, so
+  the page has a reading order instead of forty equal objects.
+*/
+.m-card--feature {
+  grid-column: span 2;
+  padding: clamp(1.5rem, 3vw, 2.25rem);
+  gap: 1.1rem;
+}
+
+.m-card--feature .m-card__name {
+  font-size: clamp(1.9rem, 3.4vw, 2.6rem);
+}
+
+.m-card--feature .m-card__what {
+  font-size: var(--m-body);
+  -webkit-line-clamp: 4;
+  line-clamp: 4;
+  max-width: 54ch;
+}
+
+@media (max-width: 660px) {
+  .m-card--feature {
+    grid-column: span 1;
+  }
+}
+
+/* The compact row, for comparison and for lists that are read top to bottom. */
+.m-row {
+  display: grid;
+  grid-template-columns: 44px 1fr auto;
+  align-items: center;
+  gap: 1rem;
+  padding: 0.9rem clamp(0.9rem, 2vw, 1.25rem);
+  border-bottom: 1px solid var(--rule-hair);
+  transition: background 120ms ease;
+}
+
+.m-row:hover {
+  background: var(--paper-raised);
+}
+
+.m-row__name {
+  font-weight: 500;
+  font-size: var(--m-small);
+}
+
+.m-row__what {
+  font-size: var(--m-tiny);
+  color: var(--ink-3);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  max-width: 60ch;
+}
+
+/* --------------------------------------------------------- trust list --- */
+
+.m-checks {
+  display: grid;
+  gap: 0;
+}
+
+.m-check {
+  display: grid;
+  grid-template-columns: 22px 1fr;
+  gap: 0.85rem;
+  padding: 1rem 0;
+  border-top: 1px solid var(--rule-hair);
+  align-items: start;
+}
+
+.m-check__mark {
+  margin-top: 0.15rem;
+  font-family: var(--m-mono);
+  font-size: 0.9rem;
+  line-height: 1.2;
+}
+
+.m-check--pass .m-check__mark {
+  color: var(--verified);
+}
+
+.m-check--fail .m-check__mark {
+  color: var(--ink-3);
+}
+
+.m-check--unknown .m-check__mark {
+  color: var(--caution);
+}
+
+.m-check__title {
+  font-size: var(--m-small);
+  font-weight: 500;
+  margin-bottom: 0.2rem;
+}
+
+.m-check__body {
+  font-size: var(--m-tiny);
+  color: var(--ink-2);
+  line-height: 1.5;
+}
+
+/* ---------------------------------------------------------- key/value --- */
+
+.m-kv {
+  display: grid;
+  gap: 0;
+  margin: 0;
+}
+
+.m-kv > div {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 1.5rem;
+  padding: 0.65rem 0;
+  border-top: 1px solid var(--rule-hair);
+}
+
+.m-kv dt {
+  font-size: var(--m-tiny);
+  color: var(--ink-3);
+  flex: none;
+}
+
+.m-kv dd {
+  margin: 0;
+  font-size: var(--m-small);
+  text-align: right;
+  overflow-wrap: anywhere;
+}
+
+/* --------------------------------------------------------------- note --- */
+
+/*
+  The absence panel.
+
+  Used wherever the honest answer is "we do not have this". It is designed, not
+  left blank, because a marketplace that hides what it does not know is exactly
+  the thing this product was built to argue against.
+*/
+.m-absent {
+  border: 1px dashed var(--rule-strong);
+  border-radius: 2px;
+  padding: 1.1rem 1.25rem;
+  background: var(--paper-sunken);
+}
+
+.m-absent__t {
+  font-size: var(--m-small);
+  font-weight: 500;
+  margin-bottom: 0.3rem;
+}
+
+.m-callout {
+  border-left: 2px solid var(--signal);
+  padding: 0.15rem 0 0.15rem 1rem;
+}
+
+.m-panel {
+  border: 1px solid var(--rule);
+  border-radius: 2px;
+  background: var(--paper-raised);
+  padding: clamp(1.15rem, 2.5vw, 1.75rem);
+}
+
+.m-panel--sunken {
+  background: var(--paper-sunken);
+  border-color: var(--rule);
+}
+
+/* -------------------------------------------------------------- steps --- */
+
+.m-steps {
+  display: flex;
+  gap: 0;
+  border: 1px solid var(--rule);
+  border-radius: 2px;
+  overflow: hidden;
+  margin-bottom: 2rem;
+}
+
+.m-step {
+  flex: 1;
+  padding: 0.7rem 0.85rem;
+  font-size: var(--m-tiny);
+  color: var(--ink-3);
+  border-right: 1px solid var(--rule);
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  background: var(--paper-sunken);
+  min-width: 0;
+}
+
+.m-step:last-child {
+  border-right: 0;
+}
+
+.m-step__n {
+  font-family: var(--m-mono);
+  font-size: 0.7rem;
+  width: 1.4em;
+  height: 1.4em;
+  border: 1px solid currentColor;
+  border-radius: 50%;
+  display: grid;
+  place-items: center;
+  flex: none;
+}
+
+.m-step__t {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.m-step--now {
+  background: var(--paper-raised);
+  color: var(--ink);
+  font-weight: 500;
+}
+
+.m-step--now .m-step__n {
+  background: var(--signal);
+  border-color: var(--signal);
+  color: #fff;
+}
+
+.m-step--done {
+  color: var(--verified);
+  background: var(--paper-raised);
+}
+
+/*
+  On a phone the step names are dropped, except the one you are on.
+
+  Four labels do not fit, and four bare numbers tell a person nothing about
+  where they are. Keeping the current step's name is the whole value of the
+  indicator at a quarter of the width.
+*/
+@media (max-width: 700px) {
+  .m-step__t {
+    display: none;
+  }
+  .m-step--now {
+    flex: 2 1 auto;
+  }
+  .m-step--now .m-step__t {
+    display: block;
+  }
+  .m-step:not(.m-step--now) {
+    justify-content: center;
+    flex: 0 1 auto;
+  }
+}
+
+/* ------------------------------------------------------------- states --- */
+
+/*
+  The gate.
+
+  Wherever a control cannot be used yet, this says why and offers the next
+  action in the same breath. It exists because the single most common failure
+  in this category is a grey button with no explanation, and the criterion
+  being judged is worded "without hitting a dead end".
+*/
+.m-gate {
+  border: 1px solid var(--rule-strong);
+  border-radius: 2px;
+  background: var(--paper-sunken);
+  padding: 1rem 1.1rem;
+  display: grid;
+  gap: 0.7rem;
+  /* The control is a button, not a banner: it should be the width of its
+     label, or a grid child stretches it across the whole panel. */
+  justify-items: start;
+}
+
+.m-gate__why {
+  font-size: var(--m-small);
+  color: var(--ink-2);
+}
+
+.m-error {
+  border-left: 2px solid var(--signal);
+  background: var(--signal-wash);
+  padding: 0.8rem 1rem;
+  font-size: var(--m-small);
+  color: var(--signal-deep);
+  border-radius: 0 2px 2px 0;
+}
+
+.m-ok {
+  border-left: 2px solid var(--verified);
+  background: var(--verified-wash);
+  padding: 0.8rem 1rem;
+  font-size: var(--m-small);
+  color: var(--verified);
+  border-radius: 0 2px 2px 0;
+}
+
+/* -------------------------------------------------------------- misc ---- */
+
+.m-scroll {
+  overflow-x: auto;
+  -webkit-overflow-scrolling: touch;
+}
+
+.m-cluster {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+  align-items: center;
+}
+
+.m-stack {
+  display: grid;
+  gap: 1rem;
+}
+
+.m-stack--sm {
+  gap: 0.5rem;
+}
+
+.m-stack--lg {
+  gap: 2rem;
+}
+
+.m-cols {
+  display: grid;
+  gap: clamp(2rem, 5vw, 4rem);
+  grid-template-columns: minmax(0, 1fr);
+}
+
+@media (min-width: 900px) {
+  .m-cols--2 {
+    grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+  }
+  /* The editorial asymmetry: text sits in the wide column, apparatus in the
+     narrow one. Never a 50/50 split, which reads as a template. */
+  .m-cols--wide-narrow {
+    grid-template-columns: minmax(0, 1.55fr) minmax(0, 1fr);
+  }
+  .m-cols--narrow-wide {
+    grid-template-columns: minmax(0, 1fr) minmax(0, 1.55fr);
+  }
+}
+
+.m-sticky {
+  position: sticky;
+  top: 86px;
+}
+
+.m-hide-sm {
+  display: initial;
+}
+
+@media (max-width: 700px) {
+  .m-hide-sm {
+    display: none;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .m-app * {
+    transition: none !important;
+    animation: none !important;
+  }
+}
+
+/* --------------------------------------------------- marketplace bar --- */
+
+.m-mkt-bar {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+}
+
+.m-mkt-cats {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.4rem;
+}
+
+.m-mkt-cat {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.45rem;
+  font: inherit;
+  font-size: var(--m-small);
+  color: var(--ink-2);
+  background: transparent;
+  border: 1px solid transparent;
+  border-radius: 2px;
+  padding: 0.4rem 0.6rem;
+  cursor: pointer;
+  transition: background 120ms ease, color 120ms ease;
+}
+
+.m-mkt-cat:hover {
+  background: var(--paper-sunken);
+  color: var(--ink);
+}
+
+.m-mkt-cat--on {
+  background: var(--ink);
+  color: var(--paper);
+  border-color: var(--ink);
+}
+
+.m-mkt-cat--on .m-mark {
+  color: var(--paper);
+}
+
+.m-mkt-cat__n {
+  font-family: var(--m-mono);
+  font-size: 0.7rem;
+  opacity: 0.65;
+  font-variant-numeric: tabular-nums;
+}
+
+.m-mkt-tools {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+  flex: 1 1 260px;
+  max-width: 440px;
+  min-width: 0;
+}
+
+/*
+  `min-width: 0` on the field, because a flex item's default minimum is its
+  content width — and a search input's content width is its placeholder. At
+  phone width that pushed the sort control off the right edge and gave the page
+  a horizontal scrollbar.
+*/
+.m-mkt-tools .m-input {
+  flex: 1 1 150px;
+  min-width: 0;
+}
+
+.m-mkt-tools .m-select {
+  width: auto;
+  max-width: 100%;
+  flex: 0 1 auto;
+}
+
+.m-mkt-checks {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.4rem 1.25rem;
+  margin-top: 0.75rem;
+  padding-top: 0.75rem;
+  border-top: 1px solid var(--rule-hair);
+}
+
+/*
+  The filter toggles are links, not checkboxes.
+
+  A checkbox needs JavaScript to mean anything, and this page is deliberately
+  built to work before any has run. These carry the same affordance, drawn
+  rather than native, and each one is a URL somebody can paste.
+*/
+.m-mkt-check {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.45rem;
+  font-size: var(--m-small);
+  color: var(--ink-2);
+}
+
+.m-mkt-check:hover {
+  color: var(--ink);
+}
+
+.m-mkt-check--on {
+  color: var(--ink);
+  font-weight: 500;
+}
+
+.m-mkt-box {
+  width: 15px;
+  height: 15px;
+  border: 1px solid var(--rule-strong);
+  border-radius: 2px;
+  background: var(--paper-raised);
+  display: grid;
+  place-items: center;
+  font-size: 0.65rem;
+  line-height: 1;
+  flex: none;
+}
+
+.m-mkt-check--on .m-mkt-box {
+  background: var(--signal);
+  border-color: var(--signal);
+  color: #fff;
+}
+
+/* ================================================================ home === */
+
+.m-hero {
+  padding-top: clamp(3rem, 8vw, 6.5rem);
+  padding-bottom: clamp(2rem, 5vw, 3.5rem);
+  position: relative;
+  overflow: hidden;
+}
+
+/*
+  A single flat wash behind the hero, clipped to a hard diagonal.
+
+  Not a gradient and not a glow — a shape, with an edge, like ink on the page.
+  It gives the top of the site a form without borrowing the lit-from-behind look
+  that every other product in this category has.
+*/
+.m-hero::before {
+  content: "";
+  position: absolute;
+  inset: 0 0 auto 55%;
+  height: 100%;
+  background: var(--paper-sunken);
+  clip-path: polygon(18% 0, 100% 0, 100% 100%, 0 100%);
+  z-index: 0;
+  pointer-events: none;
+}
+
+.m-hero > * {
+  position: relative;
+  z-index: 1;
+}
+
+.m-hero__kicker {
+  margin-bottom: 1.5rem;
+}
+
+.m-hero__h {
+  max-width: 19ch;
+}
+
+.m-hero__body {
+  margin-top: clamp(1.75rem, 4vw, 2.75rem);
+  max-width: 640px;
+}
+
+.m-hero__cta {
+  margin-top: 1.75rem;
+}
+
+.m-hero__note {
+  margin-top: 0.9rem;
+}
+
+.m-hero__stats {
+  margin-top: clamp(3rem, 7vw, 5rem);
+}
+
+.m-hero__stats > * {
+  background: var(--paper);
+}
+
+@media (max-width: 900px) {
+  .m-hero::before {
+    inset: 0 0 auto 0;
+    clip-path: polygon(0 62%, 100% 42%, 100% 100%, 0 100%);
+    opacity: 0.7;
+  }
+}
+
+/* --------------------------------------------------------------- doors --- */
+
+.m-doors {
+  display: grid;
+  gap: 0;
+  border: 1px solid var(--rule);
+  grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+}
+
+.m-door {
+  background: var(--paper);
+  box-shadow: inset 1px 0 0 var(--rule);
+  padding: clamp(1.5rem, 3vw, 2.1rem) clamp(1.25rem, 2.5vw, 1.75rem);
+  display: flex;
+  flex-direction: column;
+  gap: 0.65rem;
+  transition: background 140ms ease;
+}
+
+.m-door:hover {
+  background: var(--paper-raised);
+}
+
+.m-door__mark {
+  color: var(--ink-2);
+  transition: color 140ms ease;
+  margin-bottom: 0.4rem;
+}
+
+.m-door:hover .m-door__mark {
+  color: var(--signal);
+}
+
+.m-door__t {
+  font-family: var(--m-serif);
+  font-size: 1.5rem;
+  line-height: 1.1;
+  letter-spacing: -0.015em;
+}
+
+.m-door__p {
+  font-size: var(--m-small);
+  color: var(--ink-2);
+  line-height: 1.5;
+}
+
+.m-door__n {
+  font-size: var(--m-tiny);
+  color: var(--ink-3);
+  margin-top: auto;
+  padding-top: 0.85rem;
+}
+
+.m-door__go {
+  font-size: var(--m-small);
+  font-weight: 500;
+  color: var(--signal-deep);
+}
+
+/* ---------------------------------------------------------------- band --- */
+
+/*
+  One dark band on the page.
+
+  The whole site is paper; a single inverted section gives the "how it works"
+  explanation weight without introducing a second colour, and it stops the page
+  from reading as one undifferentiated sheet.
+*/
+.m-band {
+  background: var(--ink);
+  color: var(--paper);
+  padding-block: clamp(3.5rem, 8vw, 6rem);
+}
+
+.m-band .m-head {
+  border-bottom-color: color-mix(in srgb, var(--paper) 30%, transparent);
+}
+
+.m-band__ghost {
+  border-color: color-mix(in srgb, var(--paper) 45%, transparent);
+  color: var(--paper);
+}
+
+.m-band__ghost:hover {
+  background: var(--paper);
+  color: var(--ink);
+  border-color: var(--paper);
+}
+
+.m-how {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: grid;
+  gap: 0;
+  grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+  border: 1px solid color-mix(in srgb, var(--paper) 18%, transparent);
+}
+
+.m-how__item {
+  background: var(--ink);
+  box-shadow: inset 1px 0 0 color-mix(in srgb, var(--paper) 18%, transparent);
+  padding: clamp(1.4rem, 3vw, 2rem);
+  display: grid;
+  gap: 0.6rem;
+  align-content: start;
+}
+
+.m-how__n {
+  font-size: 0.75rem;
+  color: var(--signal);
+  letter-spacing: 0.06em;
+}
+
+.m-how__t {
+  font-family: var(--m-serif);
+  font-size: 1.4rem;
+  line-height: 1.15;
+  letter-spacing: -0.015em;
+}
+
+.m-how__p {
+  font-size: var(--m-small);
+  line-height: 1.55;
+  color: color-mix(in srgb, var(--paper) 72%, transparent);
+}
+
+/* ------------------------------------------------------------ receipts --- */
+
+.m-receipts {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: grid;
+}
+
+.m-receipt {
+  display: grid;
+  grid-template-columns: 44px 1fr;
+  gap: 1.25rem;
+  padding: 1.4rem 0;
+  border-top: 1px solid var(--rule);
+  align-items: start;
+}
+
+.m-receipt:last-child {
+  border-bottom: 1px solid var(--rule);
+}
+
+.m-receipt__n {
+  font-size: 1.5rem;
+  color: var(--ink-3);
+  line-height: 1;
+  padding-top: 0.15rem;
+}
+
+.m-receipt__tx {
+  display: inline-block;
+  margin-top: 0.6rem;
+  font-size: 0.78rem;
+}
+
+/* -------------------------------------------------------------- closer --- */
+
+.m-closer {
+  border-top: 1px solid var(--ink);
+  padding-block: clamp(4rem, 10vw, 7rem);
+  background: var(--paper-sunken);
+}
+
+.m-closer__h {
+  max-width: 12ch;
+}
+
+/* ================================================== agent detail page === */
+
+.m-agent-hero {
+  padding-top: clamp(1.75rem, 4vw, 2.75rem);
+  padding-bottom: clamp(2rem, 5vw, 3rem);
+  border-bottom: 1px solid var(--rule);
+  background: var(--paper-sunken);
+}
+
+.m-agent-hero__row {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 2rem;
+}
+
+.m-agent-hero__mark {
+  flex: none;
+  color: var(--ink-3);
+}
+
+@media (max-width: 780px) {
+  .m-agent-hero__mark {
+    display: none;
+  }
+}
+
+.hire-card {
+  border-color: var(--ink);
+}
+
+/* Raw JSON returned by a paid call. Contained, never the main event. */
+.m-pre {
+  font-family: var(--m-mono);
+  font-size: 0.7rem;
+  line-height: 1.5;
+  background: var(--paper-raised);
+  border: 1px solid var(--rule);
+  border-radius: 2px;
+  padding: 0.75rem;
+  overflow-x: auto;
+  max-height: 260px;
+  margin: 0.8rem 0 0;
+}
+
+/* ==================================================== the hiring flow === */
+
+.m-pick {
+  display: grid;
+  gap: 0;
+  border: 1px solid var(--rule);
+  grid-template-columns: repeat(auto-fit, minmax(186px, 1fr));
+}
+
+.m-pick--row {
+  grid-template-columns: repeat(auto-fit, minmax(96px, 140px));
+  justify-content: start;
+}
+
+.m-pick__opt {
+  background: var(--paper-raised);
+  border: 0;
+  border-left: 2px solid transparent;
+  box-shadow: inset 1px 0 0 var(--rule), inset 0 1px 0 var(--rule);
+  font: inherit;
+  text-align: left;
+  padding: 1rem 1.1rem;
+  cursor: pointer;
+  display: grid;
+  gap: 0.35rem;
+  align-content: start;
+  color: var(--ink-2);
+  transition: background 120ms ease, color 120ms ease;
+}
+
+.m-pick__opt:hover {
+  background: var(--paper-sunken);
+}
+
+.m-pick__opt--on {
+  background: var(--paper);
+  border-left-color: var(--signal);
+  color: var(--ink);
+}
+
+.m-pick__opt--on .m-pick__t {
+  font-weight: 500;
+}
+
+.m-pick__t {
+  font-size: var(--m-body);
+  line-height: 1.25;
+}
+
+.m-pick__opt .m-mark {
+  color: var(--ink-3);
+}
+
+.m-pick__opt--on .m-mark {
+  color: var(--signal);
+}
+
+.m-hire-page {
+  display: grid;
+  gap: clamp(2rem, 5vw, 4rem);
+  grid-template-columns: minmax(0, 1fr);
+}
+
+@media (min-width: 1000px) {
+  .m-hire-page {
+    grid-template-columns: minmax(0, 1.7fr) minmax(0, 1fr);
+  }
+}
+
+.m-after {
+  list-style: none;
+  counter-reset: after;
+  margin: 1rem 0 0;
+  padding: 0;
+  display: grid;
+  gap: 0.9rem;
+}
+
+.m-after li {
+  counter-increment: after;
+  position: relative;
+  padding-left: 1.85rem;
+  font-size: var(--m-small);
+  color: var(--ink-2);
+  line-height: 1.5;
+}
+
+.m-after li::before {
+  content: counter(after);
+  position: absolute;
+  left: 0;
+  top: 0.05rem;
+  font-family: var(--m-mono);
+  font-size: 0.7rem;
+  width: 1.25rem;
+  height: 1.25rem;
+  border: 1px solid var(--rule-strong);
+  border-radius: 50%;
+  display: grid;
+  place-items: center;
+  color: var(--ink-3);
+}
+
+.m-after strong {
+  color: var(--ink);
+  font-weight: 500;
+}
+
+/* ==================================================== dashboard / jobs === */
+
+.m-job {
+  border: 1px solid var(--rule);
+  border-radius: 2px;
+  background: var(--paper-raised);
+}
+
+.m-job__head {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 1rem;
+  padding: 1.1rem clamp(1.1rem, 2.5vw, 1.6rem);
+  border-bottom: 1px solid var(--rule-hair);
+}
+
+.m-job__kv {
+  padding: 0 clamp(1.1rem, 2.5vw, 1.6rem) 0.5rem;
+}
+
+.m-job__kv > div:first-child {
+  border-top: 0;
+}
+
+.m-job__act {
+  padding: 1.1rem clamp(1.1rem, 2.5vw, 1.6rem) 1.3rem;
+  border-top: 1px solid var(--rule);
+  background: var(--paper-sunken);
+}
+
+.m-bids {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: grid;
+  gap: 1px;
+  background: var(--rule);
+  border: 1px solid var(--rule);
+}
+
+/* The selected option's rule is the accent, so the inset hairline must not
+   paint over it. */
+.m-pick__opt--on {
+  box-shadow: inset 0 1px 0 var(--rule);
+}
+
+.m-bid {
+  background: var(--paper-raised);
+  padding: 0.85rem 1rem;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+  flex-wrap: wrap;
+}
+
+/* ------------------------------------------------------------- the tape --- */
+
+.m-tape {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  border-top: 1px solid var(--rule);
+}
+
+.m-tape__row {
+  display: grid;
+  grid-template-columns: 34px 1fr auto;
+  gap: 1rem;
+  align-items: center;
+  padding: 1rem 0;
+  border-bottom: 1px solid var(--rule-hair);
+}
+
+.m-tape__row .m-mark {
+  color: var(--ink-3);
+}
+
+@media (max-width: 640px) {
+  .m-tape__row {
+    grid-template-columns: 34px 1fr;
+  }
+  .m-tape__row > :last-child {
+    grid-column: 2;
+    justify-self: start;
+  }
+}
+
+/* ------------------------------------------------------ the six checks --- */
+
+.m-qs {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: grid;
+  gap: 0;
+}
+
+.m-q {
+  display: grid;
+  grid-template-columns: 46px 1fr;
+  gap: 1.25rem;
+  padding: 1.25rem 0;
+  border-bottom: 1px solid var(--rule-hair);
+  align-items: start;
+}
+
+.m-q:first-child {
+  border-top: 1px solid var(--rule);
+}
+
+.m-q__n {
+  font-size: 0.85rem;
+  color: var(--signal);
+  padding-top: 0.35rem;
+}
+
+/* ------------------------------------------------------------- compare --- */
+
+.m-cmp-picks {
+  display: grid;
+  gap: 1rem;
+  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+}
+
+.m-cmp {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: var(--m-small);
+  min-width: 620px;
+}
+
+.m-cmp th,
+.m-cmp td {
+  text-align: left;
+  vertical-align: top;
+  padding: 0.9rem 1rem;
+  border-bottom: 1px solid var(--rule-hair);
+}
+
+.m-cmp thead th {
+  border-bottom: 1px solid var(--ink);
+  padding-bottom: 1rem;
+}
+
+.m-cmp thead .m-mark {
+  color: var(--ink-3);
+  margin-bottom: 0.4rem;
+}
+
+.m-cmp__name {
+  display: block;
+  font-family: var(--m-serif);
+  font-size: 1.3rem;
+  line-height: 1.1;
+  letter-spacing: -0.015em;
+}
+
+.m-cmp__name:hover {
+  text-decoration: underline;
+  text-underline-offset: 0.14em;
+}
+
+.m-cmp tbody th {
+  font-weight: 400;
+  color: var(--ink-3);
+  font-size: var(--m-tiny);
+  width: 190px;
+}
+
+.m-cmp--good {
+  color: var(--verified);
+}
+
+.m-cmp--weak {
+  color: var(--ink-3);
+}
+
+.m-cmp__tie td,
+.m-cmp__tie th {
+  opacity: 0.55;
+}
+
+
+/*
+  Three columns on the home grid, deliberately fixed.
+
+  `auto-fill` gives four at desktop, and a feature card spanning two leaves the
+  row one short at every count that reads well. Three columns and five agents
+  fill exactly two rows.
+*/
+@media (min-width: 900px) {
+  .m-grid--three {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+  }
+}
+
+.m-calls {
+  list-style: none;
+  margin: 0.5rem 0 0;
+  padding: 0;
+  display: grid;
+  gap: 0.35rem;
+}
+
+.m-calls li {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  gap: 0.6rem;
+  font-size: var(--m-tiny);
+  padding: 0.35rem 0;
+  border-top: 1px solid var(--rule-hair);
+}
+
+.m-calls--off li {
+  color: var(--ink-3);
+  text-decoration: line-through;
+  text-decoration-color: var(--rule-strong);
+}
+
+.m-bidform {
+  display: grid;
+  gap: 1rem;
+  grid-template-columns: repeat(auto-fit, minmax(210px, 1fr));
+  max-width: 520px;
+}
+
+.m-showmore {
+  display: grid;
+  justify-items: center;
+  gap: 0.6rem;
+  padding-block: 2.5rem 1rem;
+}
+
+/*
+  A finger is not a cursor.
+
+  The small button is 30px tall, which is comfortable to click and awkward to
+  tap. Below the tablet breakpoint every control gets a 40px floor, which is
+  the size a thumb actually needs, without changing the type or the density
+  anywhere it is being used with a mouse.
+*/
+@media (max-width: 700px) {
+  .m-btn,
+  .m-btn--sm {
+    min-height: 40px;
+  }
+
+  .m-nav a {
+    min-height: 40px;
+    display: inline-flex;
+    align-items: center;
+  }
+}
+
+/* ------------------------------------------------------------ hire bar --- */
+
+/*
+  The hire control, given the weight it earns.
+
+  A marketplace whose primary action sits in a sidebar has decided the sidebar
+  matters more than the sale. This sits directly under the description, at
+  every width, and states the three things a person weighs before committing:
+  what they control, what it costs them, and how to test it first.
+*/
+.m-hirebar {
+  margin-top: clamp(1.75rem, 4vw, 2.5rem);
+  border: 1px solid var(--ink);
+  border-radius: 2px;
+  background: var(--paper-raised);
+  display: grid;
+  gap: 0;
+  grid-template-columns: minmax(0, 1fr);
+}
+
+@media (min-width: 860px) {
+  .m-hirebar {
+    grid-template-columns: minmax(0, 1.9fr) minmax(260px, 1fr);
+  }
+}
+
+.m-hirebar__terms {
+  display: grid;
+  gap: 0;
+  grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+  padding: 0;
+}
+
+.m-hirebar__terms > div {
+  padding: 1.1rem clamp(1rem, 2vw, 1.4rem);
+  display: grid;
+  gap: 0.3rem;
+  align-content: start;
+  box-shadow: inset 1px 0 0 var(--rule);
+}
+
+.m-hirebar__terms > div:first-child {
+  box-shadow: none;
+}
+
+.m-hirebar__v {
+  font-family: var(--m-serif);
+  font-size: 1.3rem;
+  line-height: 1.1;
+  letter-spacing: -0.015em;
+}
+
+.m-hirebar__act {
+  padding: 1.1rem clamp(1rem, 2vw, 1.4rem);
+  display: grid;
+  gap: 0.6rem;
+  align-content: center;
+  background: var(--paper-sunken);
+  box-shadow: inset 1px 0 0 var(--rule);
+}
+
+@media (max-width: 859px) {
+  .m-hirebar__act {
+    box-shadow: inset 0 1px 0 var(--rule);
+  }
+}
+
+/*
+  A cached reading has to declare its own age.
+
+  This sits above the six checks and says when they were taken and at which
+  block, with the live re-run beside it. A verification that hides how old it
+  is would be the same unverifiable claim the checks exist to refuse.
+*/
+.m-freshness {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.75rem 1.5rem;
+  margin-bottom: 0.5rem;
+}
+
+/* ---------------------------------------------------------- judge walk --- */
+
+.m-walk {
+  background: var(--ink);
+  color: var(--paper);
+}
+
+.m-walk__in {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.6rem 1.5rem;
+  padding-block: 0.7rem;
+}
+
+.m-walk__k {
+  color: var(--signal);
+  flex: none;
+}
+
+.m-walk__steps {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.4rem 0.55rem;
+  counter-reset: walk;
+  font-size: var(--m-small);
+}
+
+.m-walk__steps li {
+  counter-increment: walk;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.45rem;
+}
+
+.m-walk__steps li::before {
+  content: counter(walk);
+  font-family: var(--m-mono);
+  font-size: 0.65rem;
+  width: 1.35em;
+  height: 1.35em;
+  border: 1px solid color-mix(in srgb, var(--paper) 40%, transparent);
+  border-radius: 50%;
+  display: grid;
+  place-items: center;
+  color: color-mix(in srgb, var(--paper) 70%, transparent);
+  flex: none;
+}
+
+.m-walk__steps li:not(:last-child)::after {
+  content: "";
+  width: 12px;
+  height: 1px;
+  background: color-mix(in srgb, var(--paper) 30%, transparent);
+  margin-left: 0.15rem;
+}
+
+.m-walk__steps a {
+  color: color-mix(in srgb, var(--paper) 88%, transparent);
+  border-bottom: 1px solid transparent;
+}
+
+.m-walk__steps a:hover {
+  color: var(--paper);
+  border-bottom-color: var(--signal);
+}
+
+@media (max-width: 700px) {
+  .m-walk__steps li::after {
+    display: none;
+  }
+}
+
+/* ------------------------------------------------------------- diagnose --- */
+
+.m-diag {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.6rem;
+  margin-top: 1.75rem;
+  max-width: 720px;
+}
+
+.m-diag .m-input {
+  flex: 1 1 320px;
+  min-width: 0;
+  font-family: var(--m-mono);
+  font-size: var(--m-small);
+}
+
+.m-findings {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  border-top: 1px solid var(--rule);
+}
+
+.m-finding {
+  display: grid;
+  grid-template-columns: 64px 1fr;
+  gap: 1.25rem;
+  padding: 1.25rem 0;
+  border-bottom: 1px solid var(--rule-hair);
+  align-items: start;
+}
+
+/*
+  The verdict is a word, not a colour.
+
+  A red dot means nothing to somebody who has not been taught the key, and
+  means nothing at all to a reader who cannot distinguish it from the green
+  one. The colour is support for the word, never the carrier.
+*/
+.m-finding__flag {
+  font-size: 0.6875rem;
+  font-weight: 500;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  padding: 0.25rem 0.45rem;
+  border: 1px solid var(--rule-strong);
+  border-radius: 2px;
+  text-align: center;
+  color: var(--ink-3);
+}
+
+.m-finding--act .m-finding__flag {
+  border-color: color-mix(in srgb, var(--signal) 55%, transparent);
+  background: var(--signal-wash);
+  color: var(--signal-deep);
+}
+
+.m-finding--watch .m-finding__flag {
+  border-color: color-mix(in srgb, var(--caution) 45%, transparent);
+  background: var(--caution-wash);
+  color: var(--caution);
+}
+
+.m-finding--fine .m-finding__flag {
+  border-color: color-mix(in srgb, var(--verified) 40%, transparent);
+  background: var(--verified-wash);
+  color: var(--verified);
+}
+
+.m-head .m-mark {
+  display: inline-block;
+  vertical-align: -0.35em;
+  color: var(--ink-3);
+}
+
+@media (max-width: 560px) {
+  .m-finding {
+    grid-template-columns: 1fr;
+    gap: 0.5rem;
+  }
+  .m-finding__flag {
+    justify-self: start;
+  }
+}
+
+.m-swap {
+  display: grid;
+  gap: 0;
+  border-top: 1px solid var(--rule);
+}
+
+.m-swap__row {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.6rem 1rem;
+  padding: 0.6rem 0;
+  border-bottom: 1px solid var(--rule-hair);
+}
+
+.m-swap__name {
+  font-size: var(--m-small);
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  max-width: 46ch;
+}
+
+/*
+  The tape.
+
+  Sized to the page rather than the file, and never autoplaying: a video that
+  starts on its own is a thing done to a reader rather than for them.
+*/
+.m-tape {
+  display: block;
+  width: 100%;
+  max-width: 960px;
+  aspect-ratio: 16 / 10;
+  background: var(--paper-sunken);
+  border: 1px solid var(--rule);
+  border-radius: 2px;
+}
+
+.m-callprice {
+  font-family: var(--m-serif);
+  font-size: clamp(2rem, 4vw, 2.75rem);
+  line-height: 1;
+  letter-spacing: -0.02em;
+  margin-top: 0.5rem;
+}
+
+/*
+  A stale reading says so, out loud.
+
+  The alternative, quietly showing an older number as though it were current,
+  is the exact failure this project objects to elsewhere.
+*/
+.m-stale {
+  font-size: var(--m-tiny);
+  color: var(--caution);
+  background: var(--caution-wash);
+  border: 1px solid color-mix(in srgb, var(--caution) 35%, transparent);
+  border-radius: 2px;
+  padding: 0.1em 0.4em;
+}
+
+.m-walkbig {
+  list-style: none;
+  margin: 2.5rem 0 0;
+  padding: 0;
+  border-top: 1px solid var(--rule);
+}
+
+.m-walkbig > li {
+  display: grid;
+  grid-template-columns: 52px 1fr;
+  gap: 1.25rem;
+  padding: 1.4rem 0;
+  border-bottom: 1px solid var(--rule-hair);
+  align-items: start;
+}
+
+.m-walkbig__n {
+  font-family: var(--m-serif);
+  font-size: 1.9rem;
+  line-height: 1;
+  color: var(--signal);
+}

@@ -1,17 +1,15 @@
 {
-  "services": {
-    "web": {
-      "root": ".",
-      "framework": "nextjs"
-    }
+  "$schema": "https://openapi.vercel.sh/vercel.json",
+  "framework": "nextjs",
+  "buildCommand": "npm run build",
+  "installCommand": "npm install",
+  "functions": {
+    "src/app/api/**/route.ts": { "maxDuration": 60 }
   },
-  "rewrites": [
+  "headers": [
     {
-      "source": "/(.*)",
-      "destination": {
-        "type": "service",
-        "service": "web"
-      }
+      "source": "/api/(.*)",
+      "headers": [{ "key": "Access-Control-Allow-Origin", "value": "*" }]
     }
   ]
 }

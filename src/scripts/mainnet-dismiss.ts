@@ -8,7 +8,7 @@
  */
 import { formatEther, type Hex } from "viem";
 import {
-  MANDATE_MARKET_ABI,
+  MARKET_ABI,
   MARKET_ADDRESS,
   marketChain,
   marketClient,
@@ -26,7 +26,7 @@ const before = await readMandate(Number(ID));
 log(`mandate ${ID} · holder ${before.agent} · bond ${formatEther(before.bond)} BNB`);
 const successor = await marketClient.readContract({
   address: MARKET_ADDRESS,
-  abi: MANDATE_MARKET_ABI,
+  abi: MARKET_ABI,
   functionName: "successor",
   args: [ID],
 });
@@ -36,7 +36,7 @@ for (let attempt = 0; attempt < 40; attempt++) {
   try {
     const hash = await owner.writeContract({
       address: MARKET_ADDRESS,
-      abi: MANDATE_MARKET_ABI,
+      abi: MARKET_ABI,
       functionName: "settleEpoch",
       args: [ID, ALPHA],
       chain: marketChain,

@@ -84,7 +84,7 @@ export default function Hallmark({
         style={{ width: sponsor ? width - size - gap : width, height: size }}
         role="img"
         aria-label="No hallmark struck"
-        title="No hallmark struck — below 375 fineness"
+        title="No hallmark struck, below 375 fineness"
       />
     );
 
@@ -114,8 +114,8 @@ export default function Hallmark({
         className={className ? `hallmark ${className}` : "hallmark"}
         style={{ ["--hm-gap" as string]: `${gap}px` }}
         role="img"
-        aria-label="Sponsor's mark only — no hallmark struck"
-        title="No hallmark struck — below 375 fineness"
+        aria-label="Sponsor's mark only, no hallmark struck"
+        title="No hallmark struck, below 375 fineness"
       >
         <SponsorMark chainId={record.chainId} tokenId={record.tokenId} size={size} />
         {empties}
@@ -167,7 +167,7 @@ export default function Hallmark({
           width={width}
           height={size}
           role="img"
-          aria-label="Dismissed — hallmark defaced"
+          aria-label="Dismissed, hallmark defaced"
         >
           <title>Dismissed on chain. The record is cancelled, not deleted.</title>
           {/* pathLength normalises the dash so the draw reads the same at 16px

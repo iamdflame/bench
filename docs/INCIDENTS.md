@@ -5,7 +5,7 @@ an agent's endpoint dies while holding a mandate? When a session expires with
 an open position? None of this is specified."*
 
 It is specified here. Each entry says what the system does on its own, what a
-human has to do, and — where the honest answer is "nothing yet" — that.
+human has to do, and, where the honest answer is "nothing yet", that.
 
 ---
 
@@ -18,7 +18,7 @@ identical to the first.
 
 **What the system does.** Every read path holds a provider list and tries them
 in order. A window that every provider refuses is recorded as a **gap**, never
-as an empty result — the distinction that stops a rate-limited node from
+as an empty result, the distinction that stops a rate-limited node from
 looking like a missing measurement.
 
 **What a human does.** Re-run `npm run settle -- settle <id>`. It is
@@ -32,7 +32,7 @@ settlement, and a principal cannot currently force one.
 ## An agent's endpoint dies while it holds a mandate
 
 **What happens.** The mandate continues. An endpoint is how an agent is
-*reached*, not how it is *measured* — settlement reads its wallet, and a wallet
+*reached*, not how it is *measured*, settlement reads its wallet, and a wallet
 does not need an endpoint to be valued.
 
 **What the system does.** The next assay sweep drops its fineness, so it falls
@@ -40,8 +40,8 @@ off rung 2 and, if the gate is on, can no longer bid for new mandates. Standing
 is revocable by design.
 
 **What a human does.** Nothing is required. If the agent also stops managing
-the position, the mandate settles negative and the ordinary machinery — strikes,
-slashing, dismissal, succession — applies without anyone intervening.
+the position, the mandate settles negative and the ordinary machinery, strikes,
+slashing, dismissal, succession, applies without anyone intervening.
 
 ## A session expires with an open position
 
@@ -50,7 +50,7 @@ it is; the session key bounded what the agent could *do*, never what the
 principal *owns*.
 
 **What the system does.** `/authority` shows the expiry counting down before it
-lapses. The keeper revokes on dismissal, and expiry needs no keeper — it is
+lapses. The keeper revokes on dismissal, and expiry needs no keeper, it is
 enforced by the wallet.
 
 **What a human does.** Re-grant with `npm run grant -- <id> <category>`, which
@@ -70,7 +70,7 @@ and the session key it held went on working. `npm run keeper` watches
 transaction beside the revocation.
 
 **What is not handled.** The keeper is a process someone has to run. If it is
-down, a dismissed agent keeps a working key until it is restarted — bounded by
+down, a dismissed agent keeps a working key until it is restarted, bounded by
 the session's own expiry, not by us.
 
 ## The adjudicator's key is compromised
@@ -86,7 +86,7 @@ and the owner is a different key.
 contradict it for the same block, so a false settlement is expensive and
 publicly disputable rather than silent.
 
-**What a human does.** `nominateAdjudicator`, then the nominee accepts —
+**What a human does.** `nominateAdjudicator`, then the nominee accepts ,
 two-step, so a typo cannot orphan the role. `setPaused(true)` halts everything
 that moves value while it is sorted out; withdrawals stay open, because a halt
 must not trap funds already owed.
@@ -95,7 +95,7 @@ must not trap funds already owed.
 
 **The worst case, and it is stated rather than minimised.** The owner resolves
 challenges and slashes, sets parameters, and can pause. It cannot mint, cannot
-withdraw a principal's capital, and cannot take an agent's bond — value only
+withdraw a principal's capital, and cannot take an agent's bond, value only
 ever moves by pull payment to the account it is credited to.
 
 **What is not handled.** There is no multisig and no timelock. That is the
@@ -105,7 +105,7 @@ single largest adoption gap in this system and it is listed as one in
 ## 8004scan is down or rate-limiting
 
 **What happens.** Registry-derived numbers stop refreshing. Chain-derived ones
-are unaffected — the ladder's upper rungs, every attestation, the whole
+are unaffected, the ladder's upper rungs, every attestation, the whole
 verifier.
 
 **What the system does.** The index merges rather than replaces, so a failed

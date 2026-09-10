@@ -438,7 +438,7 @@ export default function Register({
                       </a>
                     </td>
                     <td className="name-col" title={r.name ?? undefined}>
-                      <a href={href}>{r.name ?? "—"}</a>
+                      <a href={href}>{r.name ?? "unnamed"}</a>
                       {r.source === "market" ? (
                         <span className="reg__src mark-label"> holder</span>
                       ) : null}
@@ -461,15 +461,15 @@ export default function Register({
                           <CategoryMark category={r.category} size={16} metal="var(--pewter-500)" />
                         </span>
                       ) : (
-                        <span className="dim">—</span>
+                        <span className="dim"></span>
                       )}
                     </td>
                     <td className="num" style={struck ? { color: gradeOf(r.fineness ?? 0).metal } : undefined}>
-                      {r.fineness === null ? "—" : r.fineness}
+                      {r.fineness === null ? "none" : r.fineness}
                     </td>
-                    <td className="num">{r.endpointVerified ? "answers" : "—"}</td>
+                    <td className="num">{r.endpointVerified ? "answers" : "silent"}</td>
                     <td className="num">{shortDate(r.lastSeen ?? readAt ?? null)}</td>
-                    <td className="num">{r.bondWei ? bnb(r.bondWei) : "—"}</td>
+                    <td className="num">{r.bondWei ? bnb(r.bondWei) : "none"}</td>
                     <td className="num">{alpha(r.alphaBps)}</td>
                     {/*
                       One verb per row, and it is the verb the contract would
@@ -520,8 +520,8 @@ export default function Register({
                       <>
                         Token {q.trim()} is not in the {rows.length.toLocaleString()} rows
                         we have crawled. That is a gap in our index, not a finding about
-                        the agent —{" "}
-                        <a className="link-underline" href={`/agent/${q.trim()}`}>
+                        the agent {" "}
+                        <a className="link-underline" href={`/agents/${q.trim()}`}>
                           read it from the registry →
                         </a>
                       </>
@@ -656,11 +656,11 @@ function value(r: RegisterRow, key: SortKey): number {
 const bnb = (wei: string) => (Number(BigInt(wei)) / 1e18).toFixed(4);
 
 const alpha = (bps: number | null) =>
-  bps === null ? "—" : `${bps > 0 ? "+" : ""}${(bps / 100).toFixed(2)}%`;
+  bps === null ? "none" : `${bps > 0 ? "+" : ""}${(bps / 100).toFixed(2)}%`;
 
 const shortDate = (iso: string | null) => {
-  if (!iso) return "—";
+  if (!iso) return "";
   const d = new Date(iso);
-  if (!Number.isFinite(d.getTime())) return "—";
+  if (!Number.isFinite(d.getTime())) return "";
   return d.toISOString().slice(5, 10).replace("-", "·");
 };

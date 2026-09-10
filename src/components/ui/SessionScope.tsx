@@ -168,7 +168,7 @@ export default function SessionScope({
                   <td className="mark-label scope__state">granted</td>
                   <td className="num scope__sel">{c.signature}</td>
                   <td className="num scope__tgt">{c.to.slice(0, 10)}…</td>
-                  <td className="scope__whynot">—</td>
+                  <td className="scope__whynot"></td>
                 </tr>
               ))}
               {s.withheld.map((c) => (
@@ -226,7 +226,7 @@ export default function SessionScope({
  * already passed by the time it is read.
  */
 function useCountdown(expiry: number): string {
-  const [text, setText] = useState("—");
+  const [text, setText] = useState("");
   useEffect(() => {
     const tick = () => {
       const s = expiry - Math.floor(Date.now() / 1000);

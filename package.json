@@ -42,7 +42,7 @@
     "scope-audit": "tsx --env-file=.env --env-file=.env.local src/scripts/scope-audit.ts",
     "keeper": "tsx --env-file=.env --env-file=.env.local src/scripts/keeper.ts",
     "check:config": "tsx src/lib/config.check.ts",
-    "prove-hire": "tsx --env-file=.env --env-file=.env.local src/scripts/prove-hire-flow.ts",
+    "prove-hire": "tsx --env-file=.env --env-file-if-exists=.env.local src/scripts/prove-hire.ts",
     "pool-gap": "tsx --env-file=.env --env-file=.env.local src/scripts/pool-gap.ts",
     "writeback": "tsx --env-file=.env --env-file=.env.local src/scripts/writeback.ts",
     "prove-x402": "tsx --env-file=.env --env-file=.env.local src/scripts/prove-x402.ts",
@@ -68,7 +68,14 @@
     "db:check": "tsx --env-file=.env --env-file=.env.local src/scripts/db-check.ts",
     "cross-check": "tsx --env-file=.env --env-file=.env.local src/scripts/cross-check.ts",
     "check:agreement": "tsx --env-file=.env --env-file=.env.local src/scripts/cross-check.ts 0xd6d11Aa5046dc5C7BE8d63B9223b60D7AD94cBe9 0x54c06cC2623aAA2Dcc38B17fA07aD2e99b363C90",
-    "check:doctrine": "node src/scripts/check-doctrine.mjs"
+    "check:doctrine": "node src/scripts/check-doctrine.mjs",
+    "assay:snapshot": "tsx --env-file=.env --env-file-if-exists=.env.local src/scripts/assay-snapshot.ts",
+    "probe:all": "tsx --env-file=.env --env-file-if-exists=.env.local src/scripts/probe-all.ts",
+    "keeper:sweep": "tsx --env-file=.env --env-file-if-exists=.env.local src/scripts/keeper-sweep.ts",
+    "refresh": "npm run index && npm run backfill:cards && npm run probe:all && npm run assay:snapshot && npm run snapshot",
+    "seed:books": "tsx --env-file=.env --env-file-if-exists=.env.local src/scripts/seed-books.ts",
+    "tape": "tsx src/scripts/tape.ts",
+    "backfill:cards": "tsx --env-file=.env --env-file-if-exists=.env.local src/scripts/backfill-cards.ts"
   },
   "dependencies": {
     "@altananetwork/sdk": "^0.7.1",

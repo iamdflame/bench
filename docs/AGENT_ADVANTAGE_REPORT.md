@@ -4,7 +4,7 @@
 
 Six tasks run with an agent and without one. Two of them are security tasks.
 Every no-agent arm is something observable on chain or something a person is
-actually shown — none of them is a guess at how long a human would take.
+actually shown, none of them is a guess at how long a human would take.
 
 The losses are in here, in bold, because they were named before the run.
 
@@ -21,10 +21,10 @@ checkable rather than asserted.
 | Committed on chain | [`0x00b0e484c69fc3f149…`](https://bscscan.com/tx/0x00b0e484c69fc3f149f437e0d05ae19cad019bb9b69875a66eaec9fbbbe370e4) |
 | Anchor block | [119939676](https://bscscan.com/block/119939676) · 2026-09-04T15:06:09.000Z |
 | Measurement window | 119915676 → 119939676 (24,000 blocks, ~3.0h) |
-| Gas price used by every cost model | 0.052 gwei — the median of the 142 transactions in the anchor block |
+| Gas price used by every cost model | 0.052 gwei, the median of the 142 transactions in the anchor block |
 
 The specification in [`src/advantage/lock.ts`](../src/advantage/lock.ts) is
-deterministic — it reads nothing and depends on no clock — so anyone can
+deterministic, it reads nothing and depends on no clock, so anyone can
 recompute its hash from that file alone and compare it with the calldata of
 the transaction above. The transaction carries the hash and nothing else.
 
@@ -51,11 +51,11 @@ npm run advantage:report          # re-render this file from the results
 | T1 | Keep a PancakeSwap V3 position in range | Rebalancing | **Loss.** 0 of 9 sampled positions were past the agent's trigger; the one that crossed it during the window recovered unaided. |
 | T2 | Run a grid ladder through the observed price path | Grid | Win. 0.00091656 BNB against holding over a -1.62% window, gas and pool fees charged. |
 | T3 | Move stablecoin capital to the best Venus market | Yield | Mixed. The locked metric is unusable and is published anyway. On the 18 markets deep enough to supply into, the spread is 2.49 points and rotation repays its gas above $8.03. |
-| T4 | Repair a Venus position before it is liquidated | Health Factor | Win. Being early costs $0.0093; being late costs 10.0% of seized collateral — 53,943× more on the worked example. |
+| T4 | Repair a Venus position before it is liquidated | Health Factor | Win. Being early costs $0.0093; being late costs 10.0% of seized collateral, 53,943× more on the worked example. |
 | T5 | Decide which of 20 registry agents are safe to hire | Security | Win on correctness, **loss on coverage.** 20/20 cards contradicted by the chain, but 41 checks could not be answered at all. |
 | T6 | Detect coordinated reputation on a registry agent | Security | Win. 3,000 feedbacks from 32 wallets; 99.0% written by the 14 flagged as coordinated. |
 
-3 wins, 1 outright loss, 2 mixed — and one task whose
+3 wins, 1 outright loss, 2 mixed, and one task whose
 pre-registered metric turned out to be badly specified, which is published as
 specified rather than quietly repaired. That distribution is the point. An
 all-wins report from a product built on distrust of self-reporting would be
@@ -63,14 +63,14 @@ evidence of a badly chosen task set, not of a good agent.
 
 ---
 
-## T1 — Keep a PancakeSwap V3 position in range
+## T1, Keep a PancakeSwap V3 position in range
 
 **Category:** Rebalancing
 
 **No-agent arm.** Do nothing until you happen to look. Measured on real BSC positions: of the live positions in this pool, how many sit outside their range at the anchor block, and how long they have been there.
 
 **Agent arm.** `src/agents/rebalance.ts`, through the exact predicate
-production uses — `shouldRecentre()` is exported and called by both, so the
+production uses, `shouldRecentre()` is exported and called by both, so the
 report cannot be measuring a reimplementation that has drifted.
 
 ### What was measured
@@ -102,7 +102,7 @@ the tolerance that misses the shallow exits, and this window had only
 shallow exits. A wider window with a real trend would favour the agent, and
 that is exactly why the window was not allowed to be chosen after the fact.
 
-### Exploratory — outside the lock
+### Exploratory, outside the lock
 
 Reported separately and never merged into the result above. The same
 anchor block, but every PancakeSwap V3 pool rather than the one the lock
@@ -128,20 +128,20 @@ By fee tier:
 About a quarter of the concentrated liquidity that someone actively
 touched in those three hours was sitting outside its range, earning
 nothing, at the anchor block. This is exploratory and is not the T1
-result — but it is the number worth chasing, and the pre-registered
+result, but it is the number worth chasing, and the pre-registered
 version of this task should have been specified this way.
 
 ---
 
-## T2 — Run a grid ladder through the observed price path
+## T2, Run a grid ladder through the observed price path
 
 **Category:** Grid
 
-**No-agent arm.** Buy and hold. This is not a stand-in for a human — it is the benchmark MandateMarket already settles every grid mandate against, so the agent is judged here exactly as it is judged in production.
+**No-agent arm.** Buy and hold. This is not a stand-in for a human, it is the benchmark MandateMarket already settles every grid mandate against, so the agent is judged here exactly as it is judged in production.
 
 **Agent arm.** `src/agents/grid.ts`. `evaluate()` reads nothing from the
-chain — it is a function of the price, the balances and its own carried
-state — so the production strategy itself was driven over the observed
+chain, it is a function of the price, the balances and its own carried
+state, so the production strategy itself was driven over the observed
 path, not a copy of its logic.
 
 ### What was measured
@@ -163,8 +163,8 @@ path, not a copy of its logic.
 A grid earns from oscillation and loses to trend. This window fell 1.62% with enough chop inside it for the ladder to pay, and the advantage survives real gas at the anchor block's measured price and the pool's own 0.05% fee on every fill. It is a small number on one three-hour window and it should be read as one.
 
 **What this is not.** The fills are simulated against the observed price
-path. Each clip is 0.1250 BNB — one eighth of the
-working capital — and the simulation assumes a clip that size does not move
+path. Each clip is 0.1250 BNB, one eighth of the
+working capital, and the simulation assumes a clip that size does not move
 the deepest WBNB/USDT pool on BSC. That is reasonable and it is still an
 assumption rather than a measurement. **The gas and the pool fees charged
 here are real; the fills are modelled.** A live grid would also pay spread
@@ -172,7 +172,7 @@ and occasional failed transactions, neither of which is charged above.
 
 ---
 
-## T3 — Move stablecoin capital to the best Venus market
+## T3, Move stablecoin capital to the best Venus market
 
 **Category:** Yield
 
@@ -200,7 +200,7 @@ sensible number as though it had been the plan. The stopping rule forbids
 it, so the flawed metric stands and the sensible reading is reported
 beside it, labelled.
 
-### Exploratory — markets holding at least $1M
+### Exploratory, markets holding at least $1M
 
 | | Market | APY | Cash |
 |---|---|---:|---:|
@@ -219,7 +219,7 @@ beside it, labelled.
 
 Above about $8 of capital, one rotation repays its own
 gas inside a month. That number is low because BSC gas is cheap, and it is
-the number that decides whether this category is worth automating at all —
+the number that decides whether this category is worth automating at all ,
 which is why it was named as this task's loss condition in advance. It did
 not become a loss, but it was allowed to.
 
@@ -228,11 +228,11 @@ block rather than from a price API.
 
 ---
 
-## T4 — Repair a Venus position before it is liquidated
+## T4, Repair a Venus position before it is liquidated
 
 **Category:** Health Factor
 
-**No-agent arm.** The liquidation that actually happened. Venus publishes its own liquidation incentive on chain, so the cost of not acting is not an estimate — it is a protocol parameter, paid by every borrower who was too slow.
+**No-agent arm.** The liquidation that actually happened. Venus publishes its own liquidation incentive on chain, so the cost of not acting is not an estimate, it is a protocol parameter, paid by every borrower who was too slow.
 
 This is the strongest baseline in the report because nothing about it is
 modelled. The cost of not acting is a number Venus publishes and charges.
@@ -252,7 +252,7 @@ modelled. The cost of not acting is a number Venus publishes and charges.
 ### A note on where that number came from
 
 The Venus Comptroller is a Diamond proxy and **exposes no
-`liquidationIncentiveMantissa()`** — that selector and every variant of it
+`liquidationIncentiveMantissa()`**, that selector and every variant of it
 revert with `Diamond: Function does not exist`. The value is still on
 chain, in the Unitroller's storage, so it is read from slot 6.
 
@@ -265,13 +265,13 @@ been discarded rather than published.
 
 ### **The loss**
 
-**Zero liquidations occurred in the window** on the three markets the lock named. The economics above are real and the protocol charges them, but this run produced no observed event to point at — a three-hour window on three markets was too narrow to catch one. The count is reported as zero rather than the window being widened until it found some.
+**Zero liquidations occurred in the window** on the three markets the lock named. The economics above are real and the protocol charges them, but this run produced no observed event to point at, a three-hour window on three markets was too narrow to catch one. The count is reported as zero rather than the window being widened until it found some.
 
 ---
 
-## T5 — Decide which of 20 registry agents are safe to hire
+## T5, Decide which of 20 registry agents are safe to hire
 
-**Category:** Security — TermiX's weighted category, and this
+**Category:** Security, TermiX's weighted category, and this
 marketplace's own competency.
 
 **No-agent arm.** Read the agent card and believe it. This is what the directory actually offers a person: a name, a description, a declared skill set, no evidence.
@@ -288,14 +288,14 @@ marketplace's own competency.
 
 Every one of the twenty presents as hireable. Not one of them clears the
 lowest hallmarkable grade. The contradictions are not a single systematic
-check failing across the sample — they are four different findings:
+check failing across the sample, they are four different findings:
 
 | Contradiction | Agents |
 |---|---:|
-| Identity — no endpoint of any kind | 20/20 |
-| Custody — agent wallet is the owner's wallet, byte for byte | 20/20 |
+| Identity, no endpoint of any kind | 20/20 |
+| Custody, agent wallet is the owner's wallet, byte for byte | 20/20 |
 | Reputation | 19/20 |
-| Activity — never transacted | 9/20 |
+| Activity, never transacted | 9/20 |
 
 ### **The loss**
 
@@ -316,11 +316,11 @@ rather than the sample being swapped.
 
 ---
 
-## T6 — Detect coordinated reputation on a registry agent
+## T6, Detect coordinated reputation on a registry agent
 
 **Category:** Security
 
-**No-agent arm.** The reputation score the official explorer displays. Not a proxy for a human — it is the number a human is shown.
+**No-agent arm.** The reputation score the official explorer displays. Not a proxy for a human, it is the number a human is shown.
 
 ### What was measured
 
@@ -358,7 +358,7 @@ property of the constant. The Jaccard similarity threshold was swept:
 | 0.8 | 14 | 18 |
 | 0.9 | 14 | 18 |
 
-The flag set does not move — 14 wallets at every
+The flag set does not move, 14 wallets at every
 threshold from 0.3 to 0.9.
 
 **Read that carefully rather than as a strength.** It means co-review
@@ -402,7 +402,7 @@ disclosed so the distinction can be checked rather than trusted.
 
 ### The scoring rubric
 
-- **Time.** Wall-clock seconds for the agent arm, measured. The no-agent arm is never given an invented duration — where it has no natural duration the comparison is made on correctness or on cost, and the report says which.
+- **Time.** Wall-clock seconds for the agent arm, measured. The no-agent arm is never given an invented duration, where it has no natural duration the comparison is made on correctness or on cost, and the report says which.
 - **Cost.** Gas in BNB at the gas price read at the anchor block, plus API calls made. Reported per task.
 - **Quality.** A per-task criterion, fixed above in `metric`. No score is aggregated across tasks: a single headline number would hide exactly the losses this report exists to publish.
 - **Reporting.** Every task reports win, loss or inconclusive against the criteria declared above. Losses are set in bold. An all-wins report is evidence of a badly chosen task set, not of a good agent.

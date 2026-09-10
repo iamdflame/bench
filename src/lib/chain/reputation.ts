@@ -91,7 +91,7 @@ export function buildWriteBack(opts: {
   const provenance = [
     `Machine assay, ${opts.fineness}/1000 fineness (${opts.hallmark}).`,
     block ? `Opened at block ${block}.` : "Block not recorded.",
-    `Written by ERC-8004 ${MANDATE_AGENT_ID} — assay us too.`,
+    `Written by ERC-8004 ${MANDATE_AGENT_ID}, assay us too.`,
     `Reproduce: npm run assay -- ${opts.agentId}`,
   ].join(" ");
 

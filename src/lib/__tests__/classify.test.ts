@@ -60,7 +60,7 @@ describe("classify", () => {
  * podcast agent under grid trading, and "AuraPro816" under yield optimisation,
  * because "dca" is inside "podcast" and "apr" is inside "aurapro816".
  */
-describe("classify — a signal must start a word", () => {
+describe("classify, a signal must start a word", () => {
   it("does not read an acronym out of the middle of a word", () => {
     expect(on("A podcast summarisation agent").category).toBeNull();
     expect(on("The broadcaster's own agent").category).toBeNull();
@@ -102,7 +102,7 @@ describe("classify — a signal must start a word", () => {
   });
 });
 
-describe("classify — confidence", () => {
+describe("classify, confidence", () => {
   it("rises with the strength of the match", () => {
     const weak = on("Uses a vault");
     const strong = on("Yield optimisation: auto-compound the highest yield vault");

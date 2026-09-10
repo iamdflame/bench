@@ -179,7 +179,7 @@ function custodyAssay(ctx: AssayContext): AssayResult {
       title: "Custody",
       claim: "Presented as a self-custodial agent with its own wallet.",
       finding:
-        "The agent wallet is the owner's wallet, byte for byte. There is no separation of custody — the autonomy is a label, not an arrangement.",
+        "The agent wallet is the owner's wallet, byte for byte. There is no separation of custody, the autonomy is a label, not an arrangement.",
       verdict: "fail",
       score: 0.2,
       weight: WEIGHTS.custody,
@@ -352,7 +352,7 @@ async function capabilityAssay(ctx: AssayContext): Promise<AssayResult> {
       evidence.push({
         kind: "note",
         label: "Scan coverage",
-        value: "Incomplete — the RPC provider refused part of the range",
+        value: "Incomplete, the RPC provider refused part of the range",
       });
       return {
         id: "capability",
@@ -422,7 +422,7 @@ function reputationAssay(ctx: AssayContext): AssayResult {
         ? `Registry reports ${ctx.detail.total_feedbacks} feedback records.`
         : "No reputation claimed.",
       finding: unread
-        ? "The feedback corpus could not be read — the index did not answer in time — so nothing is said about this agent's reputation either way."
+        ? "The feedback corpus could not be read, the index did not answer in time, so nothing is said about this agent's reputation either way."
         : "No feedback records to examine. There is no reputation here to trust or distrust.",
       verdict: "inconclusive",
       score: 0,

@@ -53,13 +53,56 @@ export interface TicketScope {
   withheld: { signature: string; target: string; why: string }[];
 }
 
+/**
+ * The terms every mandate opened from this ticket carries.
+ *
+ * Four of these are load-bearing against the contract's own validation, and
+ * each reverts *before* the wallet opens, so getting one wrong reads to a user
+ * as a dead button rather than as a rejected value.
+ *
+ *   `epochLength` must exceed `challengeWindow`, which is 300 on the live
+ *   market — an epoch shorter than the window in which it can be contested
+ *   cannot be settled, and the contract says so with `ChallengeWindowTooLong`.
+ *
+ *   `strikes` must not be zero. Zero strikes means an agent is dismissed on
+ *   its first bad epoch, which the contract treats as a parameter error rather
+ *   than a policy.
+ *
+ *   `catastrophic` must be *negative*. It is the alpha at which a mandate ends
+ *   immediately, and a non-negative value would end it on success — so the
+ *   natural default of 0 is exactly the one that reverts.
+ *
+ *   `bondFloorBps` ties the bond to the size of the capital. A flat floor is
+ *   only meaningful at one size; 2,000 makes the agent post at least a fifth
+ *   of what it is being trusted with.
+ */
 const TERMS = {
   toleranceBps: 200,
   feeBps: 2_000,
   slashBps: 2_500,
   epochLength: 3_600,
   epochsTotal: 24,
+  strikes: 3,
+  catastrophic: -1_000,
+  bondFloorBps: 2_000,
 } as const;
+
+/** Native BNB. V2 ignores the `amount` argument and uses `msg.value`. */
+const NATIVE = "0x0000000000000000000000000000000000000000" as const;
+
+/**
+ * What the mandate is measured against, per category.
+ *
+ * `Hold` for the two that are judged on beating a static position, the best
+ * passive rate for yield, and liquidation-avoided for health factor. The enum
+ * order is the contract's.
+ */
+const BENCHMARK: Record<Category, number> = {
+  rebalancing: 0,
+  "grid-trading": 0,
+  "yield-optimisation": 1,
+  "health-factor": 2,
+};
 
 const EXPLORER = marketChain.blockExplorers?.default?.url;
 
@@ -81,7 +124,17 @@ export default function Ticket({
   const { address, available, ready, chainId, connect, switchChain } = useWallet();
   const [connecting, setConnecting] = useState(false);
   const [category, setCategory] = useState<Category>(initialCategory ?? "grid-trading");
-  const [capital, setCapital] = useState("0.05");
+  /*
+    A deliberately small default, because this field is prefilled and signed.
+
+    It used to read 0.05 BNB. The largest mandate this market has ever held is
+    0.00006, so anybody accepting the prefill was signing for roughly eight
+    hundred times the market's entire history — on a page whose whole purpose
+    is a stranger's first transaction. A default in a money field is a
+    recommendation, and the honest recommendation for a first hire is the
+    smallest amount that is still real.
+  */
+  const [capital, setCapital] = useState("0.001");
   const [tx, setTx] = useState<TxState>({ phase: "idle" });
 
   const scope = scopes[category];
@@ -97,8 +150,16 @@ export default function Ticket({
   const refusal = useMemo(() => {
     if (!Number.isFinite(capitalNum) || capitalNum <= 0)
       return "Capital must be a positive number of BNB.";
-    if (capitalNum < 0.00001)
-      return "Below 0.00001 BNB the bond tier rounds to nothing and the agent would risk zero.";
+    /*
+      The floor is set by what an agent can actually bid, not by what the
+      field can hold. A mandate takes a bond of at least a fifth of its
+      capital, and the market's flat minimum is 0.00004 BNB — so under 0.0002
+      the required bond falls below that minimum and no agent could bid on the
+      mandate at all. Opening one would cost gas to create something nobody
+      can take.
+    */
+    if (capitalNum < 0.0002)
+      return "Below 0.0002 BNB the required bond falls under the market minimum, so no agent could bid on it.";
     return null;
   }, [capitalNum]);
 
@@ -113,11 +174,17 @@ export default function Ticket({
         "openMandate",
         [
           CATEGORIES.indexOf(category),
+          NATIVE,
+          0n,
+          BENCHMARK[category],
           TERMS.toleranceBps,
           TERMS.feeBps,
           TERMS.slashBps,
           TERMS.epochLength,
           TERMS.epochsTotal,
+          TERMS.strikes,
+          TERMS.catastrophic,
+          TERMS.bondFloorBps,
         ],
         parseEther(capital as `${number}`),
         setTx,
@@ -188,7 +255,7 @@ export default function Ticket({
           <p className="ticket__note">
             Settlement compares the agent against a measurement whose hash is on
             chain before the outcome is known, so the score cannot be written after
-            the fact — by them or by us.
+            the fact, by them or by us.
           </p>
         </Field>
 
@@ -203,7 +270,7 @@ export default function Ticket({
         </Field>
 
         <Field label="Bond floor">
-          <p className="ticket__value num">{bondFloor > 0 ? bondFloor.toFixed(5) : "—"} BNB</p>
+          <p className="ticket__value num">{bondFloor > 0 ? bondFloor.toFixed(5) : "0"} BNB</p>
           <p className="ticket__note">
             The least an agent must escrow of its own to take this mandate, at the
             tier your capital falls in. {TERMS.slashBps / 100}% of it is slashed
@@ -246,7 +313,7 @@ export default function Ticket({
                   )}
                 </td>
                 <td className="num ticket__sel">{c.signature}</td>
-                <td className="ticket__why">—</td>
+                <td className="ticket__why">none</td>
               </tr>
             ))}
             {/*

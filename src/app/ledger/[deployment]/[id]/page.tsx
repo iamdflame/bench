@@ -36,7 +36,7 @@ export async function generateMetadata({
 }): Promise<Metadata> {
   const { deployment, id } = await params;
   return {
-    title: `Mandate ${id} on ${deployment} — the ledger — MANDATE`,
+    title: `Mandate ${id} on ${deployment}, the full record | Mandate`,
     description: `Mandate ${id} as it stands on the ${deployment} deployment of the market, read from the contract.`,
   };
 }
@@ -204,7 +204,7 @@ export default async function SupersededLedger({
                 <dt className="mark-label">Agent</dt>
                 <dd className="num">
                   {m.agent === ZERO ? (
-                    "not awarded — nobody has bid"
+                    "not awarded, nobody has bid"
                   ) : (
                     <a href={addressUrl(m.agent, d.chainId)}>{m.agent}</a>
                   )}

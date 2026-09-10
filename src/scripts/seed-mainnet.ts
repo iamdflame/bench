@@ -14,7 +14,7 @@
 
 import { formatEther, parseEther, type Address, type Hex } from "viem";
 import {
-  MANDATE_MARKET_ABI,
+  MARKET_ABI,
   MARKET_ADDRESS,
   marketChain,
   marketClient,
@@ -63,7 +63,7 @@ async function send(
 ) {
   const hash = await wallet.writeContract({
     address: MARKET_ADDRESS,
-    abi: MANDATE_MARKET_ABI,
+    abi: MARKET_ABI,
     functionName,
     args,
     value,
@@ -154,7 +154,7 @@ async function run() {
     const count = Number(
       await marketClient.readContract({
         address: MARKET_ADDRESS,
-        abi: MANDATE_MARKET_ABI,
+        abi: MARKET_ABI,
         functionName: "mandateCount",
       }),
     );
@@ -237,7 +237,7 @@ async function fast() {
   const count = Number(
     await marketClient.readContract({
       address: MARKET_ADDRESS,
-      abi: MANDATE_MARKET_ABI,
+      abi: MARKET_ABI,
       functionName: "mandateCount",
     }),
   );

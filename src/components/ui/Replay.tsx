@@ -107,7 +107,7 @@ export default function Replay({ head, initial }: { head: number; initial?: numb
           {(data?.rungs ?? []).map((r) => (
             <li className="replay__rung" key={r.n} data-off={r.replayable ? undefined : "1"}>
               <span className="replay__fig num">
-                {r.population === null ? "—" : r.population.toLocaleString()}
+                {r.population === null ? "not read" : r.population.toLocaleString()}
               </span>
               <span className="replay__body">
                 <span className="replay__name">

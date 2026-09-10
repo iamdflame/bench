@@ -23,7 +23,7 @@ import {
 } from "viem";
 import { useCallback, useEffect, useState } from "react";
 import { marketChain, marketClient, MARKET_ADDRESS } from "./market";
-import { MANDATE_MARKET_ABI } from "./abi";
+import { MANDATE_MARKET_V2_ABI } from "./abiV2";
 
 declare global {
   interface Window {
@@ -130,10 +130,50 @@ export function useWallet() {
     visitor gets no dialogue at all.
   */
   useEffect(() => {
+    /*
+      Extensions do not all arrive before React does.
+
+      This checked `window.ethereum` exactly once, on mount, in an effect whose
+      only dependency is stable — so a wallet that injected two hundred
+      milliseconds later was invisible for the rest of the session, and the UI
+      showed a buttonless "no wallet detected" to somebody who plainly had one.
+
+      Three ways in now, all passive: the EIP-6963 announcement, which is how
+      Rabby, Coinbase and current MetaMask introduce themselves and the only
+      way to see past whichever extension won the `window.ethereum` race; the
+      legacy `ethereum#initialized` event; and a short poll for injectors that
+      announce nothing at all. None of them touches the provider — presence is
+      a property read — so the popup problem this file used to have does not
+      come back.
+    */
+    let cancelled = false;
+    const markAvailable = () => {
+      if (!cancelled) setState((s) => (s.available ? s : { ...s, available: true }));
+    };
+
+    const onAnnounce = () => markAvailable();
+    window.addEventListener("eip6963:announceProvider", onAnnounce);
+    window.dispatchEvent(new Event("eip6963:requestProvider"));
+    window.addEventListener("ethereum#initialized", onAnnounce, { once: true });
+
+    let tries = 0;
+    const poll = window.setInterval(() => {
+      tries += 1;
+      if (window.ethereum) markAvailable();
+      if (window.ethereum || tries >= 6) window.clearInterval(poll);
+    }, 400);
+
+    const cleanupDetect = () => {
+      cancelled = true;
+      window.clearInterval(poll);
+      window.removeEventListener("eip6963:announceProvider", onAnnounce);
+      window.removeEventListener("ethereum#initialized", onAnnounce);
+    };
+
     const provider = window.ethereum;
     if (!provider) {
       setState((s) => ({ ...s, available: false }));
-      return;
+      return cleanupDetect;
     }
     setState((s) => ({ ...s, available: true }));
 
@@ -165,6 +205,7 @@ export function useWallet() {
     p.on?.("accountsChanged", onAccounts);
     p.on?.("chainChanged", onChain);
     return () => {
+      cleanupDetect();
       p.removeListener?.("accountsChanged", onAccounts);
       p.removeListener?.("chainChanged", onChain);
     };
@@ -217,6 +258,41 @@ export function useWallet() {
 }
 
 /**
+ * Which contract a write goes to, and which ABI describes it.
+ *
+ * This used to be implicit — every write went to `MARKET_ADDRESS` under
+ * `MANDATE_MARKET_ABI` — and the two had drifted apart. `MARKET_ADDRESS` points
+ * at MandateMarket**V2**; `MANDATE_MARKET_ABI` describes **V1**. Their
+ * signatures are not compatible: V2's `openMandate` takes twelve arguments
+ * where V1's takes six, `bid` four where V1 takes two, `withdraw` one where V1
+ * takes none.
+ *
+ * The consequence was total. `simulateContract` runs before the wallet is ever
+ * asked for a signature, so every write reverted with `execution reverted: 0x`
+ * — the chain saying "no such function" — and the user saw a dead button and no
+ * wallet prompt. Not a degraded hire path: no hire path at all.
+ *
+ * Verified against mainnet: V1's `openMandate` selector reverts on
+ * `0x6052C0ab…71B2` and succeeds on `0xeD331c44…1544`, and the former answers
+ * `paused()` and `proposerStake()`, which only V2 has.
+ *
+ * So the target is now explicit at every call site. The book already carries a
+ * `deploymentAddress` per row — mandates from three deployments share one table
+ * — and passing it here is what stops a bid on a superseded row being sent to
+ * the canonical contract against a different mandate with the same number.
+ */
+export interface WriteTarget {
+  address: Address;
+  abi: readonly unknown[];
+}
+
+/** The canonical market: V2, the one `MARKET_ADDRESS` resolves to. */
+export const CANONICAL_TARGET: WriteTarget = {
+  address: MARKET_ADDRESS,
+  abi: MANDATE_MARKET_V2_ABI,
+};
+
+/**
  * Sends one write to the market and follows it to a receipt.
  *
  * Simulates first: a revert caught here costs nothing, while the same revert
@@ -228,6 +304,7 @@ export async function sendMarketTx(
   args: unknown[],
   value?: bigint,
   onPhase?: (s: TxState) => void,
+  target: WriteTarget = CANONICAL_TARGET,
 ): Promise<Hash> {
   const provider = window.ethereum;
   if (!provider) throw new Error("No wallet found.");
@@ -238,12 +315,34 @@ export async function sendMarketTx(
     transport: custom(provider),
   });
 
+  /*
+    Does this contract have this function at all?
+
+    The outage this guard exists for was silent: the ABI described V1, the
+    address held V2, and `simulateContract` returned `execution reverted: 0x` —
+    the chain's way of saying "no such function", which is indistinguishable
+    from a business-logic rejection once it reaches a user. Every write in the
+    product died that way and the failure read as a dead button.
+
+    Checking the ABI names before dialling out costs nothing and converts that
+    whole class of mistake from a mystery into a sentence that names the
+    function and the contract.
+  */
+  const known = (target.abi as readonly { type?: string; name?: string }[]).some(
+    (entry) => entry.type === "function" && entry.name === functionName,
+  );
+  if (!known) {
+    const message = `${functionName} is not a function on the market at ${target.address}. This deployment answers a different ABI.`;
+    onPhase?.({ phase: "failed", error: message });
+    throw new Error(message);
+  }
+
   onPhase?.({ phase: "signing" });
 
   try {
     const { request } = await marketClient.simulateContract({
-      address: MARKET_ADDRESS,
-      abi: MANDATE_MARKET_ABI,
+      address: target.address,
+      abi: target.abi,
       functionName,
       args,
       value,
@@ -288,6 +387,21 @@ export function readableError(error: unknown): string {
     BidSpent: "That bid has already been promoted or withdrawn.",
     NothingToWithdraw: "There is nothing to withdraw.",
     EpochNotElapsed: "This epoch has not finished yet.",
+    // V2 adds errors a user can actually hit. Each says what to do about it,
+    // not what the contract called it.
+    Paused: "The market is paused and is not accepting new capital.",
+    BidExpired: "That bid has expired. The agent would need to post a new one.",
+    NoSuchBid: "That bid no longer exists.",
+    NotBidder: "Only the wallet that placed a bid can withdraw it.",
+    BelowFineness: "That agent's fineness is below what this market requires.",
+    NotAssayed: "That agent has never been assayed, so it cannot bid here yet.",
+    StaleObservation: "The opening mark is stale or empty, that wallet holds nothing to measure at this block.",
+    NoOpeningAttestation: "This mandate has no opening mark committed, so it cannot be settled.",
+    TermComplete: "This mandate has served its full term.",
+    WrongAsset: "That is not the asset this mandate is denominated in.",
+    ChallengeWindowTooLong: "The epoch is shorter than the window in which it could be contested.",
+    StakeTooSmall: "That stake is below what the market requires to propose or challenge.",
+    BondTooSmall_V2: "That bond is below this mandate's required floor.",
   };
   for (const [key, message] of Object.entries(named)) {
     if (raw.includes(key)) return message;
@@ -298,4 +412,4 @@ export function readableError(error: unknown): string {
 }
 
 export const fmtBnb = (wei: bigint | null, dp = 3) =>
-  wei === null ? "—" : Number(formatEther(wei)).toFixed(dp);
+  wei === null ? "" : Number(formatEther(wei)).toFixed(dp);

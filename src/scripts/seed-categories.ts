@@ -11,7 +11,7 @@
 
 import { formatEther, parseEther, type Hex } from "viem";
 import {
-  MANDATE_MARKET_ABI,
+  MARKET_ABI,
   MARKET_ADDRESS,
   marketChain,
   marketClient,
@@ -32,7 +32,7 @@ const EPOCHS_TOTAL = 6;
 const count = Number(
   await marketClient.readContract({
     address: MARKET_ADDRESS,
-    abi: MANDATE_MARKET_ABI,
+    abi: MARKET_ABI,
     functionName: "mandateCount",
   }),
 );
@@ -62,7 +62,7 @@ if (balance < need) {
 for (const [name, enumValue] of missing) {
   const hash = await owner.writeContract({
     address: MARKET_ADDRESS,
-    abi: MANDATE_MARKET_ABI,
+    abi: MARKET_ABI,
     functionName: "openMandate",
     args: [enumValue, 200, 2_000, 2_500, EPOCH_SECONDS, EPOCHS_TOTAL],
     value: CAPITAL,
@@ -77,7 +77,7 @@ for (const [name, enumValue] of missing) {
   const now = Number(
     await marketClient.readContract({
       address: MARKET_ADDRESS,
-      abi: MANDATE_MARKET_ABI,
+      abi: MARKET_ABI,
       functionName: "mandateCount",
     }),
   );

@@ -24,9 +24,9 @@
  * then reported by the adjudicator exactly as a real settlement would be.
  */
 
+import { MANDATE_MARKET_ABI } from "@/lib/chain/abi";
 import { formatEther, parseEther, type Address, type Hex } from "viem";
 import {
-  MANDATE_MARKET_ABI,
   MARKET_ADDRESS,
   bnb,
   marketChain,

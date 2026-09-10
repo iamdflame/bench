@@ -27,7 +27,7 @@
 import { readAgentIndex } from "@/lib/data/agents";
 import {
   logClients,
-  MANDATE_MARKET_ABI,
+  MARKET_ABI,
   MARKET_ADDRESS,
   marketClient,
   readAllMandates,
@@ -39,7 +39,19 @@ import { getProbes } from "@/lib/data/probes";
 import { HOUSE } from "@/lib/house";
 import { collapse, type Duplication } from "@/lib/dedup";
 
-/** The lowest hallmarkable grade, and this market's bar. */
+/**
+ * The lowest hallmarkable grade — a hallmarking convention, not this market's gate.
+ *
+ * These are two different claims and the site was conflating them. 375 is the
+ * assay standard used to grade an agent; the *market's* admission bar is
+ * `minFineness()` on the deployed contract, and on the canonical V2 deployment
+ * it currently reads **0**. So pages were telling readers "at or above 375 the
+ * market will accept a bid" while the contract would accept a bid from anyone.
+ *
+ * A project whose entire argument is that self-reported claims are worthless
+ * cannot carry a false claim about its own gate. The grade keeps this name; the
+ * gate is read from chain wherever the gate is what is being described.
+ */
 export const HALLMARK_BAR = 375;
 
 export interface Rung {
@@ -130,7 +142,7 @@ async function readAssayed(): Promise<{ count: number; agents: Address[] } | nul
       for (const addr of seen) {
         const f = (await marketClient.readContract({
           address: MARKET_ADDRESS,
-          abi: MANDATE_MARKET_ABI,
+          abi: MARKET_ABI,
           functionName: "fineness",
           args: [addr as Address],
         })) as number;
@@ -248,7 +260,7 @@ async function readLadderUncached(): Promise<LadderReading> {
     minFineness = Number(
       await marketClient.readContract({
         address: MARKET_ADDRESS,
-        abi: MANDATE_MARKET_ABI,
+        abi: MARKET_ABI,
         functionName: "minFineness",
       }),
     );
@@ -297,7 +309,7 @@ async function readLadderUncached(): Promise<LadderReading> {
       source:
         probes.answered > 0
           ? `A floor, and our own call rather than someone else's flag: ${probes.answered} of ${probes.probed} endpoints answered when this office called them ${ago(probes.at)}, with the status and latency of each recorded. Everything outside those ${probes.probed} is unprobed, not silent. For comparison, 8004scan's own verification flag reports ${registry.withEndpoint} across the whole registry.`
-          : "Endpoint verified against the registry's own record rather than by a call we made — no census of ours has run.",
+          : "Endpoint verified against the registry's own record rather than by a call we made, no census of ours has run.",
       verify: "npm run probe",
     },
     {
@@ -306,7 +318,7 @@ async function readLadderUncached(): Promise<LadderReading> {
       test: "Its wallet has transacted and touched the protocols its category implies.",
       population: null,
       source:
-        "Measured per agent on request, not yet swept across the registry — that needs the 8004scan Pro tier. A number here would be a guess, so there isn't one.",
+        "Measured per agent on request, not yet swept across the registry, that needs the 8004scan Pro tier. A number here would be a guess, so there isn't one.",
       verify: "npm run assay -- <tokenId>",
     },
     {

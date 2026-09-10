@@ -1,0 +1,27 @@
+name: readme-guard
+
+# The 9 Sep failure was a caption that became a headline: a README claiming
+# "303,391 agents. Five you can reach." sat in front of a marketplace listing
+# three hundred. Numbers that a probe can change by tonight do not belong in a
+# file nobody re-reads. This fails the build if they come back.
+
+on: [push, pull_request]
+
+jobs:
+  guard:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: No stale headline numbers in the README
+        run: |
+          fail=0
+          for pattern in "Five you can reach" "303,391 agents" "Assay Office for Autonomous Agents"; do
+            if grep -qF "$pattern" README.md; then
+              echo "README still contains: $pattern"
+              fail=1
+            fi
+          done
+          # The README must name the live site and the walk.
+          grep -qF "mandate-coral.vercel.app" README.md || { echo "README does not link the live site"; fail=1; }
+          grep -qF "marketplace that hires an agent it does not operate" README.md || { echo "README headline changed"; fail=1; }
+          exit $fail

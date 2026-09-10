@@ -132,7 +132,7 @@ function SessionBlock({ agent, explorer }: { agent: OperatedAgent; explorer: str
       <div className="op__session op__session--none">
         <div className="label">authority</div>
         <p>
-          No session granted. This strategy is observing only — it can read the
+          No session granted. This strategy is observing only, it can read the
           chain and decide, but holds no key and can spend nothing.
         </p>
       </div>
@@ -190,7 +190,7 @@ function SessionBlock({ agent, explorer }: { agent: OperatedAgent; explorer: str
       </div>
 
       <p className="op__revoke-note">
-        Revoking ends this agent&apos;s ability to act at all — the same event as
+        Revoking ends this agent&apos;s ability to act at all, the same event as
         being dismissed from the mandate. The principal never surrendered its
         keys; only this bounded authority existed, and it stops.
       </p>

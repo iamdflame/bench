@@ -19,17 +19,46 @@ import type { Hex } from "viem";
 import { assayAgent } from "@/lib/assay";
 import { isHallmarked } from "@/lib/assay/types";
 import {
-  MANDATE_MARKET_ABI,
+  MARKET_ABI,
   MARKET_ADDRESS,
   marketChain,
   marketClient,
   walletFor,
 } from "@/lib/chain/market";
 
-const ADJUDICATOR_KEY = (process.env.ADJUDICATOR_KEY ??
-  "0xac0974bec39a17e36ba4a6b4d238ff944bacb478cbed5efcae784d7bf4f2ff80") as Hex;
-
 const CHAIN_ID = Number(process.env.CHAIN_ID ?? 56);
+
+/*
+  No silent fallback to anvil's first account.
+
+  This used to default to `0xac0974be…ff80`, which is the well-known Foundry
+  test key. Against a local chain that is convenient; against mainnet it means
+  the script signs as an address that is not the adjudicator, every call
+  reverts `NotAdjudicator`, and the reason is nowhere in the output. A default
+  credential that is wrong everywhere it matters is worse than no default.
+*/
+const ANVIL_KEY = "0xac0974bec39a17e36ba4a6b4d238ff944bacb478cbed5efcae784d7bf4f2ff80";
+const configured = process.env.ADJUDICATOR_KEY;
+
+if (!configured) {
+  console.error(
+    "ADJUDICATOR_KEY is not set. This script signs as the adjudicator and there is no safe default.",
+  );
+  console.error(
+    CHAIN_ID === 56
+      ? "  On mainnet, set it to the key that holds the adjudicator role. Read it with:\n" +
+          "    cast call $MARKET_ADDRESS 'adjudicator()(address)' --rpc-url https://bsc-dataseed1.binance.org"
+      : `  For a local chain, ADJUDICATOR_KEY=${ANVIL_KEY}`,
+  );
+  process.exit(1);
+}
+
+if (CHAIN_ID === 56 && configured.toLowerCase() === ANVIL_KEY) {
+  console.error("Refusing: that is anvil's test key and this is mainnet.");
+  process.exit(1);
+}
+
+const ADJUDICATOR_KEY = configured as Hex;
 
 if (!MARKET_ADDRESS) {
   console.error("MARKET_ADDRESS is not set.");
@@ -54,7 +83,7 @@ const DEMO: { wallet: string; tokenId: string; label: string }[] = [
 async function publish(agent: string, fineness: number) {
   const hash = await wallet.writeContract({
     address: MARKET_ADDRESS,
-    abi: MANDATE_MARKET_ABI,
+    abi: MARKET_ABI,
     functionName: "publishAssay",
     args: [agent as `0x${string}`, fineness],
     chain: marketChain,
@@ -92,7 +121,7 @@ for (const t of targets) {
 
 const bar = await marketClient.readContract({
   address: MARKET_ADDRESS,
-  abi: MANDATE_MARKET_ABI,
+  abi: MARKET_ABI,
   functionName: "minFineness",
 });
 log(`market bar is ${bar} fine${Number(bar) === 0 ? " (gate disabled)" : ""}`);

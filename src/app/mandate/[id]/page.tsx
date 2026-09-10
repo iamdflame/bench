@@ -31,7 +31,7 @@ export async function generateMetadata({
 }): Promise<Metadata> {
   const { id } = await params;
   return {
-    title: `Mandate ${id} — the ledger — MANDATE`,
+    title: `Mandate ${id}, the full record | Mandate`,
     description: `Every measurement mandate ${id} was settled against, committed on chain before the outcome was known, with the command that re-derives them.`,
   };
 }
@@ -118,7 +118,7 @@ async function Life({
       at: att ? Number(att.takenAt) * 1000 : null,
       block: att?.blockNumber ?? settled?.blockNumber,
       title: `Epoch ${e} settled`,
-      figure: alpha === null ? "—" : pct(alpha),
+      figure: alpha === null ? "none" : pct(alpha),
       // Gold is earned, not defaulted to: zero alpha is neither a gain nor a
       // loss and takes the neutral ink. Trailing dims; it never alarms.
       tone:
@@ -198,10 +198,10 @@ async function Life({
                     return (
                       <tr key={e}>
                         <td>{e}</td>
-                        <td className="r">{prev ? bnb(prev.valuationWei) : "—"}</td>
-                        <td className="r">{att ? bnb(att.valuationWei) : "—"}</td>
-                        <td className="r">{implied === null ? "—" : pct(implied)}</td>
-                        <td className="r">{settled ? pct(Number(settled.alphaBps)) : "—"}</td>
+                        <td className="r">{prev ? bnb(prev.valuationWei) : "none"}</td>
+                        <td className="r">{att ? bnb(att.valuationWei) : "none"}</td>
+                        <td className="r">{implied === null ? "none" : pct(implied)}</td>
+                        <td className="r">{settled ? pct(Number(settled.alphaBps)) : "none"}</td>
                       </tr>
                     );
                   })}

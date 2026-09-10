@@ -78,7 +78,7 @@ export default function Claim({
         {backing ? (
           <p className="claim__backing">
             <a className="link-underline" href={backing.href} target="_blank" rel="noreferrer">
-              backed by {backing.bnb} BNB — take it if this is wrong
+              backed by {backing.bnb} BNB, take it if this is wrong
             </a>
           </p>
         ) : (

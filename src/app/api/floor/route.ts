@@ -6,7 +6,8 @@
  * out to every viewer. One reader, many watchers.
  */
 
-import { MANDATE_MARKET_ABI, MARKET_ADDRESS, marketClient } from "@/lib/chain/market";
+import { MARKET_ADDRESS, marketClient } from "@/lib/chain/market";
+import { MANDATE_MARKET_V2_ABI } from "@/lib/chain/abiV2";
 import { readBook, bookToSnapshot } from "@/lib/chain/book";
 
 export const runtime = "nodejs";
@@ -84,27 +85,57 @@ async function readSnapshot(): Promise<FloorSnapshot> {
   const total = book.opened;
   const blockNumber = book.blockNumber ?? 0n;
 
-  const successors = await Promise.all(
+  /*
+    The successor, derived rather than asked for.
+
+    This used to call `successor(uint256)`, which V1 has and **V2 does not** —
+    so on the canonical market every one of these reverted, the `.catch`
+    swallowed it, and the column has been permanently blank rather than wrong.
+    Blank is the better failure of the two, but it is still a column that has
+    never once told the truth.
+
+    V2 answers the same question from the bid queue: the next live bid is the
+    first that is neither spent nor expired, which is exactly what the
+    contract's own `_nextLiveBid` picks.
+  */
+  const now = BigInt(Math.floor(Date.now() / 1000));
+  const bidQueues = await Promise.all(
     mandates.map((m) =>
       marketClient
         .readContract({
           address: MARKET_ADDRESS,
-          abi: MANDATE_MARKET_ABI,
-          functionName: "successor",
+          abi: MANDATE_MARKET_V2_ABI,
+          functionName: "getBids",
           args: [BigInt(m.id)],
         })
         .catch(() => null),
     ),
   );
 
+  const successors = bidQueues.map((q) => {
+    const bids = q as readonly { agent: string; spent: boolean; expiresAt: bigint }[] | null;
+    if (!bids) return null;
+    const next = bids.find((b) => !b.spent && (b.expiresAt === 0n || b.expiresAt > now));
+    return next?.agent ?? null;
+  });
+
   // The original bid backing each holder, so a slashed bond reads as a
   // fraction rather than an absolute nobody can calibrate against.
   const originals = await Promise.all(
     mandates.map(async (m) => {
       try {
+        /*
+          Read with V2's ABI, because V2's `Bid` carries a fifth field.
+
+          Decoded with V1's four-field shape the first element happens to be
+          right and every element after it is read at the wrong stride — so the
+          floor would attribute bonds to addresses that do not exist. The live
+          market has one bid, which is the only reason this has not shown yet;
+          the second bid anybody places would have made it visible.
+        */
         const bids = (await marketClient.readContract({
           address: MARKET_ADDRESS,
-          abi: MANDATE_MARKET_ABI,
+          abi: MANDATE_MARKET_V2_ABI,
           functionName: "getBids",
           args: [BigInt(m.id)],
         })) as readonly { agent: string; bond: bigint }[];

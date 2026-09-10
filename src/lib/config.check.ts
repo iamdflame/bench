@@ -22,7 +22,7 @@ for (const category of CATEGORIES) {
   for (const t of targets) {
     if (!evidence.has(t)) {
       problems.push(
-        `${category}: grants calls on ${PROTOCOL_LABEL[t] ?? t}, which its evidence list never searches — those calls can never be earned`,
+        `${category}: grants calls on ${PROTOCOL_LABEL[t] ?? t}, which its evidence list never searches, so those calls can never be earned`,
       );
     }
   }

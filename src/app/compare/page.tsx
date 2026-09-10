@@ -1,291 +1,291 @@
+import Link from "next/link";
 import type { Metadata } from "next";
-import SiteHeader from "@/components/shell/SiteHeader";
-import SiteFooter from "@/components/shell/SiteFooter";
-import Observation from "@/components/ui/Observation";
-import Command from "@/components/ui/Command";
-import CategoryMark from "@/components/mark/CategoryMark";
-import Fineness from "@/components/mark/Fineness";
-import TokenLookup from "@/components/ui/TokenLookup";
-import { resolveAgent, type AgentRecord } from "@/lib/agent-record";
-import { placeAgent, readMarketSets, type MarketSets } from "@/lib/rung";
-import { CATEGORY_LABEL, CHAIN_ID, EXPLORER, RUNG_NAMES } from "@/lib/config";
-import { MARKET_ADDRESS, marketClient } from "@/lib/chain/market";
-
-export const revalidate = 30;
+import AppShell from "@/components/v2/shell/AppShell";
+import CategoryMark from "@/components/v2/marks/CategoryMark";
+import { CATEGORIES, CATEGORY_LABEL, type Category } from "@/lib/config";
+import { listings, listingFor, type Listing } from "@/lib/market/listing";
+import { hireCounts } from "@/lib/market/hires";
+import { reviewSample } from "@/lib/market/reviews";
 
 export const metadata: Metadata = {
-  title: "Compare two agents — MANDATE",
+  title: "Compare agents | Mandate",
   description:
-    "Two ERC-8004 token ids on BNB Smart Chain, side by side, on the same tests at the same block. Absence of evidence is shown as absence, not as a low score.",
+    "Put agents doing the same job side by side, on facts that were checked rather than claimed.",
 };
 
+export const revalidate = 300;
+
 /**
- * Two agents, side by side, on the same tests at the same block.
+ * Two or three agents, side by side, rendered on the server.
  *
- * A register sorts; it does not answer "which of these two". Somebody choosing
- * between the best-known agent in a category and the one that actually holds a
- * bond is doing the thing this office exists for, and they were being asked to
- * open two tabs and hold the numbers in their head.
+ * It was a client component and so the comparison existed only after
+ * JavaScript ran: the HTML carried the page furniture and no table. Every
+ * control here is a link now, which means the comparison is in the first byte,
+ * survives a dead script, and can be pasted into a chat and open on the same
+ * two agents.
  *
- * Every row is a test both agents were put through, not a feature matrix. Where
- * a test could not be run for one of them the cell says so rather than showing
- * a zero, because "we could not measure this" and "this measured nothing" are
- * different claims and a comparison is exactly where conflating them decides
- * something.
+ * The default pair is deliberately not two of ours. Listing a competitor's
+ * agent beside our own reading of it is what makes this a venue rather than a
+ * shop window.
  */
 
-interface Side {
-  tokenId: string;
-  agent: AgentRecord | null;
-  rung: number | null;
-  rungReason: string | null;
-  fineness: number | null;
-  bondWei: bigint;
-  alphaBps: bigint;
-  epochsSettled: number;
-  mandates: number;
+const SLOTS = 3;
+const DEFAULT_PAIR = ["265375", "269706"];
+
+interface Cell {
+  text: string;
+  good?: boolean;
+  weak?: boolean;
 }
 
-async function read(tokenId: string | null, sets: MarketSets): Promise<Side | null> {
-  if (!tokenId || !/^\d{1,20}$/.test(tokenId)) return null;
-  const agent = await resolveAgent(tokenId).catch(() => null);
-  if (!agent) {
-    return {
-      tokenId,
-      agent: null,
-      rung: null,
-      rungReason: null,
-      fineness: null,
-      bondWei: 0n,
-      alphaBps: 0n,
-      epochsSettled: 0,
-      mandates: 0,
-    };
-  }
-  const place = placeAgent({ ...agent, rung: undefined }, sets);
-  const st = agent.owner ? sets.standing.get(agent.owner.toLowerCase()) : undefined;
-  return {
-    tokenId,
-    agent,
-    rung: sets.read ? place.rung : null,
-    rungReason: place.reason,
-    fineness: st?.fineness ?? null,
-    bondWei: st?.bondWei ?? 0n,
-    alphaBps: st?.alphaBps ?? 0n,
-    epochsSettled: st?.epochsSettled ?? 0,
-    mandates: st?.mandates ?? 0,
-  };
+const ROWS: { label: string; value: (l: Listing) => Cell }[] = [
+  {
+    label: "What it says it does",
+    value: (l) => ({ text: l.what ?? "Published no description" }),
+  },
+  {
+    label: "Answered when we called it",
+    value: (l) =>
+      l.liveness === "live"
+        ? {
+            text: l.probe?.latencyMs != null ? `Yes, in ${l.probe.latencyMs} ms` : "Yes",
+            good: true,
+          }
+        : l.liveness === "silent"
+          ? { text: "No, nothing came back", weak: true }
+          : l.liveness === "no-endpoint"
+            ? { text: "Its card names no endpoint", weak: true }
+            : { text: "We have not called it" },
+  },
+  {
+    label: "Publishes a price you can pay",
+    value: (l) =>
+      l.probe?.status === 402
+        ? { text: "Yes, it quoted us one", good: true }
+        : l.declaresPayment
+          ? { text: "It says so; we have not been quoted" }
+          : { text: "Bond only", weak: true },
+  },
+  {
+    label: "Registry reviews",
+    value: (l) => {
+      if (l.reviews < 1) return { text: "None", weak: true };
+      const q = l.reviewQuality;
+      if (!q) return { text: `${l.reviews}, writers unidentified` };
+      if (q.flaggedShare >= 100) {
+        return { text: `${l.reviews}, all from flagged wallets`, weak: true };
+      }
+      if (q.flaggedShare > 0) return { text: `${l.reviews}, ${q.flaggedShare}% from flagged wallets` };
+      return { text: `${l.reviews}, none from flagged wallets`, good: true };
+    },
+  },
+  {
+    label: "Reviewers we could identify",
+    value: (l) => {
+      const q = l.reviewQuality;
+      if (!q) return { text: l.reviews > 0 ? "Outside our sample" : "None" };
+      return {
+        text: `${q.reviewers} wallet${q.reviewers === 1 ? "" : "s"}, ${q.flaggedReviewers} flagged`,
+        weak: q.reviewers > 0 && q.flaggedReviewers === q.reviewers,
+      };
+    },
+  },
+  {
+    label: "Wallet separate from its owner",
+    value: (l) =>
+      l.custodySeparate === null
+        ? { text: "Not checked" }
+        : l.custodySeparate
+          ? { text: "Yes", good: true }
+          : { text: "No, one address does both", weak: true },
+  },
+  {
+    label: "Checks passed",
+    value: (l) =>
+      l.checksPassed === null
+        ? { text: "Not checked yet" }
+        : {
+            text: `${l.checksPassed} of 6`,
+            good: l.checksPassed >= 3,
+            weak: l.checksPassed === 0,
+          },
+  },
+  {
+    label: "Hired on this market",
+    value: (l) => (l.hires > 0 ? { text: `${l.hires} times`, good: true } : { text: "Not yet", weak: true }),
+  },
+  { label: "Agent id", value: (l) => ({ text: l.tokenId }) },
+];
+
+function href(picked: string[], category: Category | null, slot: number, tokenId: string) {
+  const next = [...picked];
+  next[slot] = tokenId;
+  const p = new URLSearchParams();
+  if (category) p.set("category", category);
+  ["a", "b", "c"].forEach((k, i) => {
+    if (next[i]) p.set(k, next[i]!);
+  });
+  return `/compare?${p.toString()}`;
 }
 
 export default async function ComparePage({
   searchParams,
 }: {
-  searchParams: Promise<{ a?: string; b?: string }>;
+  searchParams: Promise<Record<string, string | string[] | undefined>>;
 }) {
-  const { a, b } = await searchParams;
-  const sets = await readMarketSets();
-  const [left, right] = await Promise.all([read(a ?? null, sets), read(b ?? null, sets)]);
+  const sp = await searchParams;
+  const one = (k: string) => (Array.isArray(sp[k]) ? sp[k][0] : sp[k]) as string | undefined;
 
-  let blockNumber: string | null = null;
-  try {
-    blockNumber = (await marketClient.getBlockNumber()).toString();
-  } catch {
-    blockNumber = null;
-  }
+  const category = CATEGORIES.includes(one("category") as Category)
+    ? (one("category") as Category)
+    : null;
 
-  const both = left && right;
+  const all = listings((await hireCounts().catch(() => null))?.byTokenId);
+  const given = [one("a"), one("b"), one("c")].filter(Boolean) as string[];
+  const picked = given.length ? given.slice(0, SLOTS) : DEFAULT_PAIR;
+  /*
+    Chosen agents are looked up in the whole index, not just the classified
+    marketplace.
+
+    Our own classifier files an agent from its description, and plenty of real
+    agents it cannot place are still agents somebody wants to compare. A
+    comparison tool that refuses to show one because we failed to categorise it
+    is reporting our limitation as a fact about them. The swap list below stays
+    classified, because that is a browsing aid rather than a claim.
+  */
+  const hires = (await hireCounts().catch(() => null))?.byTokenId;
+  const chosen = picked
+    .map((id) => all.find((l) => l.tokenId === id) ?? listingFor(id, hires?.get(id) ?? 0))
+    .filter(Boolean) as Listing[];
+
+  const pool = category ? all.filter((l) => l.category === category) : all;
+  const sample = reviewSample();
 
   return (
-    <div className="app">
-      <SiteHeader current="/agents" />
-      <main className="shell section">
-        <div className="section__head">
-          <h1 className="section-title">Compare</h1>
-          <Observation size="small" block={blockNumber ?? undefined} at={new Date().toISOString()} />
+    <AppShell>
+      <div className="m-wrap m-section--tight" style={{ paddingTop: "clamp(2rem,5vw,3.5rem)" }}>
+        <div style={{ maxWidth: "46ch", marginBottom: "2rem" }}>
+          <h1 className="m-h1">Compare before you commit</h1>
+          <p className="m-lede m-lede--wide" style={{ marginTop: "1rem" }}>
+            Same job, side by side, on the things we actually checked.
+          </p>
         </div>
-        <p className="section-sub" style={{ maxWidth: "72ch" }}>
-          Two ERC-8004 token ids, on the same tests, read at the same block. Where a
-          test could not be run for one of them the cell says so — a comparison is
-          exactly where &ldquo;could not be measured&rdquo; and &ldquo;measured
-          nothing&rdquo; must not be allowed to look the same.
-        </p>
 
-        {both ? (
-          <div className="cmp">
-            <table className="tbl cmp__tbl">
+        <div className="m-cluster" style={{ marginBottom: "1.5rem" }}>
+          <span className="m-label">Doing the same job</span>
+          <Link className={`m-mkt-cat${!category ? " m-mkt-cat--on" : ""}`} href="/compare">
+            Any job
+          </Link>
+          {CATEGORIES.map((c) => (
+            <Link
+              key={c}
+              className={`m-mkt-cat${category === c ? " m-mkt-cat--on" : ""}`}
+              href={`/compare?category=${c}`}
+            >
+              <CategoryMark category={c} size={18} />
+              {CATEGORY_LABEL[c]}
+            </Link>
+          ))}
+        </div>
+
+        {chosen.length < 2 ? (
+          <div className="m-absent">
+            <p className="m-absent__t">Pick at least two agents.</p>
+            <p className="m-small">
+              {pool.length} agents are doing{" "}
+              {category ? CATEGORY_LABEL[category].toLowerCase() : "one of the four jobs"}.
+            </p>
+          </div>
+        ) : (
+          <div className="m-scroll">
+            <table className="m-cmp">
               <thead>
                 <tr>
-                  <th scope="col">test</th>
-                  <th scope="col">
-                    <Head side={left} />
-                  </th>
-                  <th scope="col">
-                    <Head side={right} />
-                  </th>
+                  <th scope="col" />
+                  {chosen.map((l) => (
+                    <th scope="col" key={l.tokenId}>
+                      {l.category ? <CategoryMark category={l.category} size={30} /> : null}
+                      <Link className="m-cmp__name" href={`/agents/${l.tokenId}`}>
+                        {l.name}
+                      </Link>
+                      <span className="m-note">
+                        {l.categoryLabel ?? "we could not file this one"}
+                      </span>
+                    </th>
+                  ))}
                 </tr>
               </thead>
               <tbody>
-                <Row
-                  label="Exists in the registry"
-                  l={left.agent ? "yes" : "no — ownerOf reverts"}
-                  r={right.agent ? "yes" : "no — ownerOf reverts"}
-                />
-                <Row
-                  label="Card resolves"
-                  l={cardCell(left)}
-                  r={cardCell(right)}
-                />
-                <Row label="Office" l={officeCell(left)} r={officeCell(right)} />
-                <Row
-                  label="Endpoint answered a call we made"
-                  l={left.agent?.endpointVerified ? "yes" : "not yet"}
-                  r={right.agent?.endpointVerified ? "yes" : "not yet"}
-                />
-                <Row
-                  label="Ladder rung"
-                  l={left.rung === null ? "chain unread" : `${left.rung} · ${RUNG_NAMES[left.rung]}`}
-                  r={right.rung === null ? "chain unread" : `${right.rung} · ${RUNG_NAMES[right.rung]}`}
-                />
-                <Row
-                  label="Fineness on chain"
-                  l={left.fineness === null ? "never assayed" : String(left.fineness)}
-                  r={right.fineness === null ? "never assayed" : String(right.fineness)}
-                  num
-                />
-                <Row
-                  label="Mandates held"
-                  l={String(left.mandates)}
-                  r={String(right.mandates)}
-                  num
-                />
-                <Row
-                  label="Bond at risk"
-                  l={left.mandates ? `${bnb(left.bondWei)} BNB` : "none"}
-                  r={right.mandates ? `${bnb(right.bondWei)} BNB` : "none"}
-                  num
-                />
-                <Row
-                  label="Epochs settled"
-                  l={String(left.epochsSettled)}
-                  r={String(right.epochsSettled)}
-                  num
-                />
-                <Row
-                  label="Cumulative alpha"
-                  l={left.epochsSettled ? alpha(left.alphaBps) : "no settled epoch"}
-                  r={right.epochsSettled ? alpha(right.alphaBps) : "no settled epoch"}
-                  num
-                />
-                <Row
-                  label="Can take a mandate today"
-                  l={verdict(left)}
-                  r={verdict(right)}
-                />
+                {ROWS.map((row) => {
+                  const cells = chosen.map((l) => row.value(l));
+                  const tie = cells.every((c) => c.text === cells[0]!.text);
+                  return (
+                    <tr key={row.label} className={tie ? "m-cmp__tie" : ""}>
+                      <th scope="row">{row.label}</th>
+                      {cells.map((c, i) => (
+                        <td
+                          key={chosen[i]!.tokenId}
+                          className={c.good ? "m-cmp--good" : c.weak ? "m-cmp--weak" : ""}
+                        >
+                          {c.text}
+                        </td>
+                      ))}
+                    </tr>
+                  );
+                })}
+                <tr>
+                  <th scope="row" />
+                  {chosen.map((l) => (
+                    <td key={l.tokenId}>
+                      <Link className="m-btn m-btn--sm m-btn--primary" href={`/hire/${l.tokenId}`}>
+                        Hire this one
+                      </Link>
+                    </td>
+                  ))}
+                </tr>
               </tbody>
             </table>
-
-            <p className="section-sub">
-              Neither column is a score. The only rows that cost anybody anything are
-              the last four: a bond can be slashed, and an epoch settles against a
-              measurement committed before the outcome was known.
-            </p>
-
-            <Command>{`npx mandate-verify --chain 56 --deployment v2 --mandate 0`}</Command>
-          </div>
-        ) : (
-          <div className="cmp cmp--empty">
-            <p className="section-sub">
-              Give two token ids: <span className="num">/compare?a=269703&amp;b=336161</span>.
-              Any id in the registry works, whether or not this office has crawled it.
-            </p>
-            <TokenLookup label="Open one agent" cta="Open →" />
           </div>
         )}
-      </main>
-      <SiteFooter
-        market={MARKET_ADDRESS}
-        note={`Both columns read from BNB Smart Chain at the block above · identity from ERC-8004, standing from the market contract · chain ${CHAIN_ID}`}
-      />
-    </div>
+
+        <section className="m-section--tight">
+          <div className="m-head">
+            <h2 className="m-h2">Swap one out</h2>
+            <p className="m-head__note">
+              {pool.length} agents{category ? ` doing ${CATEGORY_LABEL[category].toLowerCase()}` : ""}.
+              Picking one replaces the column it lands in.
+            </p>
+          </div>
+          <div className="m-swap">
+            {pool.slice(0, 30).map((l) => (
+              <span className="m-swap__row" key={l.tokenId}>
+                <span className="m-swap__name">{l.name}</span>
+                <span className="m-cluster">
+                  {[0, 1, 2].map((slot) => (
+                    <Link
+                      key={slot}
+                      className="m-btn m-btn--sm m-btn--quiet"
+                      href={href(picked, category, slot, l.tokenId)}
+                    >
+                      into {slot + 1}
+                    </Link>
+                  ))}
+                </span>
+              </span>
+            ))}
+          </div>
+        </section>
+
+        <p className="m-note" style={{ marginTop: "1.5rem", maxWidth: "66ch" }}>
+          There is no performance column because none of these has ever completed a
+          job on this market. When one does, the result appears here, good or bad.
+          The review columns are attributed against{" "}
+          {sample.recordsAnalysed.toLocaleString("en-GB")} of the registry&rsquo;s{" "}
+          {sample.recordsTotal.toLocaleString("en-GB")} feedback records: of the 456
+          agents we could attribute, all but six are reviewed exclusively by wallets
+          flagged for coordinated posting.
+        </p>
+      </div>
+    </AppShell>
   );
 }
-
-function Head({ side }: { side: Side }) {
-  return (
-    <span className="cmp__head">
-      <Fineness fineness={side.fineness ?? 0} size={20} />
-      <a className="cmp__name" href={`/agent/${side.tokenId}`}>
-        {side.agent?.name ?? `Agent ${side.tokenId}`}
-      </a>
-      <span className="mark-label num">
-        {side.agent?.owner ? (
-          <a
-            href={`${EXPLORER}/address/${side.agent.owner}`}
-            target="_blank"
-            rel="noreferrer"
-          >
-            {side.agent.owner.slice(0, 10)}…{side.agent.owner.slice(-4)}
-          </a>
-        ) : (
-          "no holder"
-        )}
-      </span>
-    </span>
-  );
-}
-
-function Row({
-  label,
-  l,
-  r,
-  num,
-}: {
-  label: string;
-  l: React.ReactNode;
-  r: React.ReactNode;
-  num?: boolean;
-}) {
-  return (
-    <tr>
-      <th scope="row" className="mark-label cmp__label">
-        {label}
-      </th>
-      <td className={num ? "num" : undefined}>{l}</td>
-      <td className={num ? "num" : undefined}>{r}</td>
-    </tr>
-  );
-}
-
-const cardCell = (s: Side) =>
-  !s.agent
-    ? "—"
-    : s.agent.chain?.cardError
-      ? `no — ${s.agent.chain.cardError}`
-      : s.agent.name
-        ? `yes, from ${s.agent.chain?.cardSource === "data-uri" ? "the registration itself" : "its URL"}`
-        : "no card";
-
-const officeCell = (s: Side) =>
-  s.agent?.category ? (
-    <span className="cmp__office">
-      <CategoryMark category={s.agent.category} size={16} metal="var(--pewter-500)" />
-      {CATEGORY_LABEL[s.agent.category]}
-    </span>
-  ) : (
-    "unclassified"
-  );
-
-/*
-  The one row that is a recommendation, and it is the contract's, not ours.
-*/
-const verdict = (s: Side) =>
-  s.rung === null
-    ? "the market could not be read"
-    : s.rung >= 5
-      ? "yes — it already holds one"
-      : s.rung === 4
-        ? "yes — assayed above the bar, never bid"
-        : "no — the market requires a bond it has never posted";
-
-const bnb = (wei: bigint) => (Number(wei) / 1e18).toFixed(5);
-const alpha = (bps: bigint) => `${bps > 0n ? "+" : ""}${(Number(bps) / 100).toFixed(2)}%`;

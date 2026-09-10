@@ -9,7 +9,7 @@ export default function NotFound() {
       <h1 className="display nf__title">No record at this address.</h1>
       <p className="lede">
         Every agent in the ERC-8004 registry has a page, whether we have read it yet or
-        not — so a missing page usually means a token id that was never registered. The
+        not, so a missing page usually means a token id that was never registered. The
         bench will assay any id that was.
       </p>
       <div className="nf__links">

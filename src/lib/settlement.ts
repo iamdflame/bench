@@ -17,7 +17,7 @@
  */
 
 import type { Address } from "viem";
-import { MANDATE_MARKET_ABI, MARKET_ADDRESS, marketClient } from "@/lib/chain/market";
+import { MARKET_ABI, MARKET_ADDRESS, marketClient } from "@/lib/chain/market";
 import { readPool, WBNB_USDT_POOL, type Valuation } from "@/lib/chain/prices";
 import {
   MAX_DEVIATION_BPS,
@@ -68,7 +68,7 @@ export function toObservation(
 export async function readOpenAttestation(mandateId: number): Promise<Attestation | null> {
   const r = (await marketClient.readContract({
     address: MARKET_ADDRESS,
-    abi: MANDATE_MARKET_ABI,
+    abi: MARKET_ABI,
     functionName: "openAttestation",
     args: [BigInt(mandateId)],
   })) as readonly [`0x${string}`, bigint, bigint, bigint];
@@ -83,7 +83,7 @@ export async function readEpochAttestation(
 ): Promise<Attestation | null> {
   const r = (await marketClient.readContract({
     address: MARKET_ADDRESS,
-    abi: MANDATE_MARKET_ABI,
+    abi: MARKET_ABI,
     functionName: "epochAttestation",
     args: [BigInt(mandateId), epoch],
   })) as readonly [`0x${string}`, bigint, bigint, bigint];
@@ -243,7 +243,7 @@ export async function measureAlpha(mandateId: number, epoch: number): Promise<Me
     explanation:
       `wallet held ${fmt(prev.valuationWei)} BNB at the mark for epoch ${epoch === 0 ? "open" : epoch - 1} ` +
       `and holds ${fmt(observation.valuationWei)} at block ${observation.blockNumber}, ` +
-      `so ${alphaBps >= 0n ? "+" : ""}${(Number(alphaBps) / 100).toFixed(2)}% against holding — gas included`,
+      `so ${alphaBps >= 0n ? "+" : ""}${(Number(alphaBps) / 100).toFixed(2)}% against holding, gas included`,
   };
 }
 
@@ -251,7 +251,7 @@ async function walletOf(mandateId: number, open: Attestation | null): Promise<Ad
   // The mandate's current holder is the wallet whose value is at stake.
   const m = (await marketClient.readContract({
     address: MARKET_ADDRESS,
-    abi: MANDATE_MARKET_ABI,
+    abi: MARKET_ABI,
     functionName: "getMandate",
     args: [BigInt(mandateId)],
   })) as Record<string, unknown>;

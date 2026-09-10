@@ -8,7 +8,7 @@
 import { readAgentIndex } from "@/lib/data/agents";
 import { placeAgent, readMarketSets } from "@/lib/rung";
 import { CATEGORIES, CHAIN_ID, type Category } from "@/lib/config";
-import { gate, ok, preflight } from "@/lib/api/respond";
+import { fail, gate, ok, preflight } from "@/lib/api/respond";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
@@ -31,10 +31,28 @@ export async function GET(request: Request) {
   const offset = Math.max(0, Number(url.searchParams.get("offset") ?? 0));
 
   const rung = rungParam !== null && /^[0-6]$/.test(rungParam) ? Number(rungParam) : null;
-  const category =
-    categoryParam && (CATEGORIES as readonly string[]).includes(categoryParam)
-      ? (categoryParam as Category)
-      : null;
+
+  /*
+    An unrecognised filter is refused, not ignored.
+
+    `?category=grid` used to fall through to `null` and return the whole
+    unfiltered register, so a caller asking for grid agents got three hundred
+    thousand rows of everything and no indication that their filter had been
+    dropped. Silently widening a query is the worst of the three options: worse
+    than an error, and worse than an empty page, because the caller believes
+    the answer.
+  */
+  if (categoryParam !== null && !(CATEGORIES as readonly string[]).includes(categoryParam)) {
+    return fail(
+      400,
+      `Unknown category "${categoryParam}". Valid categories are ${CATEGORIES.join(", ")}.`,
+      CHAIN_ID,
+    );
+  }
+  if (rungParam !== null && rung === null) {
+    return fail(400, `Unknown rung "${rungParam}". Rungs run 0 to 6.`, CHAIN_ID);
+  }
+  const category = (categoryParam as Category | null) ?? null;
 
   const [index, sets] = await Promise.all([readAgentIndex(), readMarketSets()]);
 

@@ -13,7 +13,7 @@ export default function Legend({ compact = false }: { compact?: boolean }) {
     ["ring", "bond still at risk"],
     ["tint", "realised alpha per epoch"],
     ["tremor", "strikes against the holder"],
-    ["rupture", "dismissal — the bond changed hands"],
+    ["rupture", "dismissal, the bond changed hands"],
   ];
   return (
     <dl className={compact ? "legend legend--compact" : "legend"}>

@@ -11,7 +11,7 @@
 
 import type { Hex } from "viem";
 import {
-  MANDATE_MARKET_ABI,
+  MARKET_ABI,
   MARKET_ADDRESS,
   marketChain,
   marketClient,
@@ -56,7 +56,7 @@ if (m.alphaBps === null || !m.observation) {
 const wallet = walletFor(norm(process.env.PRIVATE_KEY));
 const hash = await wallet.writeContract({
   address: MARKET_ADDRESS,
-  abi: MANDATE_MARKET_ABI,
+  abi: MARKET_ABI,
   functionName: "settleEpoch",
   args: [BigInt(id), m.alphaBps, m.observation],
   chain: marketChain,

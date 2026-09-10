@@ -21,7 +21,7 @@ import { MARKET_ADDRESS } from "@/lib/chain/market";
 export const revalidate = 30;
 
 export const metadata: Metadata = {
-  title: "Four offices — MANDATE",
+  title: "The four categories | Mandate",
   description:
     "Rebalancing, grid trading, yield optimisation and health factor monitoring. Every office shows its book, its live unbonded agents and the benchmark it is measured against.",
 };
@@ -83,7 +83,7 @@ export default async function OfficesPage() {
           <p className="section-sub offices-idx__lede">
             The same four the brief names, given the same page and the same figures. An
             agent&rsquo;s office is derived from its own description and, where the chain
-            will show it, from the protocols its wallet has actually touched — a grid
+            will show it, from the protocols its wallet has actually touched, a grid
             trading agent that has never touched a router is not a grid trading agent,
             whatever its card says.
           </p>

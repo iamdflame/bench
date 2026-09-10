@@ -2,7 +2,7 @@
 
 Every number this project publishes is a measurement of something, taken at a
 time, by a run, from a source that could have refused. This document says which
-— and where the pipeline is weaker than it should be.
+ and where the pipeline is weaker than it should be.
 
 ---
 
@@ -16,7 +16,7 @@ guessed.
 |---|---|
 | Attestations | The BSC block the valuation was read at, committed on chain before the outcome was known |
 | Ladder rungs | The block the on-chain rungs were read at; the snapshot date for registry rungs |
-| Agent index rows | `lastSeen` per row — the run that last refreshed it |
+| Agent index rows | `lastSeen` per row, the run that last refreshed it |
 | Advantage Report | A single anchor block, fixed by a transaction *before* the run |
 | Pool-gap scan | An explicit block range, printed at the top of every run |
 | Greenfield objects | The block and price the breakdown was derived from |
@@ -62,7 +62,7 @@ Stated, because an unstated exclusion is indistinguishable from an oversight.
 
 8004scan allows **25 requests a minute anonymously**, 450 with the Pro tier.
 At registry scale the limiter is the critical path, not the network, so it is a
-single serialised queue with a minimum interval rather than a token bucket —
+single serialised queue with a minimum interval rather than a token bucket ,
 bursting simply moves the 429 later.
 
 ```ts
@@ -79,7 +79,7 @@ const MIN_INTERVAL_MS = Math.ceil(60_000 / RATE_PER_MIN);
 
 **RPC providers are the harder limit.** Measured across thirteen public BSC
 endpoints: most refuse `eth_getLogs` over any range, two serve archive state,
-and which ones do *changes* — publicnode served ranged log queries when this
+and which ones do *changes*, publicnode served ranged log queries when this
 was written and now answers `Archive requests require a personal token` for
 anything a few hours old. So every log path holds a provider list and tries
 them in order, and **a window every provider refuses is recorded as a gap, not
@@ -88,7 +88,7 @@ and only one of them is about the chain.
 
 ## The event indexer
 
-Market events — settlements, dismissals, assays, observations — are read
+Market events, settlements, dismissals, assays, observations, are read
 directly from logs by `src/lib/career.ts`, `src/lib/ladder.ts` and
 `packages/mandate-verify`. Each walks the range in provider-sized windows and
 reports what it could not read.
@@ -107,8 +107,8 @@ subgraph or a persistent indexer, and the schema for one already exists in
   guess. The fallback is deliberate: it keeps the site deployable before any
   infrastructure exists and up when the database is not.
 
-  Production now reads the database — `GET /api/v1/registry/funnel` reports
-  `"source": "postgres"` — so this entry no longer belongs under a heading
+  Production now reads the database, `GET /api/v1/registry/funnel` reports
+  `"source": "postgres"`, so this entry no longer belongs under a heading
   about what is not true. It is left here, corrected, because a note that
   quietly disappears once it stops being embarrassing is worth less than one
   that records having been fixed.

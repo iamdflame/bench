@@ -4073,3 +4073,53 @@ p code {
 }
 
 .office-live__cta:hover { color: var(--gold-999); }
+
+/* ---------------------------------------------------------------------------
+   Buying a call in the browser.
+
+   The panel is quiet until a price is on screen, because the sequence is the
+   product: ask, read the price, decide, sign. A checkout that opens with a
+   button labelled "pay" has asked somebody to approve a number they have not
+   been shown.
+   --------------------------------------------------------------------------- */
+
+.buycall { display: grid; gap: .6rem; }
+.buycall__what { margin: 0; }
+.buycall__note { margin: 0; opacity: .72; }
+
+.buycall__quote {
+  display: grid;
+  gap: .7rem;
+  padding: .85rem;
+  border: 1px solid var(--rule, rgba(255,255,255,.14));
+  border-radius: 2px;
+}
+
+.buycall__terms {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(7rem, 1fr));
+  gap: .6rem 1.1rem;
+  margin: 0;
+}
+.buycall__terms dt { margin-bottom: .2rem; }
+.buycall__terms dd { margin: 0; }
+
+/* A shortfall is a finding, not an error: nothing was signed. */
+.buycall__short { margin: 0; opacity: .85; }
+
+.buycall__done { display: grid; gap: .5rem; }
+
+.buycall__body {
+  margin: 0;
+  padding: .7rem .8rem;
+  max-height: 20rem;
+  overflow: auto;
+  font-size: .74rem;
+  line-height: 1.5;
+  border: 1px solid var(--rule, rgba(255,255,255,.14));
+  border-radius: 2px;
+  white-space: pre-wrap;
+  word-break: break-word;
+}
+
+.buycall__failed { display: grid; gap: .5rem; }

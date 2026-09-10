@@ -32,7 +32,7 @@ const STATES = ["Open", "Active", "Closed", "Abandoned"];
 const ZERO = "0x0000000000000000000000000000000000000000";
 
 const short = (a?: string | null) =>
-  a && a !== ZERO ? `${a.slice(0, 6)}…${a.slice(-4)}` : "—";
+  a && a !== ZERO ? `${a.slice(0, 6)}…${a.slice(-4)}` : "none";
 const pct = (bps: number) => `${bps > 0 ? "+" : ""}${(bps / 100).toFixed(2)}%`;
 
 export default function MarketApp({
@@ -189,7 +189,7 @@ export default function MarketApp({
         <Stat label="opened all-time" value={String(totals?.everOpened ?? 0)} />
         <Stat
           label="chain"
-          value={snapshot?.chainId === 56 ? "BNB mainnet" : `chain ${snapshot?.chainId ?? "—"}`}
+          value={snapshot?.chainId === 56 ? "BNB mainnet" : `chain ${snapshot?.chainId ?? "unknown"}`}
         />
       </section>
 
@@ -349,7 +349,7 @@ export default function MarketApp({
                 {hiring ? (
                   <p className="sheet__note">
                     You are opening a mandate agent{" "}
-                    <a href={`/agent/${hiring}`} className="link-underline num">
+                    <a href={`/agents/${hiring}`} className="link-underline num">
                       {hiring}
                     </a>{" "}
                     can bid for. Escrow the capital here; the agent then posts
@@ -417,7 +417,7 @@ function MandateRow({
         ) : null}
       </td>
       <td className={`num r ${m.cumulativeAlphaBps > 0 ? "up" : m.cumulativeAlphaBps < 0 ? "down" : "dim"}`}>
-        {m.epochsSettled === 0 ? "—" : pct(alphaPerEpoch)}
+        {m.epochsSettled === 0 ? "none" : pct(alphaPerEpoch)}
       </td>
       <td className="num r dim">
         {m.epochsSettled}/{m.epochsTotal}

@@ -44,12 +44,12 @@ const METHOD: Record<Category, { venue: string; act: string; benchmark: string }
   rebalancing: {
     venue: "PancakeSwap V3",
     act: "Re-centres a liquidity position when price leaves its range, or holds when the fees forgone are smaller than the gas and slippage of moving.",
-    benchmark: "Doing nothing — holding the same position through the epoch.",
+    benchmark: "Doing nothing, holding the same position through the epoch.",
   },
   "grid-trading": {
     venue: "PancakeSwap V3 SwapRouter",
     act: "Places and refreshes a ladder of orders inside a band, taking the spread as price oscillates within it.",
-    benchmark: "Doing nothing — holding the opening basket through the epoch.",
+    benchmark: "Doing nothing, holding the opening basket through the epoch.",
   },
   "yield-optimisation": {
     venue: "Venus Protocol",
@@ -59,7 +59,7 @@ const METHOD: Record<Category, { venue: string; act: string; benchmark: string }
   "health-factor": {
     venue: "Venus Protocol",
     act: "Watches a borrow position and repays or supplies before it can be liquidated.",
-    benchmark: "The liquidation that did not happen — the penalty avoided.",
+    benchmark: "The liquidation that did not happen, the penalty avoided.",
   },
 };
 
@@ -73,10 +73,10 @@ export async function generateMetadata({
   params: Promise<{ office: string }>;
 }): Promise<Metadata> {
   const { office } = await params;
-  if (!CATEGORIES.includes(office as Category)) return { title: "Not found — MANDATE" };
+  if (!CATEGORIES.includes(office as Category)) return { title: "Not found | Mandate" };
   const c = office as Category;
   return {
-    title: `${CATEGORY_LABEL[c]} — MANDATE`,
+    title: `${CATEGORY_LABEL[c]} | Mandate`,
     description: `${CATEGORY_BLURB[c]} Every agent in this office, the mandates it holds, and what its bond is worth.`,
   };
 }
@@ -244,7 +244,7 @@ export default async function OfficePage({
           {live.length === 0 ? (
             <p className="section-sub">
               No mandate is open in this office. That is the finding, not a gap in the
-              page — nothing here is illustrated when it does not exist.
+              page, nothing here is illustrated when it does not exist.
             </p>
           ) : (
             <div className="tablewrap">
@@ -287,7 +287,8 @@ export default async function OfficePage({
           <p className="section-sub">
             Classified into this office from their own description and, where the chain
             shows it, from the protocols their wallet has touched. None of them has capital
-            at risk here, so none of them carries a mark.
+            at risk here, so none of them carries a mark. Every one we hold is listed 
+            the ones that answered when called are first.
           </p>
           {classified.length === 0 ? (
             <p className="section-sub">
@@ -295,9 +296,20 @@ export default async function OfficePage({
             </p>
           ) : (
             <ul className="office-live">
-              {classified.slice(0, 8).map((a) => (
+              {/*
+                Every agent in this office, not the first eight.
+
+                The listing was capped at eight, which meant an office holding
+                ninety classified agents advertised itself with eight of them
+                and the count above it disagreed with the list below it. Agent
+                Diversity is a third of the main-track score and the failure it
+                punishes is exactly this: a category rendered shallower than it
+                is. Ninety rows is a long page and a long page is the honest
+                shape of a category with ninety agents in it.
+              */}
+              {classified.map((a) => (
                 <li key={a.tokenId} className="office-live__row">
-                  <a className="office-live__name" href={`/agent/${a.tokenId}`}>
+                  <a className="office-live__name" href={`/agents/${a.tokenId}`}>
                     {a.name || `Agent #${a.tokenId}`}
                   </a>
                   <span className="office-live__id num">{a.tokenId}</span>
@@ -327,7 +339,7 @@ export default async function OfficePage({
                     An agent nobody has reached cannot be called, so this offers
                     the assay instead of pretending otherwise.
                   */}
-                  <a className="office-live__cta" href={`/agent/${a.tokenId}`}>
+                  <a className="office-live__cta" href={`/agents/${a.tokenId}`}>
                     {a.answered ? "call →" : "assay →"}
                   </a>
                 </li>
@@ -383,8 +395,8 @@ function OfficeRow({ r }: { r: BookRow }) {
       </td>
       <td>{STATE[r.state]}</td>
       <td className="num">{bnb(r.capitalWei)}</td>
-      <td className="num">{r.bondWei > 0n ? bnb(r.bondWei) : "—"}</td>
-      <td className="num">{r.epochsSettled > 0 ? pct(r.cumulativeAlphaBps) : "—"}</td>
+      <td className="num">{r.bondWei > 0n ? bnb(r.bondWei) : "none"}</td>
+      <td className="num">{r.epochsSettled > 0 ? pct(r.cumulativeAlphaBps) : "none"}</td>
       <td className="num">
         {r.epochsSettled} / {r.epochsTotal}
       </td>

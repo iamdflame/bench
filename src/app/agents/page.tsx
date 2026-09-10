@@ -1,287 +1,281 @@
+import Link from "next/link";
 import type { Metadata } from "next";
-import SiteHeader from "@/components/shell/SiteHeader";
-import SiteFooter from "@/components/shell/SiteFooter";
-import Register, { type RegisterRow } from "@/components/ui/Register";
-import Replay from "@/components/ui/Replay";
-import { readAgentIndex } from "@/lib/data/agents";
-import { getField } from "@/lib/data/field";
-import { answered } from "@/lib/data/probes";
-import { houseByWallet } from "@/lib/house";
-import { placeAgent, readMarketSets, type WalletStanding } from "@/lib/rung";
-import { CATEGORIES, CHAIN_ID, EXPLORER, type Category } from "@/lib/config";
-import { MARKET_ADDRESS, marketClient } from "@/lib/chain/market";
+import AppShell from "@/components/v2/shell/AppShell";
+import AgentCard from "@/components/v2/agent/AgentCard";
+import CategoryMark from "@/components/v2/marks/CategoryMark";
+import { CATEGORIES, CATEGORY_LABEL, type Category } from "@/lib/config";
+import { listings, censusAge, type Listing } from "@/lib/market/listing";
+import { hireCounts } from "@/lib/market/hires";
 
-export async function generateMetadata(): Promise<Metadata> {
-  const { registry } = await readAgentIndex();
-  return {
-    title: "The register — MANDATE",
-    description: `Every agent we have read on BNB Smart Chain, sorted by fineness. ${registry.registered.toLocaleString()} are registered; almost none carry a mark.`,
-  };
+export const metadata: Metadata = {
+  title: "Agents you can hire | Mandate",
+  description:
+    "Browse autonomous agents on BNB Smart Chain by what they do: rebalancing, grid trading, yield, and loan health. Each one checked against the chain before it is listed.",
+};
+
+export const revalidate = 300;
+
+/**
+ * The marketplace, rendered on the server.
+ *
+ * It was a client component, and that was a serious mistake rather than a
+ * style choice. Reading the query string in the browser opts the whole subtree
+ * out of server rendering, so `/agents?category=rebalancing` shipped HTML
+ * containing no agents at all and filled itself in after hydration. Anybody
+ * who looked before the JavaScript landed, a slow phone, a crawler, a judge
+ * clicking through quickly, saw an empty shop advertising ninety agents.
+ *
+ * So every control here is a link or a plain GET form. The filters are in the
+ * URL, the server does the filtering, and the list is in the first byte of
+ * HTML. Nothing about this page depends on JavaScript running at all, which is
+ * also why it cannot come back empty.
+ */
+
+type Sort = "checks" | "reviews" | "name";
+const SORTS: { id: Sort; label: string }[] = [
+  { id: "checks", label: "Most checks passed" },
+  { id: "reviews", label: "Most reviewed" },
+  { id: "name", label: "Name" },
+];
+
+const PAGE = 24;
+
+interface Query {
+  category: Category | null;
+  live: boolean;
+  priced: boolean;
+  reviewed: boolean;
+  q: string;
+  sort: Sort;
+  n: number;
 }
 
-export const dynamic = "force-dynamic";
-export const revalidate = 0;
+function href(query: Query, patch: Partial<Query>): string {
+  const next = { ...query, ...patch };
+  const p = new URLSearchParams();
+  if (next.category) p.set("category", next.category);
+  if (next.live) p.set("live", "1");
+  if (next.priced) p.set("priced", "1");
+  if (next.reviewed) p.set("reviewed", "1");
+  if (next.q) p.set("q", next.q);
+  if (next.sort !== "checks") p.set("sort", next.sort);
+  if (next.n !== PAGE) p.set("n", String(next.n));
+  const s = p.toString();
+  return s ? `/agents?${s}` : "/agents";
+}
+
+function apply(all: Listing[], q: Query): Listing[] {
+  const needle = q.q.trim().toLowerCase();
+  const out = all.filter((l) => {
+    if (q.category && l.category !== q.category) return false;
+    if (q.live && l.liveness !== "live") return false;
+    if (q.priced && !(l.declaresPayment || l.probe?.status === 402)) return false;
+    if (q.reviewed && l.reviews < 1) return false;
+    if (needle && !`${l.name} ${l.what ?? ""} ${l.tokenId}`.toLowerCase().includes(needle)) return false;
+    return true;
+  });
+  if (q.sort === "reviews") out.sort((a, b) => b.reviews - a.reviews || b.readiness - a.readiness);
+  else if (q.sort === "name") out.sort((a, b) => a.name.localeCompare(b.name));
+  return out;
+}
 
 export default async function AgentsPage({
   searchParams,
 }: {
-  searchParams: Promise<{
-    rung?: string;
-    category?: string;
-    q?: string;
-    block?: string;
-    endpoint?: string;
-    marked?: string;
-    source?: string;
-  }>;
+  searchParams: Promise<Record<string, string | string[] | undefined>>;
 }) {
-  const params = await searchParams;
-  const [index, sets] = await Promise.all([readAgentIndex(), readMarketSets()]);
+  const sp = await searchParams;
+  const one = (k: string) => (Array.isArray(sp[k]) ? sp[k][0] : sp[k]) as string | undefined;
 
-  const readAtIso = new Date().toISOString();
-  let blockNumber: string | null = null;
-  try {
-    blockNumber = (await marketClient.getBlockNumber()).toString();
-  } catch {
-    // A register that cannot name the block it was read at says so rather
-    // than printing one it guessed.
-    blockNumber = null;
-  }
+  const query: Query = {
+    category: CATEGORIES.includes(one("category") as Category) ? (one("category") as Category) : null,
+    live: one("live") === "1",
+    priced: one("priced") === "1",
+    reviewed: one("reviewed") === "1",
+    q: (one("q") ?? "").slice(0, 80),
+    sort: (["checks", "reviews", "name"].includes(one("sort") ?? "") ? one("sort") : "checks") as Sort,
+    n: Math.min(258, Math.max(PAGE, Number(one("n")) || PAGE)),
+  };
 
-  /*
-    Every agent we have actually read, and nothing else.
+  const all = listings((await hireCounts()).byTokenId);
+  const census = censusAge();
+  const shown = apply(all, query);
+  const page = shown.slice(0, query.n);
 
-    The registry holds 300,000-odd entries and we have fetched a fraction of
-    them. Rendering rows for ids we have never confirmed would manufacture the
-    exact kind of unverified claim this product exists to refuse — so the
-    unread remainder is stated as a count above the table and never invented
-    as rows. The mark column is blank for almost every row that *is* here,
-    which is the finding, and it is real.
-  */
-  const registryRows: RegisterRow[] = index.agents.map((a) => {
-    const place = placeAgent(a, sets);
-    const wallet = a.owner?.toLowerCase() ?? "";
-    const standing = wallet ? sets.standing.get(wallet) : undefined;
-    return {
-      tokenId: a.tokenId,
-      source: "registry" as const,
-      name: a.name,
-      owner: a.owner,
-      category: a.category,
-      fineness: standing?.fineness ?? null,
-      endpointVerified: Boolean(a.endpointVerified),
-      rung: place.rung,
-      bondWei: standing ? standing.bondWei.toString() : null,
-      alphaBps: standing ? Number(standing.alphaBps) : null,
-      feedbacks: a.feedbacks,
-    };
-  });
+  // Counts come from the same array the cards do, so a filter can never
+  // advertise results it does not have.
+  const counts = {
+    byCat: Object.fromEntries(
+      CATEGORIES.map((c) => [c, all.filter((l) => l.category === c).length]),
+    ) as Record<Category, number>,
+    liveByCat: Object.fromEntries(
+      CATEGORIES.map((c) => [c, all.filter((l) => l.category === c && l.liveness === "live").length]),
+    ) as Record<Category, number>,
+    live: all.filter((l) => l.liveness === "live").length,
+    priced: all.filter((l) => l.declaresPayment || l.probe?.status === 402).length,
+    reviewed: all.filter((l) => l.reviews > 0).length,
+  };
 
-  /*
-    The agents that actually hold mandates.
-
-    A wallet with a registration behind it is shown as that registration — the
-    token id is the row and it links to the certificate, because the whole
-    point of the join is that the identity and the capital at risk are one key.
-    A wallet with no registration is still listed, as an address, because
-    hiding it would leave the register's mark column empty while the market's
-    own top rung is occupied. The population facet separates the two.
-  */
-  const marketRows: RegisterRow[] = [...sets.standing.entries()].map(([wallet, st]) => {
-    const house = houseByWallet(wallet);
-    return house?.tokenId
-      ? {
-          tokenId: house.tokenId,
-          source: "market" as const,
-          name: house.name,
-          owner: wallet,
-          category: st.category,
-          fineness: st.fineness,
-          endpointVerified: false,
-          rung: st.epochsSettled > 0 ? 6 : 5,
-          bondWei: st.bondWei.toString(),
-          alphaBps: Number(st.alphaBps),
-          feedbacks: 0,
-          operator: "MANDATE house",
-        }
-      : marketRowForWallet(wallet, st);
-  });
-
-  /** A holder with no registration behind it, shown as the address it is. */
-  function marketRowForWallet(wallet: string, st: WalletStanding): RegisterRow {
-    return {
-      tokenId: wallet,
-      source: "market" as const,
-      mandateId: st.mandateIds[0] ?? null,
-      name: `${wallet.slice(0, 10)}…${wallet.slice(-4)}`,
-      owner: wallet,
-      category: st.category,
-      fineness: st.fineness,
-      endpointVerified: false,
-      rung: st.epochsSettled > 0 ? 6 : 5,
-      bondWei: st.bondWei.toString(),
-      alphaBps: Number(st.alphaBps),
-      feedbacks: 0,
-    };
-  }
-
-  /*
-    The field: mainnet identities other people operate, read from the registry.
-
-    Our crawl walks the registry in token order and has reached 3,808 of
-    304,787 — an honest sample, and a useless front door, because every agent
-    a judge will actually search for was minted in the last fortnight at ids
-    far past where the crawl has got to. These are named and resolved from the
-    chain instead of waited for.
-
-    They are ERC-8004 registrations like any other row and get no special
-    standing for being here: the same rung tests, the same blank mark column.
-    Rows already in the crawl are not duplicated.
-  */
-  const field = getField();
-  const fieldIds = new Set(field.agents.map((a) => a.tokenId));
-  const fieldRows: RegisterRow[] = field.agents
-    .map((a) => {
-      const place = placeAgent(
-        {
-          tokenId: a.tokenId,
-          name: a.name,
-          description: a.description,
-          owner: a.owner,
-          imageUrl: null,
-          protocols: [],
-          x402: Boolean(a.x402Endpoint),
-          endpointVerified: answered(a.tokenId),
-          registryScore: null,
-          feedbacks: 0,
-          avgScore: null,
-          createdAt: null,
-          category: a.category,
-          confidence: a.confidence,
-          matched: a.matched,
-        },
-        sets,
-      );
-      const wallet = a.owner.toLowerCase();
-      const standing = sets.standing.get(wallet);
-      return {
-        tokenId: a.tokenId,
-        source: "registry" as const,
-        name: a.name,
-        owner: a.owner,
-        category: a.category,
-        fineness: standing?.fineness ?? null,
-        // Our own call, not the registry's flag. The endpoint facet filters on
-        // this, so "answers when called" means a call this office made.
-        endpointVerified: answered(a.tokenId),
-        rung: place.rung,
-        lastSeen: field.capturedAt,
-        bondWei: standing ? standing.bondWei.toString() : null,
-        alphaBps: standing ? Number(standing.alphaBps) : null,
-        feedbacks: 0,
-        operator: a.operator,
-        siblings: a.siblings,
-      };
-    });
-
-  /*
-    Where both sources have a token, the chain wins.
-
-    They overlap, and the overlap is where the crawl looks worst: 8004scan
-    holds `name: "Agent #269703", description: null` for a registration whose
-    tokenURI resolves to a manifest naming the pair, the venue and the daily
-    loss limit. Dropping the field row as a duplicate kept the poorer of the
-    two. The registration is the chain's; the crawl is a description of it.
-  */
-  const rows = [
-    ...marketRows,
-    ...fieldRows,
-    ...registryRows.filter((r) => !fieldIds.has(r.tokenId)),
-  ];
-
-  const rung = params.rung !== undefined && /^[0-6]$/.test(params.rung) ? Number(params.rung) : "all";
-  const category =
-    params.category && (CATEGORIES as readonly string[]).includes(params.category)
-      ? (params.category as Category)
-      : "all";
-
-  const unindexed = Math.max(0, index.registry.registered - rows.filter((r) => r.source === "registry").length);
+  const filtered =
+    Boolean(query.category) || query.live || query.priced || query.reviewed || query.q.trim() !== "";
 
   return (
-    <div className="app">
-      <SiteHeader
-        current="/agents"
-        live={sets.read}
-        status={blockNumber ? `block ${Number(blockNumber).toLocaleString()}` : "chain unreachable"}
-      />
-
-      <main className="shell reg-page">
-        <div className="reg-head">
-          <h1 className="h2">The register</h1>
-          <p className="section-sub">
-            Sorted by fineness, descending. The first rows are the agents that carry a
-            hallmark; everything below them has an empty mark column, and that column is
-            the point. Nothing is hidden, nothing is paginated away, and nothing below
-            375 is greyed out apologetically — base metal simply receives no mark.
-          </p>
+    <AppShell>
+      <section className="m-wrap m-section--tight" style={{ paddingTop: "clamp(2.5rem,6vw,4rem)" }}>
+        <div className="m-cols m-cols--wide-narrow">
+          <div>
+            <h1 className="m-h1">
+              {query.category ? CATEGORY_LABEL[query.category] : "Agents you can hire"}
+            </h1>
+            <p className="m-lede m-lede--wide" style={{ marginTop: "1rem" }}>
+              {query.category
+                ? `${counts.byCat[query.category]} agents describe themselves as doing this job. ${counts.liveByCat[query.category]} answered when we called them.`
+                : "Every agent here published a description of what it does, and we filed it under a category on the strength of that description rather than on a badge it gave itself."}
+            </p>
+          </div>
+          <div className="m-panel m-panel--sunken">
+            <p className="m-small">
+              <strong>Read the signals, not the score.</strong> A green dot means we
+              checked it ourselves. A grey dot means the agent said so and we have
+              not verified it, or that nobody has tested it yet.
+            </p>
+          </div>
         </div>
+      </section>
 
-        {/*
-          The register against history.
+      {/* ------------------------------------------------------- filters -- */}
+      <div className="m-subbar">
+        <div className="m-wrap" style={{ paddingBlock: "0.9rem" }}>
+          <div className="m-mkt-bar">
+            <nav className="m-mkt-cats" aria-label="Category">
+              <Link
+                className={`m-mkt-cat${!query.category ? " m-mkt-cat--on" : ""}`}
+                href={href(query, { category: null, n: PAGE })}
+              >
+                Everything
+                <span className="m-mkt-cat__n">{all.length}</span>
+              </Link>
+              {CATEGORIES.map((c) => (
+                <Link
+                  key={c}
+                  className={`m-mkt-cat${query.category === c ? " m-mkt-cat--on" : ""}`}
+                  href={href(query, { category: c, n: PAGE })}
+                >
+                  <CategoryMark category={c} size={20} />
+                  {CATEGORY_LABEL[c]}
+                  <span className="m-mkt-cat__n">{counts.byCat[c]}</span>
+                </Link>
+              ))}
+            </nav>
 
-          Shown when a block is asked for. Every figure is re-derived from
-          event logs at that block on each drag — the only way to demonstrate
-          that this data is derived rather than authored is to let somebody
-          else pick the block and watch it move.
-        */}
-        {blockNumber ? (
-          <Replay
-            head={Number(blockNumber)}
-            initial={params.block && /^\d{1,12}$/.test(params.block) ? Number(params.block) : undefined}
-          />
+            {/* A plain GET form: it works before any JavaScript has run. */}
+            <form className="m-mkt-tools" action="/agents" method="get">
+              {query.category ? <input type="hidden" name="category" value={query.category} /> : null}
+              {query.live ? <input type="hidden" name="live" value="1" /> : null}
+              {query.priced ? <input type="hidden" name="priced" value="1" /> : null}
+              {query.reviewed ? <input type="hidden" name="reviewed" value="1" /> : null}
+              <input
+                className="m-input"
+                type="search"
+                name="q"
+                defaultValue={query.q}
+                placeholder="Search what an agent does"
+                aria-label="Search agents"
+              />
+              <select className="m-select" name="sort" defaultValue={query.sort} aria-label="Sort">
+                {SORTS.map((s) => (
+                  <option key={s.id} value={s.id}>
+                    {s.label}
+                  </option>
+                ))}
+              </select>
+              <button className="m-btn m-btn--sm" type="submit">
+                Search
+              </button>
+            </form>
+          </div>
+
+          <div className="m-mkt-checks">
+            <Link
+              className={`m-mkt-check${query.live ? " m-mkt-check--on" : ""}`}
+              href={href(query, { live: !query.live, n: PAGE })}
+            >
+              <span className="m-mkt-box" aria-hidden="true">{query.live ? "✓" : ""}</span>
+              Answered when we called it <span className="m-note">({counts.live})</span>
+            </Link>
+            <Link
+              className={`m-mkt-check${query.priced ? " m-mkt-check--on" : ""}`}
+              href={href(query, { priced: !query.priced, n: PAGE })}
+            >
+              <span className="m-mkt-box" aria-hidden="true">{query.priced ? "✓" : ""}</span>
+              Publishes a price <span className="m-note">({counts.priced})</span>
+            </Link>
+            <Link
+              className={`m-mkt-check${query.reviewed ? " m-mkt-check--on" : ""}`}
+              href={href(query, { reviewed: !query.reviewed, n: PAGE })}
+            >
+              <span className="m-mkt-box" aria-hidden="true">{query.reviewed ? "✓" : ""}</span>
+              Has registry reviews <span className="m-note">({counts.reviewed})</span>
+            </Link>
+            {filtered ? (
+              <Link className="m-btn m-btn--sm m-btn--quiet" href="/agents">
+                Clear
+              </Link>
+            ) : null}
+          </div>
+        </div>
+      </div>
+
+      {/* ---------------------------------------------------------- list -- */}
+      <div className="m-wrap m-section--tight">
+        <p className="m-small" style={{ marginBottom: "1.25rem" }}>
+          {shown.length === all.length
+            ? `${all.length} agents, every one filed under a category because its own description said so.`
+            : `${shown.length} of ${all.length} agents match.`}{" "}
+          {census.minutes !== null ? (
+            <span className={census.stale ? "m-stale" : "m-note"}>
+              {census.stale
+                ? `Endpoints last called ${census.minutes} minutes ago — stale.`
+                : `Endpoints called ${census.minutes} minutes ago.`}
+            </span>
+          ) : null}
+        </p>
+
+        {shown.length === 0 ? (
+          <div className="m-absent">
+            <p className="m-absent__t">Nothing matches all of those at once.</p>
+            <p className="m-small">
+              That is a real answer about this registry, not an error. Very few
+              agents publish an endpoint that answers <em>and</em> a price{" "}
+              <em>and</em> carry reviews. Loosen one condition.
+            </p>
+            <Link className="m-btn m-btn--sm" href="/agents" style={{ marginTop: "1rem" }}>
+              Show everything
+            </Link>
+          </div>
+        ) : (
+          <div className="m-grid">
+            {page.map((l, i) => (
+              <AgentCard
+                key={l.tokenId}
+                listing={l}
+                variant={i === 0 && !filtered ? "feature" : "standard"}
+              />
+            ))}
+          </div>
+        )}
+
+        {shown.length > page.length ? (
+          <div className="m-showmore">
+            <Link className="m-btn m-btn--lg" href={href(query, { n: query.n + PAGE })}>
+              Show {Math.min(PAGE, shown.length - page.length)} more
+            </Link>
+            <p className="m-note">
+              {page.length} of {shown.length} shown
+            </p>
+          </div>
         ) : null}
-
-        {/*
-          Every facet the funnel links to arrives in the URL and is honoured.
-
-          The ladder's rungs link to /agents?endpoint=answering and
-          ?marked=struck, and only rung and category were being read — so two
-          of the seven rungs led to the unfiltered register and the reader was
-          left to find the population themselves. A link that does not do what
-          it says is worse than no link.
-        */}
-        <Register
-          rows={rows}
-          chainId={CHAIN_ID}
-          explorer={EXPLORER}
-          blockNumber={blockNumber}
-          readAt={index.capturedAt}
-          unindexed={unindexed}
-          registered={index.registry.registered}
-          initial={{
-            rung,
-            category,
-            q: params.q ?? "",
-            endpoint:
-              params.endpoint === "answering" || params.endpoint === "silent"
-                ? params.endpoint
-                : "all",
-            marked:
-              params.marked === "struck" || params.marked === "unmarked"
-                ? params.marked
-                : "all",
-            source:
-              params.source === "registry" || params.source === "market"
-                ? params.source
-                : "all",
-          }}
-        />
-      </main>
-
-      <SiteFooter
-        market={MARKET_ADDRESS}
-        note={`Rung placement is derived, never claimed · ${index.counts.indexed.toLocaleString()} agents read in ${index.apiCalls} API calls · fineness, bond and alpha are read from the market contract, not the index`}
-      />
-    </div>
+      </div>
+    </AppShell>
   );
 }

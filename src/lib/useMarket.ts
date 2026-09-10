@@ -31,11 +31,11 @@ export interface TapeEntry {
 }
 
 const ZERO = "0x0000000000000000000000000000000000000000";
-const short = (a: string) => (a && a !== ZERO ? `${a.slice(0, 6)}…${a.slice(-4)}` : "—");
+const short = (a: string) => (a && a !== ZERO ? `${a.slice(0, 6)}…${a.slice(-4)}` : "none");
 const pct = (bps: number) => `${bps > 0 ? "+" : ""}${(bps / 100).toFixed(2)}%`;
 
 export function bnb(wei: string | bigint | undefined, dp?: number): string {
-  if (wei === undefined) return "—";
+  if (wei === undefined) return "";
   const n = Number(BigInt(wei)) / 1e18;
   if (dp !== undefined) return n.toFixed(dp);
   if (n === 0) return "0";

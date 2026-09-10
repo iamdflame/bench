@@ -25,7 +25,7 @@ export default function OfficeMark({
       className="office-mark"
     >
       {title ? <title>{title}</title> : null}
-      {/* Filled surround, device knocked out — silhouette first. */}
+      {/* Filled surround, device knocked out, silhouette first. */}
       <path d="M4 2 H20 V15 L15 20 H9 L4 15 Z" fill={metal} />
       {/*
         A balance in equilibrium, knocked out of the punch.

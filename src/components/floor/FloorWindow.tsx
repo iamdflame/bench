@@ -64,7 +64,7 @@ export default function FloorWindow({ height = 400 }: { height?: number }) {
     <div className="floorwin" ref={host} style={{ height }}>
       {live ? <FloorCanvas state={state} className="floorwin__canvas" /> : null}
       <Legend compact />
-      <a className="floorwin__go btn btn--sm" href="/floor">
+      <a className="floorwin__go btn btn--sm" href="/activity">
         See the market floor →
       </a>
       <span className="floorwin__status mark-label">

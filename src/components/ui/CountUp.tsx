@@ -56,5 +56,5 @@ export default function CountUp({
     return () => cancelAnimationFrame(raf);
   }, [value]);
 
-  return <span className={className}>{shown === null ? "—" : shown}</span>;
+  return <span className={className}>{shown === null ? "none" : shown}</span>;
 }

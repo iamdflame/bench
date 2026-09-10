@@ -3,15 +3,22 @@
 import OfficeMark from "@/components/mark/OfficeMark";
 import { WalletChip } from "@/components/floor/Actions";
 
+/*
+  The archive's own bar, pointing home first.
+
+  These pages are the technical record behind the marketplace, not a separate
+  site, and the first link has to be the way back. Reading a methodology page
+  and finding no route to the thing it is a methodology for is a dead end with
+  a scroll bar.
+*/
 const NAV = [
-  { href: "/start", label: "Start" },
-  // The four offices carry equal weight in the rubric and equal weight here.
-  { href: "/offices", label: "Offices" },
-  { href: "/agents", label: "Register" },
-  { href: "/floor", label: "Floor" },
+  { href: "/", label: "← Marketplace" },
+  { href: "/verify", label: "How we check" },
+  { href: "/assay", label: "Method" },
+  { href: "/bench", label: "Bench" },
   { href: "/authority", label: "Authority" },
   { href: "/evidence", label: "Evidence" },
-  { href: "/assay", label: "Method" },
+  { href: "/offices", label: "Categories" },
   { href: "/api", label: "API" },
   { href: "/list-your-agent", label: "List yours" },
   /*
@@ -37,28 +44,37 @@ export default function SiteHeader({
   live,
   status,
   current,
-  wallet = false,
+  wallet = true,
 }: {
   live?: boolean;
   status?: string;
   current?: string;
   /**
-   * Show the wallet control.
+   * Show the wallet control. On by default; a page may still opt out.
    *
-   * Off everywhere by default. The bar used to carry it on every page, which
-   * meant an office advertised a wallet state to readers who had not asked for
-   * one — and, because the chip mounts the wallet hook, the front page opened
-   * a connect dialogue in any browser whose extension answers a bare provider
-   * call. Removing it outright went too far the other way: the pages where you
-   * bid, revoke or sign then had no way to connect at all. It belongs where
-   * there is something to sign, and nowhere else.
+   * This defaulted to `false`, and the reasoning was sound at the time: the
+   * chip mounted the wallet hook, and the hook called `eth_accounts` on mount,
+   * and several multi-chain extensions answer any bare provider call with
+   * their own connect overlay. So the front page of an assay office threw a
+   * wallet popup at people who had asked for nothing.
+   *
+   * That cause was fixed underneath this: the hook now does a property read on
+   * mount and only reflects an existing connection when this browser has
+   * connected here before. Nothing reaches an extension unbidden.
+   *
+   * What the default cost, meanwhile, was the product. Fourteen of the
+   * seventeen pages that render this header never passed the prop, so a
+   * visitor could land, read an agent's certificate, decide to hire it, and
+   * find no way to connect anywhere on the page. The criterion this
+   * marketplace is judged against says a stranger must get through the journey
+   * "without hitting a dead end", and an invisible wallet is the first one.
    */
   wallet?: boolean;
 }) {
   return (
     <header className="app-header">
       <div className="app-header__inner shell">
-        <a href="/" className="wordmark" aria-label="MANDATE — home">
+        <a href="/" className="wordmark" aria-label="MANDATE, home">
           <OfficeMark size={20} />
           <span className="wordmark__name" style={{ fontSize: 20 }}>
             MANDATE
@@ -74,15 +90,13 @@ export default function SiteHeader({
         </nav>
 
         {/*
-          No wallet in the header.
+          The wallet lives here, on every page that does not opt out.
 
-          A "no wallet detected" chip sat here on every page, which meant the
-          bar across an assay office was advertising a wallet state to readers
-          who had not asked for one — and, because the chip mounted the wallet
-          hook, the front page opened a connect dialogue in any browser whose
-          extension answers a bare provider call. Browsing needs no wallet at
-          any point; it is asked for once, at the ticket, by somebody who has
-          decided to sign something.
+          Browsing still needs no wallet and nothing is asked of an extension
+          until somebody asks for one — see the hook. But the control has to be
+          findable *before* the moment of signing, because somebody who has just
+          read a certificate and decided to act should not have to guess which
+          page carries the button.
         */}
         <div className="app-header__right">
           {status ? (

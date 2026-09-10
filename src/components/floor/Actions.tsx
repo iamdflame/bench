@@ -18,6 +18,19 @@ import { marketChain } from "@/lib/chain/market";
 import { fmtBnb, sendMarketTx, useWallet, type TxState } from "@/lib/chain/wallet";
 import type { FloorMandate } from "@/app/api/floor/route";
 
+/** Native BNB. V2 ignores the `amount` argument and uses `msg.value`. */
+const NATIVE = "0x0000000000000000000000000000000000000000" as const;
+
+/**
+ * What a mandate's alpha is measured against, indexed by the category enum.
+ *
+ * `Hold` for the two judged against a static position, the best passive rate
+ * for yield, liquidation-avoided for health factor. The order is the
+ * contract's own enum order, which `CATEGORIES` already mirrors.
+ */
+const BENCHMARK_BY_INDEX: Record<number, number> = { 0: 0, 1: 0, 2: 1, 3: 2 };
+
+
 const CATEGORY_NAMES = [
   "Rebalancing",
   "Grid Trading",
@@ -26,6 +39,86 @@ const CATEGORY_NAMES = [
 ];
 
 const EXPLORER = marketChain.blockExplorers?.default?.url;
+
+
+/**
+ * A control that never simply refuses.
+ *
+ * Both panels here gated their submit on `ready` — connected, and on the right
+ * chain — and then rendered a grey button with no explanation and no way to
+ * become ready. A visitor with no wallet, or the wrong network, saw a dead
+ * rectangle and the product's answer was silence.
+ *
+ * The criterion this marketplace is judged against says a stranger must get
+ * through "without hitting a dead end". So every reason a control is
+ * unavailable is named, and where the reason is fixable the fix is the button:
+ * no wallet, connect it; wrong chain, switch it; a bad value, say which value.
+ */
+function Gate({
+  refusal,
+  children,
+}: {
+  /** A reason the inputs are not yet valid, or null. */
+  refusal?: string | null;
+  children: React.ReactNode;
+}) {
+  const { address, available, ready, chainId, connect, switchChain } = useWallet();
+  const [busy, setBusy] = useState(false);
+
+  if (!available) {
+    return (
+      <p style={{ fontSize: 11.5, lineHeight: 1.5, color: "var(--ink-3)", margin: 0 }}>
+        No wallet extension in this browser, so nothing here can be signed.
+        Everything above is readable without one.
+      </p>
+    );
+  }
+
+  if (!address) {
+    return (
+      <button
+        onClick={async () => {
+          setBusy(true);
+          try {
+            await connect();
+          } catch {
+            /* The wallet said no; it will have said so itself. */
+          } finally {
+            setBusy(false);
+          }
+        }}
+        disabled={busy}
+        style={buttonStyle(!busy)}
+      >
+        {busy ? "connecting…" : "connect a wallet to sign"}
+      </button>
+    );
+  }
+
+  if (!ready) {
+    return (
+      <button onClick={() => void switchChain()} style={buttonStyle(true)}>
+        switch to {marketChain.name}
+        {chainId ? ` (on ${chainId})` : ""}
+      </button>
+    );
+  }
+
+  if (refusal) {
+    return (
+      <>
+        <button disabled style={buttonStyle(false)}>
+          cannot submit yet
+        </button>
+        <p style={{ fontSize: 11.5, lineHeight: 1.5, color: "var(--ink-3)", margin: "0.4rem 0 0" }}>
+          {refusal}
+        </p>
+      </>
+    );
+  }
+
+  return <>{children}</>;
+}
 
 export function WalletChip() {
   const { address, available, ready, chainId, balanceWei, connect, switchChain } =
@@ -174,12 +267,33 @@ export function BidPanel({
 
   const bondNum = Number(bond);
   const targetNum = Number(target);
+  /*
+    A negative target is refused on chain, not merely unwise.
+
+    This allowed anything down to −32,767, which reads as "I promise to lose
+    money" and which V2 rejects with `BadParameters` before the wallet opens.
+    Bounding it here means the reason arrives beside the field instead of as a
+    dead button.
+  */
   const valid =
     ready &&
     Number.isFinite(bondNum) &&
     bondNum > 0 &&
     Number.isFinite(targetNum) &&
-    Math.abs(targetNum) <= 32_767;
+    targetNum >= 0 &&
+    targetNum <= 32_767;
+
+  /* Which input is wrong, said beside the input rather than by a revert. */
+  const bidRefusal =
+    !Number.isFinite(bondNum) || bondNum <= 0
+      ? "A bond must be a positive number of BNB. It is the agent's own capital at risk."
+      : !Number.isFinite(targetNum)
+        ? "The target must be a number, in basis points of alpha."
+        : targetNum < 0
+          ? "A negative target promises to lose money, and the market refuses it."
+          : targetNum > 32_767
+            ? "That target is above the largest the contract can hold."
+            : null;
   const busy = tx.phase === "signing" || tx.phase === "pending";
 
   const submit = async () => {
@@ -188,7 +302,9 @@ export function BidPanel({
       await sendMarketTx(
         address,
         "bid",
-        [BigInt(mandate.id), Math.round(targetNum)],
+        // `amount` is ignored for a native-asset mandate and `ttl` of 0 means
+        // the bid does not expire — the two arguments V2 added over V1.
+        [BigInt(mandate.id), Math.round(targetNum), 0n, 0n],
         parseEther(bond as `${number}`),
         setTx,
       );
@@ -229,9 +345,11 @@ export function BidPanel({
         slashed in the principal&apos;s favour.
       </p>
 
-      <button onClick={submit} disabled={!valid || busy} style={buttonStyle(valid && !busy)}>
-        {busy ? "…" : mandate.state === 1 ? "join succession queue" : "bid for mandate"}
-      </button>
+      <Gate refusal={bidRefusal}>
+        <button onClick={submit} disabled={!valid || busy} style={buttonStyle(valid && !busy)}>
+          {busy ? "…" : mandate.state === 1 ? "join succession queue" : "bid for mandate"}
+        </button>
+      </Gate>
       <Phase tx={tx} />
     </div>
   );
@@ -246,6 +364,21 @@ export function OpenMandatePanel({ onDone }: { onDone?: () => void }) {
 
   const capitalNum = Number(capital);
   const valid = ready && Number.isFinite(capitalNum) && capitalNum > 0;
+
+  /*
+    Why the capital is not acceptable, said here rather than by a revert.
+
+    The floor on the live market is a bond of 0.00004 BNB and the agent must
+    post at least a fifth of the capital, so capital under 0.0002 leaves an
+    agent risking less than the market's own minimum and the contract refuses
+    the bid later — after the principal has already paid gas to open it.
+  */
+  const openRefusal =
+    !Number.isFinite(capitalNum) || capitalNum <= 0
+      ? "Capital must be a positive number of BNB."
+      : capitalNum < 0.0002
+        ? "Below 0.0002 BNB an agent's fifth-of-capital bond falls under the market minimum, and no agent could bid on it."
+        : null;
   const busy = tx.phase === "signing" || tx.phase === "pending";
 
   const submit = async () => {
@@ -256,11 +389,17 @@ export function OpenMandatePanel({ onDone }: { onDone?: () => void }) {
         "openMandate",
         [
           category, // category
-          200, // toleranceBps — 2% underperformance tolerated
-          2_000, // feeBps — 20% of alpha
-          2_500, // slashBps — a quarter of the bond per failing epoch
-          3_600, // epochLength — one hour
+          NATIVE, // asset, native BNB; V2 ignores `amount` and uses msg.value
+          0n, // amount, see above
+          BENCHMARK_BY_INDEX[category] ?? 0, // what the alpha is measured against
+          200, // toleranceBps, 2% underperformance tolerated
+          2_000, // feeBps, 20% of alpha
+          2_500, // slashBps, a quarter of the bond per failing epoch
+          3_600, // epochLength, one hour, and it must exceed challengeWindow (300)
           24, // epochsTotal
+          3, // strikes, must not be zero
+          -1_000, // catastrophic, must be negative, or the contract refuses
+          2_000, // bondFloorBps, the agent posts at least a fifth of the capital
         ],
         parseEther(capital as `${number}`),
         setTx,
@@ -316,9 +455,11 @@ export function OpenMandatePanel({ onDone }: { onDone?: () => void }) {
         the term completes.
       </p>
 
-      <button onClick={submit} disabled={!valid || busy} style={buttonStyle(valid && !busy)}>
-        {busy ? "…" : "open mandate"}
-      </button>
+      <Gate refusal={openRefusal}>
+        <button onClick={submit} disabled={!valid || busy} style={buttonStyle(valid && !busy)}>
+          {busy ? "…" : "open mandate"}
+        </button>
+      </Gate>
       <Phase tx={tx} />
     </div>
   );
@@ -330,12 +471,29 @@ export function WithdrawButton() {
   const [tx, setTx] = useState<TxState>({ phase: "idle" });
   const busy = tx.phase === "signing" || tx.phase === "pending";
 
-  if (!ready || !address) return null;
+  /*
+    This used to return null when nobody was connected.
+
+    Withdraw is the only way capital leaves this contract — released bonds,
+    earned fees, resolved slashes all land there — and it was invisible to
+    anyone who had not already connected on the right chain. Somebody owed
+    money by the market had no way to discover that from the market. It now
+    renders whatever the state is, and says what the state is.
+  */
+  if (!ready || !address) {
+    return (
+      <span className="label" title="Fees, released bonds and resolved slashes are withdrawn here">
+        connect to see what you can withdraw
+      </span>
+    );
+  }
 
   return (
     <div>
       <button
-        onClick={() => void sendMarketTx(address, "withdraw", [], undefined, setTx).catch(() => {})}
+        onClick={() =>
+          void sendMarketTx(address, "withdraw", [NATIVE], undefined, setTx).catch(() => {})
+        }
         disabled={busy}
         className="label"
         style={{

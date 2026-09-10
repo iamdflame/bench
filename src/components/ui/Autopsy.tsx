@@ -2,7 +2,7 @@ import type { Autopsy } from "@/lib/autopsy";
 import Command from "./Command";
 import { EXPLORER } from "@/lib/config";
 
-const fmt = (v: number | null, dp = 2) => (v === null ? "—" : v.toFixed(dp));
+const fmt = (v: number | null, dp = 2) => (v === null ? "none" : v.toFixed(dp));
 
 /**
  * The reputation autopsy.
@@ -94,8 +94,8 @@ export default function AutopsyPanel({ autopsy }: { autopsy: Autopsy }) {
         */}
         {!a.populationRead ? (
           <p className="small au__unread">
-            The registry-wide feedback corpus could not be read — the upstream index
-            returned a database error — so coordination could only be judged against this
+            The registry-wide feedback corpus could not be read, the upstream index
+            returned a database error, so coordination could only be judged against this
             agent&rsquo;s own {a.reviewers} reviewer{a.reviewers === 1 ? "" : "s"}. That is
             not enough to draw a conclusion from, and none is drawn: the two figures above
             are the same number because nothing was removed, not because nothing was
@@ -110,7 +110,7 @@ export default function AutopsyPanel({ autopsy }: { autopsy: Autopsy }) {
               {a.reviewers === 1 ? "" : "s"} {a.flagged.length === 1 ? "is" : "are"} part
               of a coordinated cohort, judged against{" "}
               {a.populationSampled.toLocaleString()} reviewer profiles across the registry
-              rather than this agent alone — a wallet that left one review here is
+              rather than this agent alone, a wallet that left one review here is
               unremarkable until you see the two hundred it left elsewhere.
             </p>
 

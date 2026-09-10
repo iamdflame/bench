@@ -6,7 +6,7 @@ import Authority from "@/components/agents/Authority";
 import { MARKET_ADDRESS } from "@/lib/chain/market";
 
 export const metadata: Metadata = {
-  title: "Authority — MANDATE",
+  title: "Who leaves the reviews | Mandate",
   description:
     "Exactly what each agent may do with a principal's capital, what it was refused, and the control that ends it.",
 };
@@ -37,7 +37,7 @@ export default function AuthorityPage() {
             </h1>
             <p className="lede start-sub">
               A bond makes an agent accountable for outcomes. It does not make it
-              incapable of anything outside its brief — that is an{" "}
+              incapable of anything outside its brief. That is an{" "}
               <strong>ERC-8183 session key</strong>: a spend cap no larger than the
               mandate&rsquo;s capital, an expiry that ends with its term, and a call
               allowlist bound to target <em>and</em> selector. The principal never
@@ -59,7 +59,7 @@ export default function AuthorityPage() {
               Stated rather than finessed: in this deployment the principal, the
               operator and the adjudicator are the same party, so revocation is
               authorised by an operator token. A market with third-party
-              principals would have the principal sign it from their own wallet —
+              principals would have the principal sign it from their own wallet,
               the contract already treats dismissal that way, and this endpoint is
               the piece that would move. That concentration is a real weakness and
               it is listed as one.
@@ -77,7 +77,7 @@ export default function AuthorityPage() {
 
       <SiteFooter
         market={MARKET_ADDRESS}
-        note="Session keys are ERC-8183. The allowlist is derived from the assay, never from the category alone — granted is a subset of proven, enforced by the type system rather than by a check somebody has to remember."
+        note="Session keys are ERC-8183. The allowlist is derived from the assay, never from the category alone, granted is a subset of proven, enforced by the type system rather than by a check somebody has to remember."
       />
     </div>
   );

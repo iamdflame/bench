@@ -90,8 +90,8 @@ export default function AgentStandings({ explorer }: { explorer: string }) {
       {data ? (
         <p className="label tbl__foot">
           {data.complete
-            ? `derived from contract logs, blocks ${data.fromBlock}–${data.toBlock}`
-            : "partial history — the RPC refused part of the range"}
+            ? `derived from contract logs, blocks ${data.fromBlock} to ${data.toBlock}`
+            : "partial history, the RPC refused part of the range"}
         </p>
       ) : null}
     </div>
@@ -113,12 +113,12 @@ function Row({ s, explorer }: { s: Standing; explorer: string }) {
         </a>
       </td>
       <td className={`num r ${s.meanAlphaBps > 0 ? "up" : s.meanAlphaBps < 0 ? "down" : "dim"}`}>
-        {s.epochs === 0 ? "—" : pct(s.meanAlphaBps)}
+        {s.epochs === 0 ? "none" : pct(s.meanAlphaBps)}
       </td>
       <td className="num r dim">{s.mandatesHeld}</td>
       <td className="num r dim">{s.epochs}</td>
       <td className="num r dim">
-        {s.epochs === 0 ? "—" : `${Math.round((s.wins / s.epochs) * 100)}%`}
+        {s.epochs === 0 ? "none" : `${Math.round((s.wins / s.epochs) * 100)}%`}
       </td>
       <td className="num r dim">{bnb(s.feesWei)}</td>
       <td className={`num r ${lost ? "warn" : "dim"}`}>{bnb(s.slashedWei)}</td>

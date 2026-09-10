@@ -16,7 +16,7 @@
 
 import { formatEther, parseEther, type Address, type Hex } from "viem";
 import {
-  MANDATE_MARKET_ABI,
+  MARKET_ABI,
   MARKET_ADDRESS,
   marketChain,
   marketClient,
@@ -49,7 +49,7 @@ async function send(
 ) {
   const hash = await w.writeContract({
     address: MARKET_ADDRESS,
-    abi: MANDATE_MARKET_ABI,
+    abi: MARKET_ABI,
     functionName,
     args,
     value,
@@ -86,7 +86,7 @@ async function run() {
 
   const current = (await marketClient.readContract({
     address: MARKET_ADDRESS,
-    abi: MANDATE_MARKET_ABI,
+    abi: MARKET_ABI,
     functionName: "minBond",
   })) as bigint;
   if (current > MIN_BOND) {
@@ -103,7 +103,7 @@ async function run() {
   const count = Number(
     await marketClient.readContract({
       address: MARKET_ADDRESS,
-      abi: MANDATE_MARKET_ABI,
+      abi: MARKET_ABI,
       functionName: "mandateCount",
     }),
   );
@@ -127,7 +127,7 @@ async function run() {
 
   const stored = (await marketClient.readContract({
     address: MARKET_ADDRESS,
-    abi: MANDATE_MARKET_ABI,
+    abi: MARKET_ABI,
     functionName: "openAttestation",
     args: [BigInt(id)],
   })) as readonly [string, bigint, bigint, bigint];

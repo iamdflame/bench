@@ -8,14 +8,14 @@ import { MARKET_ADDRESS } from "@/lib/chain/market";
 import restatement from "@/data/restatement.json";
 
 export const metadata: Metadata = {
-  title: "Restatement — MANDATE",
+  title: "Where we were wrong | Mandate",
   description:
     "We measured our own agents wrong and slashed one for it. Every settled epoch, re-run through the corrected gauge, including what we still cannot prove.",
 };
 
 const bnb = (wei: string) => (Number(BigInt(wei)) / 1e18).toFixed(8);
 const pct = (bps: number | null) =>
-  bps === null ? "—" : `${bps >= 0 ? "+" : ""}${(bps / 100).toFixed(2)}%`;
+  bps === null ? "none" : `${bps >= 0 ? "+" : ""}${(bps / 100).toFixed(2)}%`;
 
 export default function RestatementPage() {
   const r = restatement;
@@ -32,8 +32,8 @@ export default function RestatementPage() {
         </h1>
         <p className="lede start-sub">
           The valuation read native BNB and USDT and nothing else. Every strategy this
-          market runs moves capital into something that gauge could not see — a
-          PancakeSwap V3 position, a Venus supply, a debt repayment, even a WBNB wrap —
+          market runs moves capital into something that gauge could not see, a
+          PancakeSwap V3 position, a Venus supply, a debt repayment, even a WBNB wrap 
           and all of it counted as zero. The better an agent performed, the harder it was
           punished.
         </p>
@@ -157,7 +157,7 @@ export default function RestatementPage() {
                       <td>{e.marketName}</td>
                       <td className="r">{e.mandateId}</td>
                       <td className="r">{e.epoch}</td>
-                      <td className="r">{e.attestedBlock ?? "—"}</td>
+                      <td className="r">{e.attestedBlock ?? "none"}</td>
                       <td className="r">{pct(e.reportedAlphaBps)}</td>
                       <td className="r">{pct(e.correctedAlphaBps)}</td>
                       <td className="rs__status">{e.blockedBy ?? "re-derived"}</td>
@@ -178,7 +178,7 @@ export default function RestatementPage() {
           <div className="panel__body">
             <p className="small au__unread">
               Re-deriving a valuation at a past block needs archive state, and BSC&rsquo;s
-              public endpoints serve about fifty seconds of it — <code>bsc-dataseed</code>{" "}
+              public endpoints serve about fifty seconds of it, <code>bsc-dataseed</code>{" "}
               answers <code>missing trie node</code>, <code>blockrazor</code> answers{" "}
               <code>not supported</code>, <code>publicnode</code> demands a token. The
               attested blocks are hours old.
@@ -187,7 +187,7 @@ export default function RestatementPage() {
               So the slashes above are <strong>not yet proven to have been taken in
               error</strong>, and no money has been returned on the strength of an
               assumption. Correcting the record with an unverified correction would repeat
-              the exact failure this page exists to report — and it would be worse for
+              the exact failure this page exists to report, and it would be worse for
               being inside a confession.
             </p>
             <Command note="Completes the re-derivation and, where a slash is shown to have been taken in error, names the transaction that returns it.">

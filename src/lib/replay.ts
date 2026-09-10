@@ -113,11 +113,11 @@ async function registeredAt(
         return id > m ? id : m;
       }, 0n);
       notes.push(
-        `Rung 0 is the highest token id minted by block ${to.toLocaleString()}. The registry issues ids in sequence, so the newest id is the population — read from ${logs.length} mint events in the ${(Number(to - from)).toLocaleString()} blocks before it.`,
+        `Rung 0 is the highest token id minted by block ${to.toLocaleString()}. The registry issues ids in sequence, so the newest id is the population, read from ${logs.length} mint events in the ${(Number(to - from)).toLocaleString()} blocks before it.`,
       );
       return Number(highest);
     } catch (e) {
-      notes.push(`log query ${from}–${to} refused: ${(e instanceof Error ? e.message : String(e)).split("\n")[0].slice(0, 80)}`);
+      notes.push(`log query ${from}${to} refused: ${(e instanceof Error ? e.message : String(e)).split("\n")[0].slice(0, 80)}`);
       return null;
     }
   }
@@ -188,7 +188,7 @@ async function marketAt(
 }
 
 const NEVER_ON_CHAIN =
-  "never on chain — this rung was probed off chain at a moment in time and no historical record of the probe was kept. Back-filling it from today's answer would be authoring history.";
+  "never on chain, this rung was probed off chain at a moment in time and no historical record of the probe was kept. Back-filling it from today's answer would be authoring history.";
 
 /** Re-derives the ladder as it stood at `block`. */
 export async function ladderAt(block: bigint, rpc = LOG_RPC): Promise<Replay> {

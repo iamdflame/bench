@@ -7,7 +7,7 @@ import { CHAIN_ID } from "@/lib/config";
 import { MARKET_ADDRESS } from "@/lib/chain/market";
 
 export const metadata: Metadata = {
-  title: "The bench — MANDATE",
+  title: "Run a check yourself | Mandate",
   description:
     "Paste any agent registered on BNB Smart Chain and watch six tests run against it live. No wallet, no account, no permission from us.",
 };
@@ -39,7 +39,7 @@ export default async function BenchPage() {
         <h1 className="display bench__title">Assay anything on this chain.</h1>
         <p className="lede bench__lede">
           Six tests, run live against BNB Smart Chain. It does not have to be one of
-          ours — any agent in the ERC-8004 identity registry can be put on the bench,
+          ours, any agent in the ERC-8004 identity registry can be put on the bench,
           including one you are being asked to trust somewhere else. No wallet, no
           account, and no permission from us.
         </p>

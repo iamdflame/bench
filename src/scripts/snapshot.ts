@@ -67,6 +67,38 @@ const reviewerNodes = [...profiles.values()].map((p) => ({
   reasons: flags[p.address] ?? [],
 }));
 
+/*
+  Which agents each reviewer reviewed, inverted.
+
+  `profileReviewers` already holds this as a Set per reviewer and the snapshot
+  threw it away, writing only `agents.size`. That single omission is why the
+  site has been carrying a blanket caveat saying reviews cannot be attributed:
+  the attribution was computed on every run and discarded before it was
+  written. Inverting it here costs nothing and makes a per-agent flagged share
+  available everywhere, with no extra API calls.
+*/
+const byAgent = new Map<string, { total: number; flagged: number; reviewers: Set<string> }>();
+for (const prof of profiles.values()) {
+  for (const agentId of prof.agents) {
+    const row = byAgent.get(agentId) ?? { total: 0, flagged: 0, reviewers: new Set<string>() };
+    row.total += 1;
+    if (flaggedSet.has(prof.address)) row.flagged += 1;
+    row.reviewers.add(prof.address);
+    byAgent.set(agentId, row);
+  }
+}
+const reviewsByAgent = Object.fromEntries(
+  [...byAgent.entries()].map(([agentId, r]) => [
+    agentId,
+    {
+      reviewers: r.reviewers.size,
+      flaggedReviewers: r.flagged,
+      flaggedShare: r.total ? Math.round((r.flagged / r.total) * 1000) / 10 : 0,
+    },
+  ]),
+);
+log(`reviews attributed for ${Object.keys(reviewsByAgent).length} agents`);
+
 // Co-review edges, for the ring.
 const list = [...profiles.values()];
 const edges: { a: string; b: string; similarity: number; shared: number }[] = [];
@@ -206,6 +238,7 @@ const snapshot = {
     flaggedReviewers: flaggedSet.size,
     cleanRecords,
     nodes: reviewerNodes,
+    byAgent: reviewsByAgent,
     edges,
   },
   categories: CATEGORIES.map((c) => ({

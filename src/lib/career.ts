@@ -14,7 +14,7 @@ import { parseAbiItem, type Address } from "viem";
 import {
   CATEGORY_NAMES,
   logClients,
-  MANDATE_MARKET_ABI,
+  MARKET_ABI,
   MARKET_ADDRESS,
   marketClient,
   readAllMandates,
@@ -83,7 +83,7 @@ const EMPTY_CAREER = (agent: Address): Career => ({
   dismissals: [],
   totals: { mandates: 0, epochs: 0, feesEarnedWei: "0", slashedWei: "0", dismissals: 0 },
   logsRead: false,
-  verify: "",
+  verify: "none",
 });
 
 /** Every mandate this wallet has held, and what happened in each. */
@@ -194,7 +194,7 @@ export async function readCareer(agent: Address): Promise<Career> {
     logsRead,
     verify: rows.length
       ? `npx mandate-verify --mandate ${rows[0]!.id} --chain 56`
-      : "",
+      : "no settled mandate to verify yet",
   };
 }
 
@@ -214,4 +214,4 @@ export async function readCareerForWallet(wallet: string | null | undefined): Pr
   });
 }
 
-export { marketClient, MANDATE_MARKET_ABI };
+export { marketClient, MARKET_ABI };

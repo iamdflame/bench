@@ -5,7 +5,7 @@ import Command from "@/components/ui/Command";
 import { MARKET_ADDRESS } from "@/lib/chain/market";
 
 export const metadata: Metadata = {
-  title: "The assay, as public infrastructure — MANDATE",
+  title: "The assay as public infrastructure | Mandate",
   description:
     "A free, unauthenticated, rate-limited API over the assay engine. Assay any ERC-8004 agent on BNB Smart Chain, read the trust ladder, browse the register. Open to everyone, including the projects competing with us.",
 };
@@ -45,7 +45,7 @@ export default function ApiPage() {
         <p className="mark-label">Public infrastructure</p>
         <h1 className="display method__title">The assay is open to everyone.</h1>
         <p className="lede method__lede">
-          Free, unauthenticated, rate limited. No key, no account, no permission from us —
+          Free, unauthenticated, rate limited. No key, no account, no permission from us,
           including for the other projects in this hackathon. An assay office whose
           findings only its own front end could read would be a trade association, and a
           measurement nobody else can obtain is indistinguishable from one nobody else can
@@ -153,7 +153,7 @@ console.log(\`\${page.coverage.read} of \${page.coverage.registered} read\`);`}<
           <p className="section-sub api__invite">
             If you are building an agent marketplace, a directory, a router or a wallet on
             BNB Smart Chain, this is yours to use. Show fineness on your own listings. Use
-            the ladder as your own filter. Cite the assay and disagree with it in public —
+            the ladder as your own filter. Cite the assay and disagree with it in public,
             every finding carries the command that re-derives it, so disagreeing is cheap
             and settling the disagreement is cheaper. You do not need to ask, and there is
             nothing to sign.

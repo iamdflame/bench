@@ -137,7 +137,7 @@ export default function CareerPanel({ career }: { career: Career; explorer?: str
               <ul className="au__reasons career__dismissals">
                 {career.dismissals.map((d) => (
                   <li key={d.txHash}>
-                    Dismissed from mandate {d.mandateId} — {d.reason || "no reason recorded"}
+                    Dismissed from mandate {d.mandateId}, {d.reason || "no reason recorded"}
                   </li>
                 ))}
               </ul>

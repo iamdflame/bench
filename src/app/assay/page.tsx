@@ -9,7 +9,7 @@ import { HALLMARK_LADDER } from "@/lib/assay/types";
 import { MARKET_ADDRESS } from "@/lib/chain/market";
 
 export const metadata: Metadata = {
-  title: "The method — MANDATE",
+  title: "The method in full | Mandate",
   description:
     "The six tests, what each is worth, and the fineness ladder they produce. Assay any agent on BSC, including one you are being asked to trust somewhere else.",
 };
@@ -35,14 +35,14 @@ const TESTS: { id: string; title: string; weight: number; asks: string; fails: s
     title: "Custody",
     weight: 150,
     asks: "Is the agent's wallet separate from its owner's?",
-    fails: "agent_wallet == owner_address — the agent has no custody of its own",
+    fails: "agent_wallet == owner_address, the agent has no custody of its own",
   },
   {
     id: "activity",
     title: "Activity",
     weight: 250,
     asks: "Has the wallet ever done anything?",
-    fails: "nonce 0 · balance 0 — registered and never used",
+    fails: "nonce 0 · balance 0, registered and never used",
   },
   {
     id: "capability",
@@ -63,7 +63,7 @@ const TESTS: { id: string; title: string; weight: number; asks: string; fails: s
     title: "Performance",
     weight: 50,
     asks: "Has it settled epochs against measurements committed in advance?",
-    fails: "No record — which is the ordinary case, and is reported as absence rather than zero",
+    fails: "No record, which is the ordinary case, and is reported as absence rather than zero",
   },
 ];
 
@@ -94,7 +94,7 @@ export default function MethodPage() {
             </h1>
             <p className="lede method__lede">
               Six tests against BNB Smart Chain, each worth a fixed number of millesimal
-              points. An agent earns a point only where evidence exists — absence of
+              points. An agent earns a point only where evidence exists, absence of
               evidence is impurity, because an assay office does not grade unproven
               metal. Nothing here is weighted by opinion after the fact.
             </p>
@@ -152,7 +152,7 @@ export default function MethodPage() {
           <p className="section-sub">
             999 is pure. 375 is the lowest grade that may legally carry a hallmark in the
             United Kingdom, and it is the lowest grade that carries one here. The shield
-            shape encodes the grade, so the mark is readable before the number is —
+            shape encodes the grade, so the mark is readable before the number is,
             and below 375 <strong>no shield is struck at all</strong>.
           </p>
           <ul className="grades">
@@ -166,7 +166,7 @@ export default function MethodPage() {
             ))}
           </ul>
           <p className="tbl__foot">
-            Base metal receives no mark. That is not an omission — it is the whole
+            Base metal receives no mark. That is not an omission. It is the whole
             philosophy in one decision. A bad agent is never rendered with a bad score;
             it is rendered as an unmarked object, which is honest, unforgeable, and at
             the scale of this registry, unanswerable.

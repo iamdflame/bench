@@ -1,4 +1,5 @@
 import Command from "./Command";
+import BuyCall from "./BuyCall";
 import { CATEGORY_LABEL, EXPLORER, type Category } from "@/lib/config";
 
 /**
@@ -88,9 +89,9 @@ export default function Hire({
                     ? `, with ${(Number(BigInt(bondWei)) / 1e18).toFixed(5)} BNB of its own escrowed against it`
                     : ""}
                   . Open another and it bids the same way: its bond is slashed when it
-                  trails the benchmark past tolerance, and you never hand over your keys
-                  — it acts under an ERC-8183 session key scoped to the calls its assay
-                  proved it can make.
+                  trails the benchmark past tolerance, and you never hand over your
+                  keys: it acts under an ERC-8183 session key scoped to the calls its
+                  assay proved it can make.
                 </p>
                 <a className="btn btn--primary" href={`/floor?agent=${tokenId}`}>
                   Open a mandate →
@@ -104,8 +105,9 @@ export default function Hire({
             ) : assayed ? (
               <>
                 <p className="small hire__what">
-                  Its fineness is published on chain at or above 375, so the market will
-                  accept a bid from it. It has never posted one. A mandate opened in{" "}
+                  Its fineness is published on chain at or above 375, the hallmarking
+                  standard. The market itself sets no minimum on the canonical
+                  deployment, so a bid from it would be accepted on the assay alone. It has never posted one. A mandate opened in{" "}
                   {category ? CATEGORY_LABEL[category] : "its office"} is a lot it can bid
                   for; until it does, no capital of yours is at risk and none of its own
                   is either.
@@ -129,7 +131,7 @@ export default function Hire({
                   This agent cannot take a mandate. The market requires a bond, and
                   nothing has ever been escrowed from this wallet
                   {fineness !== null && fineness < 375
-                    ? `; its fineness of ${fineness} is below the 375 bar besides`
+                    ? `; its fineness of ${fineness} is below 375, the hallmarking standard, besides`
                     : ""}
                   . Offering you a button here would be offering a transaction the
                   contract would refuse.
@@ -148,9 +150,25 @@ export default function Hire({
             <p className="small hire__what">
               {answering
                 ? "This agent's endpoint answers, so a single question can be bought outright: the first request returns a 402 carrying the price, the second carries a signed USD1 authorisation and returns the answer. The seller submits the transfer, so the buyer needs no BNB."
-                : "No endpoint of ours has ever reached this agent, so there is nothing to call. The assay below is still purchasable — it is our reading of the agent, not the agent's own answer."}
+                : "No endpoint of ours has ever reached this agent, so there is nothing to call. The assay below is still purchasable. It is our reading of the agent, not the agent's own answer."}
             </p>
-            <Command note="Returns 402 with the price and the payment terms. Priced at 0.01 USD1.">
+            {/*
+              The rail, usable rather than described.
+
+              This was a curl line, which is a checkout for people who write
+              shell scripts. The brief asks for a venue where someone can put
+              an agent to work, and a marketplace whose only way to pay is a
+              terminal command is a marketplace for four people. The whole
+              handshake now happens in the browser: fetch the 402, sign the
+              authorisation, ask again carrying it.
+            */}
+            <BuyCall
+              tokenId={tokenId}
+              path={`/api/x402/agent/${tokenId}/status`}
+              label="Buy this assay for 0.01 USD1 →"
+              what="Our full six-test reading of this agent, settled on BNB Smart Chain. You sign an authorisation; we submit the transfer, so you need no BNB."
+            />
+            <Command note="The same call, if you would rather drive it yourself.">
               {`curl -i https://mandate-coral.vercel.app/api/x402/agent/${tokenId}/status`}
             </Command>
           </div>
@@ -161,7 +179,7 @@ export default function Hire({
             <a className="link-underline" href="/assay">
               How the six tests work →
             </a>{" "}
-            — what each one asks of the chain, and what makes it fail.
+           , what each one asks of the chain, and what makes it fail.
           </p>
         ) : null}
 

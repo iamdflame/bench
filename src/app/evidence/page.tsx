@@ -6,7 +6,7 @@ import Command from "@/components/ui/Command";
 import { MARKET_ADDRESS } from "@/lib/chain/market";
 
 export const metadata: Metadata = {
-  title: "Evidence — MANDATE",
+  title: "Evidence | Mandate",
   description:
     "The Agent Advantage Report, the Sybil finding, session-scope proofs, and the measurements that went against us. Every one with the command that reproduces it.",
 };
@@ -28,7 +28,7 @@ const PROOFS: Item[] = [
   },
   {
     title: "Independent verification",
-    body: "A published package that re-derives any settlement from public chain state. It reads no database, no API and no file we control — enforced by a build step that fails if any of those appear in its source.",
+    body: "A published package that re-derives any settlement from public chain state. It reads no database, no API and no file we control, enforced by a build step that fails if any of those appear in its source.",
     command: "npx mandate-verify --mandate 0 --chain 56 --deployment v1",
   },
   {
@@ -64,7 +64,7 @@ const PROOFS: Item[] = [
 const ADVERSE: Item[] = [
   {
     title: "We measured our own agents wrong, and slashed one for it",
-    body: "The valuation read native BNB and USDT and nothing else, so a V3 position, a Venus supply, a debt repayment or a WBNB wrap all counted as zero — the better an agent performed, the harder it was punished. Three slashes totalling 0.00037 BNB stand against one agent on that basis. The gauge is fixed; the re-derivation that would prove each slash wrong needs archive state no free BSC endpoint serves, so nothing has been returned on an assumption and the gap is stated rather than closed quietly.",
+    body: "The valuation read native BNB and USDT and nothing else, so a V3 position, a Venus supply, a debt repayment or a WBNB wrap all counted as zero: the better an agent performed, the harder it was punished. Three slashes totalling 0.00037 BNB stand against one agent on that basis. The gauge is fixed; the re-derivation that would prove each slash wrong needs archive state no free BSC endpoint serves, so nothing has been returned on an assumption and the gap is stated rather than closed quietly.",
     href: "https://github.com/iamdflame/mandate-bnb/blob/main/docs/RESTATEMENT.md",
     hrefLabel: "Read the restatement",
   },
@@ -87,7 +87,7 @@ const ADVERSE: Item[] = [
   },
   {
     title: "A competitor's finding did not hold",
-    body: "Another submission reported that the 8004scan indexer silently ignores chain_id, inflating every count taken at face value. Publishing that would have invalidated several competitors' headline numbers. It was tested: chain_id=56 returns 301,996, 8453 returns 59,596, 196 returns 12,232 — distinct per chain, and the first 25 rows are all chain 56. The claim is false, so it is not being used.",
+    body: "Another submission reported that the 8004scan indexer silently ignores chain_id, inflating every count taken at face value. Publishing that would have invalidated several competitors' headline numbers. It was tested: chain_id=56 returns 301,996, 8453 returns 59,596, 196 returns 12,232, distinct per chain, and the first 25 rows are all chain 56. The claim is false, so it is not being used.",
   },
   {
     title: "Three instrument bugs, found mid-run",
@@ -117,14 +117,14 @@ const NOT_YET: Item[] = [
   },
   {
     title: "Capability cannot be swept across the registry",
-    body: "Rung 3 needs a log scan per agent, and no free BSC provider will serve the range at that volume. It is measured on request, on the agent page, and left blank in the funnel — a plausible number there would be a guess.",
+    body: "Rung 3 needs a log scan per agent, and no free BSC provider will serve the range at that volume. It is measured on request, on the agent page, and left blank in the funnel, a plausible number there would be a guess.",
   },
   {
     title: "Revocation is authorised by an operator token, not by the principal",
     body: "In this deployment the principal, the operator and the adjudicator are the same party. A market with third-party principals would have the principal sign revocation from their own wallet. The contract already treats dismissal that way; this endpoint is the piece that would move.",
   },
   {
-    title: "Bonds are small enough that nobody has attacked them — and we do not have the capital to fix it",
+    title: "Bonds are small enough that nobody has attacked them, and we do not have the capital to fix it",
     body: "The mechanism is identical at any size and the sums currently at risk are under a dollar, so nothing here has been tested by an adversary with a reason to try. Retiring the objection needs one mandate at roughly 1 BNB capital and 0.25 BNB bond, settled honestly and published win or lose. The operator wallet holds about 0.005 BNB. This is a standing constraint rather than a task in progress: it is not going to be closed by working harder, and pretending otherwise would be its own small dishonesty.",
   },
   {
@@ -141,7 +141,7 @@ const NOT_YET: Item[] = [
   },
   {
     title: "Market history is read from logs, not from an index",
-    body: "Events are read with provider failover and any gaps are reported rather than smoothed over. There is no subgraph, so this does not scale past a few hundred mandates — stated in docs/DATA.md rather than discovered later.",
+    body: "Events are read with provider failover and any gaps are reported rather than smoothed over. There is no subgraph, so this does not scale past a few hundred mandates, stated in docs/DATA.md rather than discovered later.",
   },
   {
     title: "There is no demo video",
@@ -209,7 +209,7 @@ export default function EvidencePage() {
 
         <p className="tbl__foot ladder-foot">
           Start at the{" "}
-          <Link href="/start" className="link-underline">
+          <Link href="/agents" className="link-underline">
             judge path
           </Link>{" "}
           if you would rather check the claims than read about them.

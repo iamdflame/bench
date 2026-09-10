@@ -19,6 +19,7 @@ import {
 import { privateKeyToAccount } from "viem/accounts";
 import { bsc, bscTestnet, foundry } from "viem/chains";
 import { MANDATE_MARKET_ABI } from "./abi";
+import { MANDATE_MARKET_V2_ABI } from "./abiV2";
 import { MARKET_V2 } from "./deployments";
 
 /**
@@ -141,11 +142,31 @@ const ZERO = "0x0000000000000000000000000000000000000000";
 export const isZero = (a: string | undefined | null) =>
   !a || a.toLowerCase() === ZERO;
 
+/**
+ * The ABI a given market address actually answers.
+ *
+ * This module addressed `MARKET_ADDRESS`, which defaults to the V2 contract,
+ * while re-exporting the **V1** ABI to everything that imported it. Reads
+ * survived on the overlap between the two shapes; every write built on it was
+ * dead, which is precisely the bug that made the whole marketplace
+ * untransactable, and it is still sitting in four scripts.
+ *
+ * One function, so the pairing cannot drift again.
+ */
+export function abiFor(address: string): readonly unknown[] {
+  return address.toLowerCase() === MARKET_V2.toLowerCase()
+    ? (MANDATE_MARKET_V2_ABI as readonly unknown[])
+    : (MANDATE_MARKET_ABI as readonly unknown[]);
+}
+
+/** The ABI for the market this deployment is configured against. */
+export const MARKET_ABI = abiFor(MARKET_ADDRESS);
+
 export async function readMandateCount(): Promise<number> {
   if (!MARKET_ADDRESS) return 0;
   const n = await marketClient.readContract({
     address: MARKET_ADDRESS,
-    abi: MANDATE_MARKET_ABI,
+    abi: MARKET_ABI,
     functionName: "mandateCount",
   });
   return Number(n);
@@ -154,7 +175,7 @@ export async function readMandateCount(): Promise<number> {
 export async function readMandate(id: number): Promise<MandateView> {
   const m = (await marketClient.readContract({
     address: MARKET_ADDRESS,
-    abi: MANDATE_MARKET_ABI,
+    abi: MARKET_ABI,
     functionName: "getMandate",
     args: [BigInt(id)],
   })) as Record<string, unknown>;
@@ -182,7 +203,7 @@ export async function readMandate(id: number): Promise<MandateView> {
 export async function readBids(id: number): Promise<BidView[]> {
   const bids = (await marketClient.readContract({
     address: MARKET_ADDRESS,
-    abi: MANDATE_MARKET_ABI,
+    abi: MARKET_ABI,
     functionName: "getBids",
     args: [BigInt(id)],
   })) as readonly Record<string, unknown>[];
@@ -261,4 +282,11 @@ export const bps = (v: number | bigint) => {
 export const shortAddr = (a: string) =>
   a && a.length > 12 ? `${a.slice(0, 6)}…${a.slice(-4)}` : a;
 
-export { MANDATE_MARKET_ABI };
+/*
+  Deliberately not re-exported.
+
+  `export { MANDATE_MARKET_ABI }` from a module whose address points at V2 is
+  how four scripts came to build V1 calldata for a V2 contract. Importers take
+  `MARKET_ABI`, or ask `abiFor(address)` when they span deployments.
+*/
+export { MANDATE_MARKET_ABI as MANDATE_MARKET_V1_ABI_EXPLICIT };

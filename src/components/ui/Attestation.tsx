@@ -99,7 +99,7 @@ export default function Attestation({
       </div>
 
       <div className="panel__body">
-        <Command note="Reads the chain and nothing else — no database, no API, no file we control. Exit 0 verified, 1 mismatch, 3 inconclusive.">
+        <Command note="Reads the chain and nothing else, no database, no API, no file we control. Exit 0 verified, 1 mismatch, 3 inconclusive.">
           {`npx mandate-verify --mandate ${mandateId} --chain ${chainId}`}
         </Command>
       </div>

@@ -145,7 +145,7 @@ export function detectCoordination(
     for (const m of members) {
       add(
         m.address,
-        `One of ${members.length} wallets with near-identical activity (${lo}–${hi} records across ${agentsLo}–${agentsHi} agents)`,
+        `One of ${members.length} wallets with near-identical activity (${lo}${hi} records across ${agentsLo}${agentsHi} agents)`,
       );
     }
   }
@@ -174,7 +174,7 @@ export function detectCoordination(
     if (median < 60_000) {
       add(
         p.address,
-        `Median gap between submissions is ${Math.round(median / 1000)}s — machine cadence`,
+        `Median gap between submissions is ${Math.round(median / 1000)}s, machine cadence`,
       );
     }
     if (p.maxPerAgent >= 8) {

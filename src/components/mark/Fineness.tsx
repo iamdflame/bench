@@ -25,7 +25,7 @@ export default function Fineness({
     return <span className="mark-absent" style={{ width: size, height: size }} aria-label="Unmarked" />;
   }
 
-  const label = title ?? `${value} of 999 — ${grade.label}`;
+  const label = title ?? `${value} of 999, ${grade.label}`;
 
   return (
     <svg

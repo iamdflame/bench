@@ -2,6 +2,7 @@ import type { Metadata, Viewport } from "next";
 import localFont from "next/font/local";
 import Palette from "@/components/shell/Palette";
 import "./globals.css";
+import "./theme.css";
 
 /*
   Fonts are self-hosted rather than fetched by `next/font/google`.
@@ -48,16 +49,16 @@ const sans = localFont({
 */
 export const metadata: Metadata = {
   title: {
-    default: "MANDATE — Assay Office for Autonomous Agents",
+    default: "Mandate | Hire an agent to run a position on BNB Chain",
     template: "%s",
   },
   description:
-    "Agents registered on BNB Smart Chain are tested against the chain, not taken at their word. We strike what passes and let the rest go unmarked.",
+    "A marketplace for autonomous agents on BNB Smart Chain. Each one is checked against the chain before it is listed, and paid only if it beats the benchmark you choose.",
   applicationName: "MANDATE",
   openGraph: {
-    title: "MANDATE — Assay Office for Autonomous Agents",
+    title: "Mandate | Hire an agent to run a position on BNB Chain",
     description:
-      "We test agents against BNB Smart Chain, strike what passes, and let the rest go unmarked.",
+      "Agents that rebalance liquidity, run grids, chase yield and watch loan health. Checked against the chain, bonded against failure.",
     type: "website",
     siteName: "MANDATE",
   },
@@ -72,8 +73,15 @@ export const metadata: Metadata = {
  * missing data rather than as the finding.
  */
 export const viewport: Viewport = {
-  themeColor: "#08090b",
-  colorScheme: "dark",
+  /*
+    Paper, not the anvil.
+
+    The marketplace is light and the verification archive is dark, and the
+    browser chrome has to pick one. It picks the one a person actually lands
+    on. The archive paints its own ground, so nothing there regresses.
+  */
+  themeColor: "#f6f3ec",
+  colorScheme: "light dark",
 };
 
 export default function RootLayout({

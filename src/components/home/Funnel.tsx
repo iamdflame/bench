@@ -108,7 +108,7 @@ export default function Funnel({
                     <span className="msheet__break">{r.discontinuity}</span>
                   ) : null}
                 </td>
-                <td className="msheet__cmd">{r.verify ? <Command>{r.verify}</Command> : "—"}</td>
+                <td className="msheet__cmd">{r.verify ? <Command>{r.verify}</Command> : "none"}</td>
               </tr>
             ))}
           </tbody>
