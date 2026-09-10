@@ -74,7 +74,6 @@
     "keeper:sweep": "tsx --env-file=.env --env-file-if-exists=.env.local src/scripts/keeper-sweep.ts",
     "refresh": "npm run index && npm run backfill:cards && npm run probe:all && npm run assay:snapshot && npm run snapshot",
     "seed:books": "tsx --env-file=.env --env-file-if-exists=.env.local src/scripts/seed-books.ts",
-    "tape": "tsx src/scripts/tape.ts",
     "backfill:cards": "tsx --env-file=.env --env-file-if-exists=.env.local src/scripts/backfill-cards.ts"
   },
   "dependencies": {

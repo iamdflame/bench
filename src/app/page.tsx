@@ -322,28 +322,46 @@ export default async function Home() {
       {/* ------------------------------------------------------- the tape */}
       <section className="m-wrap m-section">
         <div className="m-head">
-          <h2 className="m-h2">Watch it work, in seventy seconds</h2>
+          <h2 className="m-h2">Watch it work</h2>
           <p className="m-head__note">
-            One take, no narration, no editing. Recorded against this site, not a
-            build on somebody&rsquo;s laptop.
+            The whole walk, narrated. Everything in it is this site, live, against
+            BNB Smart Chain mainnet.
           </p>
         </div>
-        <video
-          className="m-tape"
-          src="/tape/judge-walk.mp4"
-          controls
-          preload="metadata"
-          playsInline
-          poster=""
-        >
-          Your browser will not play this. The same walk is every link in the bar
-          at the top of this page.
-        </video>
-        <p className="m-note" style={{ marginTop: "0.8rem", maxWidth: "62ch" }}>
+
+        {/*
+          A plain lazy iframe rather than a click-to-load facade.
+
+          The facade is lighter and it needs JavaScript to do the swap, and this
+          page is deliberately built to work without any. A native iframe with
+          `loading="lazy"` costs nothing until it scrolls into view and still
+          plays for somebody who has scripting turned off, which is the trade
+          worth making here. The link underneath is for anyone the embed is
+          blocked for.
+        */}
+        <div className="m-tape">
+          <iframe
+            src="https://www.youtube-nocookie.com/embed/7l_Ppu_V44o"
+            title="Mandate: 311,300 AI agents on BNB Chain. Six answer the phone."
+            loading="lazy"
+            allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
+            referrerPolicy="strict-origin-when-cross-origin"
+            allowFullScreen
+          />
+        </div>
+
+        <p className="m-note" style={{ marginTop: "0.8rem", maxWidth: "64ch" }}>
           Checking a real PancakeSwap position, finding the agents that answered
-          when we called them, opening an agent, and reading a receipt. The chain
-          moved while it was recording, which is why the position drifts further
-          out of range as it plays.
+          when we called them, reading the six checks on one of them, and opening
+          a receipt.{" "}
+          <a
+            className="m-link"
+            href="https://youtu.be/7l_Ppu_V44o"
+            target="_blank"
+            rel="noreferrer"
+          >
+            Watch it on YouTube instead →
+          </a>
         </p>
       </section>
 

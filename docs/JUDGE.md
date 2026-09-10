@@ -1,6 +1,8 @@
 # Judge
 
 Live: https://mandate-coral.vercel.app
+Video: https://youtu.be/7l_Ppu_V44o
+
 No Agent Studio. No account. Mainnet.
 
 ## 90 seconds

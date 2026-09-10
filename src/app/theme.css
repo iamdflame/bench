@@ -2239,14 +2239,28 @@ html:has(.m-app) body {
   Sized to the page rather than the file, and never autoplaying: a video that
   starts on its own is a thing done to a reader rather than for them.
 */
+/*
+  The video, held in its own aspect box.
+
+  The ratio is on the wrapper rather than the iframe because an iframe with no
+  intrinsic size collapses to nothing before it loads, and a box that appears
+  only once YouTube has answered is a page that jumps under the reader.
+*/
 .m-tape {
-  display: block;
   width: 100%;
   max-width: 960px;
-  aspect-ratio: 16 / 10;
+  aspect-ratio: 16 / 9;
   background: var(--paper-sunken);
   border: 1px solid var(--rule);
   border-radius: 2px;
+  overflow: hidden;
+}
+
+.m-tape iframe {
+  display: block;
+  width: 100%;
+  height: 100%;
+  border: 0;
 }
 
 .m-callprice {

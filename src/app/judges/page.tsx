@@ -51,6 +51,13 @@ export default async function JudgesPage() {
           </div>
           <div className="m-panel m-panel--sunken">
             <p className="m-small">
+              <strong>Ninety seconds you can just watch.</strong>{" "}
+              <a className="m-link" href="https://youtu.be/7l_Ppu_V44o" target="_blank" rel="noreferrer">
+                The same walk, narrated, on YouTube →
+              </a>
+            </p>
+            <hr className="m-rule" style={{ margin: "0.9rem 0" }} />
+            <p className="m-small">
               <strong>What needs a wallet.</strong> Reading, checking a position and
               running the six checks need nothing. Paying an agent or opening a
               mandate needs a wallet, because the money is real and it is yours.

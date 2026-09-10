@@ -15,7 +15,7 @@ Built for *The Smart Money Era*, BNB Agent Studio marketplace track.
 | **Catalog** | https://mandate-coral.vercel.app/agents |
 | **Receipts** | https://mandate-coral.vercel.app/activity |
 | **API** | https://mandate-coral.vercel.app/api |
-| **Video** | `<paste the YouTube URL here>` · script and settings in [`docs/video/`](docs/video/SCRIPT.md) |
+| **Video** | **https://youtu.be/7l_Ppu_V44o** (90 seconds, narrated) |
 
 Nothing here requires Agent Studio. Nothing moves until you sign. Mandate does
 not take custody.
@@ -23,6 +23,8 @@ not take custody.
 ---
 
 ## Judge walk, 90 seconds, mainnet
+
+**[Watch it instead](https://youtu.be/7l_Ppu_V44o)**, or do it yourself:
 
 1. Open the site. Four jobs, equal depth.
 2. **Check a position**: paste a PancakeSwap V3 number or a wallet. We read it
@@ -165,10 +167,11 @@ Everything present-tense: https://mandate-coral.vercel.app/evidence
 ```
 src/app/          the market: agents, hire, diagnose, judges, receipts, activity
 src/lib/          census, assay, settlement, x402, chain
-src/scripts/      index, probe, assay snapshot, seed books, tape
+src/scripts/      index, probe, assay snapshot, seed books
+tools/            browser checks: overflow, tiny text, dead controls, at three widths
 packages/         mandate-verify, mandate-client, mcp
 contracts/        MandateMarketV2 and 102 tests
-docs/             adoption, multisig, video, partner tracks, archive
+docs/             judge walk, receipts, adoption, multisig, incidents, partner tracks
 ```
 
 License: MIT.
