@@ -6,7 +6,9 @@ Start here, then work from the other two files.
 |---|---|
 | [`voiceover.md`](voiceover.md) | **The words.** Thirteen blocks, one per screen, in three lengths. Paste each into ElevenLabs and download it. |
 | [`SHOTLIST.md`](SHOTLIST.md) | **The edit.** Where each clip goes and how long that screen has to stay up. |
+| [`YOUTUBE.md`](YOUTUBE.md) | **The posting.** Title, description with chapters, and which thumbnail to upload. |
 | [`mix.sh`](mix.sh) | Optional. Lays all thirteen clips over your recording in one command. |
+| `thumbnail/` | Three rendered thumbnails and the HTML they came from. |
 | `clips/` | Where your `01.mp3` … `13.mp3` go. |
 | `archive/` | The first attempt, kept for reference. It was too short. |
 
@@ -20,7 +22,8 @@ Start here, then work from the other two files.
 3. Open `SHOTLIST.md` and place each clip.
 4. Export at 1080p, 30fps.
 5. Upload to YouTube as **Unlisted**, not Private. A judge has to be able to
-   open it without an account.
+   open it without an account. Title, description and thumbnail are in
+   [`YOUTUBE.md`](YOUTUBE.md).
 6. Send me the URL and I will put it on the site and in the README.
 
 ---

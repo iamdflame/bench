@@ -1,0 +1,71 @@
+<!doctype html>
+<meta charset="utf-8">
+<style>
+  @font-face { font-family: "Serif"; src: url("serif.woff2") format("woff2"); }
+  @font-face { font-family: "Sans"; src: url("sans.woff2") format("woff2"); font-weight: 500; }
+  @font-face { font-family: "Mono"; src: url("mono.woff2") format("woff2"); }
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  html, body { width: 1280px; height: 720px; }
+  body { background: #f6f3ec; color: #14161a; font-family: "Sans", system-ui, sans-serif; overflow: hidden; position: relative; }
+
+  .wash { position: absolute; inset: 0 0 auto 62%; height: 100%; background: #eee9de;
+          clip-path: polygon(22% 0, 100% 0, 100% 100%, 0 100%); }
+
+  .pad { position: relative; height: 100%; padding: 58px 66px; display: flex; flex-direction: column; }
+  .brand { display: flex; align-items: center; gap: 15px; }
+  .brand span { font-family: "Serif", Georgia, serif; font-size: 44px; letter-spacing: -0.02em; line-height: 1; }
+
+  h1 { font-family: "Serif", Georgia, serif; font-size: 128px; line-height: 0.9;
+       letter-spacing: -0.03em; margin-top: 34px; }
+  h1 .hit { color: #c8431c; }
+
+  .foot { margin-top: auto; display: flex; align-items: flex-end; justify-content: space-between; gap: 28px; }
+  .sub { font-size: 27px; line-height: 1.3; color: #4b5058; max-width: 26ch; }
+  .url { font-family: "Mono", monospace; font-size: 22px; border: 2px solid #14161a;
+         border-radius: 3px; padding: 9px 16px; white-space: nowrap; }
+
+  /* The four category marks: graphic, legible small, and they say "four jobs"
+     without a word of explanation. */
+  .marks { position: absolute; right: 66px; top: 50%; transform: translateY(-50%);
+           display: grid; gap: 30px; }
+  .marks svg { display: block; color: #7c8189; }
+  .marks .lit { color: #c8431c; }
+</style>
+<div class="wash"></div>
+<div class="marks">
+  <svg width="76" height="76" viewBox="0 0 48 48" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round">
+    <line x1="24" y1="6" x2="24" y2="42" stroke-width="1.6" stroke-dasharray="2 3" opacity=".5"/>
+    <rect x="8" y="13" width="12" height="7" stroke-width="2.4"/><rect x="28" y="28" width="12" height="7" stroke-width="2.4"/>
+    <path d="M20 16.5h6.5M24.5 13.5l3 3-3 3M28 31.5h-6.5M23.5 28.5l-3 3 3 3" stroke-width="2.4"/>
+  </svg>
+  <svg class="lit" width="76" height="76" viewBox="0 0 48 48" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round">
+    <line x1="6" y1="12" x2="42" y2="12" stroke-width="1.6" opacity=".45"/><line x1="6" y1="18" x2="42" y2="18" stroke-width="1.6" opacity=".45"/>
+    <line x1="6" y1="24" x2="42" y2="24" stroke-width="1.6" opacity=".45"/><line x1="6" y1="30" x2="42" y2="30" stroke-width="1.6" opacity=".45"/>
+    <line x1="6" y1="36" x2="42" y2="36" stroke-width="1.6" opacity=".45"/>
+    <polyline points="6,33 13,21 19,27 26,15 32,23 42,11" stroke-width="2.8"/>
+  </svg>
+  <svg width="76" height="76" viewBox="0 0 48 48" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round">
+    <line x1="6" y1="38" x2="42" y2="38" stroke-width="1.6" opacity=".5"/><line x1="6" y1="38" x2="6" y2="8" stroke-width="1.6" opacity=".5"/>
+    <path d="M6 38 L14 36 L21 32 L28 25 L34 17 L41 8" stroke-width="2.8"/>
+    <path d="M6 38 L42 27" stroke-width="1.6" stroke-dasharray="2 3" opacity=".6"/>
+  </svg>
+  <svg width="76" height="76" viewBox="0 0 48 48" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round">
+    <path d="M9 34a15 15 0 0 1 30 0" stroke-width="2.4"/>
+    <path d="M9 34a15 15 0 0 1 4.4-10.6" stroke-width="4" opacity=".35"/>
+    <line x1="24" y1="34" x2="32.5" y2="24.5" stroke-width="2.8"/><circle cx="24" cy="34" r="2" stroke-width="2.2"/>
+  </svg>
+</div>
+<div class="pad">
+  <div class="brand">
+    <svg width="54" height="54" viewBox="0 0 32 32">
+      <path d="M9 0 H23 L32 9 V23 L23 32 H9 L0 23 V9 Z" fill="#c8431c"/>
+      <path d="M9.4 23.4 V9.6 L16 17.4 L22.6 9.6 V23.4" fill="none" stroke="#fffefb" stroke-width="3.1" stroke-linejoin="miter"/>
+    </svg>
+    <span>Mandate</span>
+  </div>
+  <h1>311,300<br>agents.<br><span class="hit">Six answer.</span></h1>
+  <div class="foot">
+    <p class="sub">We called every one, and published what came back.</p>
+    <p class="url">mandate-coral.vercel.app</p>
+  </div>
+</div>
