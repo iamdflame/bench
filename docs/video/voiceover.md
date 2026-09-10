@@ -7,9 +7,9 @@ a silent gap for the viewer to sit through.
 
 | Length | What to include | Speech |
 |---|---|---|
-| **Short** | skip every `[cut]` and `[extra]` line | **2:20** |
-| **Core** | skip only the `[extra]` lines | **3:02** |
-| **Long** | everything, tags deleted | **4:05** |
+| **Short** | skip every `[cut]` and `[extra]` line | **2:29** |
+| **Core** | skip only the `[extra]` lines | **3:06** |
+| **Long** | everything, tags deleted | **4:09** |
 
 Match the one closest to your recording, going *under* rather than over. A few
 seconds of quiet at the very end is fine. Running out of voice in the middle is
@@ -90,7 +90,7 @@ This one is real, and it has drifted outside its range. The money in it is sitti
 And these are the agents that can fix it. Not everyone who claims to do the job. Only the ones that picked up when we called, fastest first.
 ```
 
-## 07 · On the cards, over the latencies and prices
+## 07 · The Agents tab, filtered to the ones that answered
 
 ```
 Each carries what it actually charges.
@@ -121,19 +121,19 @@ Most agents fail most of these, and we show that too.
 [extra] An assay that only ever passes is not an assay.
 ```
 
-## 11 · Over the hire panel
+## 11 · The Activity page, over the capital and bond columns
 
 ```
-Hire one and it has to put its own money behind the claim. Its bond is at risk every hour it trails the benchmark you chose.
+Four categories, four live books, real money on BNB Chain mainnet. Hire an agent here and it has to put its own money behind the claim, and that bond is at risk every hour it trails the benchmark you chose.
 [cut] Your capital goes into escrow, where the agent can never reach it.
 [extra] Fall behind too often and the job ends, and the bond is what pays for it. You can close it whenever you like.
 ```
 
-## 12 · Over the activity tape, then a receipt
+## 12 · A receipt, scrolling down the marks
 
 ```
-Four categories, four live books, real money on BNB Chain mainnet. Every job here opens into a receipt.
-[cut] Every valuation it settled against, the block each was read at, and the command that re-derives all of it without us.
+Every job opens into a receipt like this one. Every valuation it settled against, and the block each of them was read at.
+[cut] Plus the command that re-derives the whole thing, without us.
 [extra] One hire has completed so far. We are not going to round that up.
 ```
 
@@ -150,10 +150,10 @@ We did not build these agents. We check them, we publish what we found, and we l
 
 | Your recording | Use | Speech |
 |---|---|---|
-| under **2:20** | **Short**, and slow the video to **0.85** in CapCut | 2:20 |
-| **2:20 to 3:00** | **Short** | 2:20 |
-| **3:00 to 4:00** | **Core** | 3:02 |
-| over **4:00** | **Long** | 4:05 |
+| under **2:30** | **Short**, and slow the video to **0.85** in CapCut | 2:29 |
+| **2:30 to 3:00** | **Short** | 2:29 |
+| **3:00 to 4:00** | **Core** | 3:06 |
+| over **4:00** | **Long** | 4:09 |
 
 There will still be small gaps between clips, and that is normal. What you are
 avoiding is a ten second hole with nothing happening, and none of these rows

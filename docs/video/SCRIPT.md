@@ -27,8 +27,9 @@ Start here, then work from the other two files.
 
 ## The one rule
 
-The picture leads. If the voice is longer than the screen it belongs to, slow
-the footage down. Do not cut the voice, and do not speed the picture up to fit.
+The picture leads. Each clip starts when its screen appears; it is fine for it
+to finish over the next one. If a clip is still going two screens later, slow
+the footage down. Do not cut the voice, and never speed the picture up to fit.
 
 A viewer needs about four seconds to read a screen they have never seen. It will
 feel slow to you because you already know what is on it.
