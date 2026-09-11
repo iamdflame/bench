@@ -614,12 +614,141 @@ html:has(.m-app) body {
   flex: none;
 }
 
-@media (max-width: 860px) {
+/* A label never breaks inside its link. Below the width eight links fit on
+   one line they move into the Menu disclosure instead of wrapping, and the
+   duplicate "Hire an agent" button gives up its room first. */
+.m-nav a,
+.m-header__hire {
+  white-space: nowrap;
+}
+
+@media (max-width: 1399px) {
+  .m-header__hire {
+    display: none;
+  }
+}
+
+.m-menu {
+  display: none;
+  position: relative;
+}
+
+@media (max-width: 1179px) {
   .m-nav {
     display: none;
   }
   .m-header__right {
     margin-left: auto;
+  }
+  .m-menu {
+    display: block;
+  }
+}
+
+.m-menu > summary,
+.m-wallet > summary {
+  list-style: none;
+}
+.m-menu > summary::-webkit-details-marker,
+.m-wallet > summary::-webkit-details-marker {
+  display: none;
+}
+
+.m-menu__panel,
+.m-wallet__panel {
+  position: absolute;
+  right: 0;
+  top: calc(100% + 0.5rem);
+  z-index: 50;
+  background: var(--paper);
+  border: 1px solid var(--rule);
+  box-shadow: 0 14px 34px color-mix(in srgb, var(--ink) 14%, transparent);
+}
+
+.m-menu__panel {
+  display: flex;
+  flex-direction: column;
+  min-width: 15rem;
+  padding: 0.45rem;
+}
+.m-menu__panel a:not(.m-btn) {
+  padding: 0.65rem 0.75rem;
+  color: var(--ink-2);
+  font-size: var(--m-small);
+  border-left: 2px solid transparent;
+}
+.m-menu__panel a:not(.m-btn):hover {
+  color: var(--ink);
+  background: color-mix(in srgb, var(--ink) 5%, transparent);
+}
+.m-menu__panel a[aria-current="page"] {
+  color: var(--ink);
+  border-left-color: var(--signal);
+}
+.m-menu__panel .m-btn {
+  margin-top: 0.45rem;
+}
+
+.m-wallet {
+  position: relative;
+}
+.m-wallet__chip {
+  cursor: pointer;
+}
+.m-wallet[open] > .m-wallet__chip {
+  background: color-mix(in srgb, var(--ink) 7%, transparent);
+  color: var(--ink);
+}
+.m-wallet__chip--warn {
+  border-color: var(--signal);
+}
+.m-wallet__panel {
+  display: grid;
+  gap: 0.75rem;
+  width: 20rem;
+  max-width: calc(100vw - 2rem);
+  padding: 1rem;
+}
+.m-wallet__addr {
+  font-size: 0.78rem;
+  word-break: break-all;
+  color: var(--ink);
+}
+.m-wallet__row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+}
+.m-wallet__facts {
+  display: grid;
+  gap: 0.35rem;
+  margin: 0;
+  font-size: var(--m-small);
+}
+.m-wallet__facts div {
+  display: flex;
+  justify-content: space-between;
+  gap: 1rem;
+}
+.m-wallet__facts dt {
+  color: var(--ink-3);
+}
+.m-wallet__facts dd {
+  margin: 0;
+  color: var(--ink);
+  text-align: right;
+}
+
+@media (max-width: 560px) {
+  .m-menu__panel,
+  .m-wallet__panel {
+    position: fixed;
+    left: 1rem;
+    right: 1rem;
+    top: 70px;
+    width: auto;
+    min-width: 0;
+    max-width: none;
   }
 }
 
@@ -1220,6 +1349,20 @@ html:has(.m-app) body {
 }
 
 .m-mkt-cat--on .m-mark {
+  color: var(--paper);
+}
+
+/* The pills are links, and the shell's `.m-app a { color: inherit }` outranks
+   a single class: the selected pill rendered ink text on an ink background,
+   an empty black box. These selectors carry the element so they win. */
+a.m-mkt-cat {
+  color: var(--ink-2);
+}
+a.m-mkt-cat:hover {
+  color: var(--ink);
+}
+a.m-mkt-cat.m-mkt-cat--on,
+a.m-mkt-cat.m-mkt-cat--on:hover {
   color: var(--paper);
 }
 

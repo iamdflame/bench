@@ -78,6 +78,21 @@ function rememberConnected(): void {
   }
 }
 
+function forgetConnected(): void {
+  try {
+    window.localStorage.removeItem(CONNECTED_KEY);
+  } catch {
+    /* Nothing was stored, so there is nothing to forget. */
+  }
+}
+
+/**
+ * Fired when this tab disconnects, so every component holding a `useWallet`
+ * drops the account at once. Other tabs hear the same thing through the
+ * `storage` event when the remembered flag is removed.
+ */
+const DISCONNECT_EVENT = "mandate:wallet-disconnect";
+
 export function useWallet() {
   const [state, setState] = useState<WalletState>({
     address: null,
@@ -147,6 +162,14 @@ export function useWallet() {
       come back.
     */
     let cancelled = false;
+    const onDisconnect = () =>
+      setState((s) => ({ ...s, address: null, chainId: null, ready: false, balanceWei: null }));
+    const onStorage = (e: StorageEvent) => {
+      if (e.key === CONNECTED_KEY && e.newValue === null) onDisconnect();
+    };
+    window.addEventListener(DISCONNECT_EVENT, onDisconnect);
+    window.addEventListener("storage", onStorage);
+
     const markAvailable = () => {
       if (!cancelled) setState((s) => (s.available ? s : { ...s, available: true }));
     };
@@ -165,6 +188,8 @@ export function useWallet() {
 
     const cleanupDetect = () => {
       cancelled = true;
+      window.removeEventListener(DISCONNECT_EVENT, onDisconnect);
+      window.removeEventListener("storage", onStorage);
       window.clearInterval(poll);
       window.removeEventListener("eip6963:announceProvider", onAnnounce);
       window.removeEventListener("ethereum#initialized", onAnnounce);
@@ -189,6 +214,10 @@ export function useWallet() {
 
     const onAccounts = (accounts: unknown) => {
       const list = accounts as Address[];
+      // After a disconnect, a wallet that cannot give up its permission may
+      // still announce accounts. They are ignored until the person connects
+      // again, or "disconnect" would undo itself on the next account switch.
+      if (list?.length && !hasConnectedBefore()) return;
       void refresh(list?.length ? list[0] : null);
     };
     const onChain = () => {
@@ -254,7 +283,29 @@ export function useWallet() {
     if (state.address) await refresh(state.address);
   }, [refresh, state.address]);
 
-  return { ...state, connect, switchChain, refresh };
+  /**
+   * Stops this site reading the wallet.
+   *
+   * The remembered flag is what licenses the silent reconnect on a later
+   * visit, so forgetting it is the disconnect. Where the wallet supports it
+   * (MetaMask and several others do), the site's permission is also handed
+   * back, so the wallet itself shows the site as disconnected. Nothing here
+   * touches funds or anything already signed.
+   */
+  const disconnect = useCallback(async () => {
+    forgetConnected();
+    window.dispatchEvent(new Event(DISCONNECT_EVENT));
+    try {
+      await window.ethereum?.request({
+        method: "wallet_revokePermissions",
+        params: [{ eth_accounts: {} }],
+      } as never);
+    } catch {
+      /* Not supported by this wallet; the local disconnect stands on its own. */
+    }
+  }, []);
+
+  return { ...state, connect, switchChain, refresh, disconnect };
 }
 
 /**

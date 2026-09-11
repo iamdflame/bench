@@ -10,6 +10,7 @@
 import { refreshIfStale } from "@/lib/census/refresh";
 import { keeperBid, keeperConfigured, openMandatesNeedingBids } from "@/lib/keeper/bid";
 import { beat } from "@/lib/heartbeat";
+import { readGridWindow } from "@/lib/grid/window";
 
 export interface JobReport {
   job: string;
@@ -21,6 +22,17 @@ export interface JobReport {
 type Job = { name: string; budgetMs: number; run: (authorised: boolean) => Promise<unknown> };
 
 const JOBS: Job[] = [
+  {
+    name: "grid-window",
+    budgetMs: 8_000,
+    // A read, not a spend, so anyone may trigger it. It carries the stored
+    // Grid-1 window up to the chain head, so the first reader after a quiet
+    // day does not pay for the whole gap.
+    run: async () => {
+      const w = await readGridWindow({ fresh: true });
+      return { fills: w.fills.length, roundTrips: w.roundTrips.length, toBlock: w.toBlock };
+    },
+  },
   {
     name: "census",
     budgetMs: 40_000,

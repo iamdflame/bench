@@ -78,28 +78,44 @@ export function snapshot<T = unknown>(name: SnapshotName): { payload: T; capture
  */
 export const DEFAULT_WARM: SnapshotName[] = ["probe", "assays", "census", "demo", "grid-window", "grid-state"];
 
+const warming = new Map<SnapshotName, Promise<void>>();
+
 export async function warm(names: SnapshotName[] = DEFAULT_WARM): Promise<void> {
   if (!(await ensure())) return;
-  const due = names.filter((n) => Date.now() - (lastWarm.get(n) ?? 0) > WARM_TTL_MS);
-  if (!due.length) return;
-  for (const n of due) lastWarm.set(n, Date.now());
-  try {
-    const rows = (await pg!`select name, payload, captured_at from snapshots where name in ${pg!(due)}`) as {
-      name: SnapshotName;
-      payload: unknown;
-      captured_at: Date;
-    }[];
-    for (const r of rows) {
-      const current = snapshot(r.name);
-      const at = new Date(r.captured_at).toISOString();
-      if (!current || current.capturedAt < at) {
-        memory.set(r.name, { payload: r.payload, capturedAt: at, source: "db" });
-        onChange.get(r.name)?.forEach((fn) => fn());
+  // A name already being read is waited for, not skipped. It used to be marked
+  // warm before its row arrived, so a second caller in the same moment went on
+  // to read the committed file while the newer row was still on its way.
+  const waiting = names.map((n) => warming.get(n)).filter((p): p is Promise<void> => Boolean(p));
+  const due = names.filter((n) => !warming.has(n) && Date.now() - (lastWarm.get(n) ?? 0) > WARM_TTL_MS);
+  if (due.length) {
+    const read = (async () => {
+      try {
+        const rows = (await pg!`select name, payload, captured_at from snapshots where name in ${pg!(due)}`) as {
+          name: SnapshotName;
+          payload: unknown;
+          captured_at: Date;
+        }[];
+        for (const r of rows) {
+          const current = snapshot(r.name);
+          const at = new Date(r.captured_at).toISOString();
+          if (!current || current.capturedAt < at) {
+            memory.set(r.name, { payload: r.payload, capturedAt: at, source: "db" });
+            onChange.get(r.name)?.forEach((fn) => fn());
+          }
+        }
+      } catch {
+        /* the file reading stands */
+      } finally {
+        for (const n of due) warming.delete(n);
       }
+    })();
+    for (const n of due) {
+      lastWarm.set(n, Date.now());
+      warming.set(n, read);
     }
-  } catch {
-    /* the file reading stands */
+    waiting.push(read);
   }
+  await Promise.all(waiting);
 }
 
 /** Writes a new reading. `capturedAt` defaults to now. */

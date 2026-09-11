@@ -13,7 +13,8 @@ import type { Hex } from "viem";
 import { diagnose } from "@/lib/diagnose";
 import { judgePicks } from "@/lib/market/judge";
 import { listingFor } from "@/lib/market/listing";
-import { readGridWindow } from "@/lib/grid/window";
+import { readGridWindow, type GridWindow } from "@/lib/grid/window";
+import { snapshot } from "@/lib/data/snapshots";
 import { listSessions } from "@/lib/chain/session-store";
 import { comparePolicy } from "@/lib/chain/keystore";
 import { registeredCount } from "@/lib/registry/count";
@@ -54,8 +55,28 @@ export async function judgePathChecks(): Promise<Check[]> {
       return { ok: Boolean(l), detail: l ? `${l.name}: ${l.liveness}` : "not in the index" };
     }),
     timed(4, "Grid-1 has real fills on chain", async () => {
-      const w = await readGridWindow();
-      return { ok: w.fills.length > 0, detail: `${w.fills.length} fills, ${w.roundTrips.length} round trips, read to block ${w.toBlock}` };
+      // The read carries the stored window forward and stores each stretch as
+      // it goes, so a slow provider can leave it short of the budget. The
+      // stored reading is an earlier chain read of the same log: it stands,
+      // with its block and its age, until it is more than a day old.
+      let failed: string | null = null;
+      const w = await withTimeout(
+        readGridWindow().catch((e) => {
+          failed = (e as Error).message.slice(0, 120);
+          return null;
+        }),
+        9_000,
+      );
+      if (w) return { ok: w.fills.length > 0, detail: `${w.fills.length} fills, ${w.roundTrips.length} round trips, read to block ${w.toBlock}` };
+      const why = failed ? `the chain read failed (${failed})` : "the chain read did not finish inside 9 seconds";
+      const stored = snapshot<GridWindow>("grid-window")?.payload;
+      if (!stored) return { ok: false, detail: `${why}, and there is no stored reading` };
+      const hours = (Date.now() - Date.parse(stored.readAt)) / 3_600_000;
+      const age = hours < 1 ? `${Math.max(1, Math.round(hours * 60))} min` : `${hours.toFixed(1)} h`;
+      return {
+        ok: stored.fills.length > 0 && hours < 26,
+        detail: `${stored.fills.length} fills, ${stored.roundTrips.length} round trips, stored reading to block ${stored.toBlock}, ${age} old; ${why}`,
+      };
     }),
     timed(5, "The desk can read the KeyStore", async () => {
       const live = (await listSessions()).filter((s) => !s.revokedAt && s.registered && s.expiry * 1000 > Date.now());

@@ -61,6 +61,12 @@ for (const [name, path] of PAGES) {
       // behaviour; only a silent one is a dead end.
       const dead = [...document.querySelectorAll('button[disabled],a[aria-disabled="true"]')]
         .filter(e => {
+          // A reason the control names itself through aria-describedby counts
+          // wherever it sits, provided it is on screen and says something.
+          const ids = (e.getAttribute('aria-describedby') || '').split(/\s+/).filter(Boolean);
+          const linked = ids.map(id => document.getElementById(id))
+            .find(t => t && t.textContent.trim() && t.getClientRects().length);
+          if (linked) return false;
           const scope = e.closest('form,section,div');
           const said = scope && scope.querySelector('.m-error,.m-gate__why,.m-field__hint,.m-absent__t');
           return !said || !said.textContent.trim();

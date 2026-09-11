@@ -19,13 +19,26 @@
  *   - Gas is what the chain charged the transaction that carried each fill
  *     (gas used times effective price). The relay's fee is that plus its
  *     margin, so this understates cost slightly, and says so.
+ *
+ * Reading it, stated so the cost stays bounded:
+ *   The one public provider that serves these logs caps a query at 5,000
+ *   blocks, and BSC makes about 190,000 a day. Reading from the deploy block
+ *   on every request therefore grew by some forty queries a day, and by the
+ *   second day it no longer fitted inside the status check's twelve seconds.
+ *   The window is now read forward from the last stored reading: stored fills
+ *   before its final blocks stand, those final blocks are read again in case
+ *   of a reorganisation, and everything after is read now. Each stretch of
+ *   the scan is stored as it completes, so a read that is cut short still
+ *   moves the cursor. A stored reading is only ever an earlier chain read,
+ *   and `verify` still prints the one command that rebuilds it from nothing.
  */
 
-import { parseAbiItem, type Address, type Hex } from "viem";
+import { parseAbiItem, type Address, type Hex, type PublicClient } from "viem";
 import { logClients } from "@/lib/chain/market";
 import { bscClient } from "@/lib/chain/rpc";
 import { SWAP_BOUND, USDT, WBNB_USDT_POOL } from "@/lib/chain/leash";
 import { memo } from "@/lib/cache";
+import { snapshot, store, warm } from "@/lib/data/snapshots";
 
 export const SWAP_BOUND_DEPLOY_TX: Hex = "0xe1b9ce12e82556507c28b7360c3406d17c3b19efbbc599a95a90e069480a1411";
 /** The block that transaction landed in. Pinned, so the window needs no receipt read to start. */
@@ -35,6 +48,12 @@ const SWAPPED = parseAbiItem(
 );
 const SLOT0 = parseAbiItem("function slot0() view returns (uint160,int24,uint16,uint16,uint16,uint32,bool)");
 const CHUNK = 5_000n;
+/** Chunk queries in flight at once. Small, because the provider is a public one. */
+const PARALLEL = 4;
+/** Chunks per stored stretch, so a read cut short keeps what it has read. */
+const STRETCH = 8n;
+/** Blocks read again from the end of a stored reading. BSC finalises in two or three; this is generous. */
+const REREAD = 50n;
 
 export interface Fill {
   tx: Hex;
@@ -81,41 +100,88 @@ export interface GridWindow {
   verify: string;
 }
 
-async function deployBlock(): Promise<bigint> {
-  return SWAP_BOUND_DEPLOY_BLOCK;
+/** How long a provider has before the next one is asked as well. */
+const HEDGE_MS = 1_500;
+/** Providers in the order to ask them; whichever answers first moves to the front. */
+const preferred = logClients.map((_, i) => i);
+
+/**
+ * A provider's error, without the provider's URL.
+ *
+ * viem puts the full URL in its message, and a configured RPC URL can carry
+ * an API key. This message ends up in `/api/status`, which is public.
+ */
+function reason(e: unknown): string {
+  const err = e as { shortMessage?: string; message?: string };
+  return (err?.shortMessage ?? err?.message?.split("\n")[0] ?? "unknown").replace(/https?:\/\/\S+/g, "<rpc>");
 }
 
-async function swappedLogs(from: bigint, to: bigint) {
-  const out: Awaited<ReturnType<(typeof logClients)[number]["getLogs"]>> = [];
+/**
+ * One chunk of logs, hedged across providers.
+ *
+ * Measured on Vercel: the same one-chunk read answered in 0.2 s, then did not
+ * answer for 8 s, then answered in 0.7 s. Asking providers one after another
+ * meant a provider that hangs held the read for its whole 25 s timeout. Now
+ * the next provider is asked as well once the first has had 1.5 s, and the
+ * first answer wins; a slow provider is never cut off, only overtaken.
+ */
+function chunkLogs(start: bigint, end: bigint) {
+  const ask = (i: number) => logClients[i].getLogs({ address: SWAP_BOUND, event: SWAPPED, fromBlock: start, toBlock: end });
+  type Logs = Awaited<ReturnType<typeof ask>>;
+  const order = [...preferred];
+  return new Promise<Logs>((resolve, reject) => {
+    const errors: string[] = [];
+    let next = 0;
+    let open = 0;
+    let settled = false;
+    let timer: ReturnType<typeof setTimeout> | undefined;
+    const launch = () => {
+      clearTimeout(timer);
+      if (settled || next >= order.length) return;
+      const i = order[next++];
+      open++;
+      ask(i).then(
+        (logs) => {
+          if (settled) return;
+          settled = true;
+          clearTimeout(timer);
+          preferred.splice(preferred.indexOf(i), 1);
+          preferred.unshift(i);
+          resolve(logs);
+        },
+        (e) => {
+          open--;
+          errors.push(reason(e));
+          if (settled) return;
+          if (next < order.length) launch();
+          else if (open === 0) {
+            settled = true;
+            reject(new Error(`no provider served SwapBound logs for ${start}-${end}: ${errors.join("; ").slice(0, 240)}`));
+          }
+        },
+      );
+      timer = setTimeout(launch, HEDGE_MS);
+    };
+    launch();
+  });
+}
+
+type SwappedLog = Awaited<ReturnType<typeof chunkLogs>>[number];
+
+async function swappedLogs(from: bigint, to: bigint): Promise<SwappedLog[]> {
+  const ranges: [bigint, bigint][] = [];
   for (let start = from; start <= to; start += CHUNK) {
-    const end = start + CHUNK - 1n > to ? to : start + CHUNK - 1n;
-    let got: typeof out | null = null;
-    let last: unknown;
-    for (const c of logClients) {
-      try {
-        got = (await c.getLogs({ address: SWAP_BOUND, event: SWAPPED, fromBlock: start, toBlock: end })) as typeof out;
-        break;
-      } catch (e) {
-        last = e;
-      }
-    }
-    if (!got) throw new Error(`no provider served SwapBound logs for ${start}-${end}: ${(last as Error)?.message ?? "unknown"}`);
-    out.push(...got);
+    ranges.push([start, start + CHUNK - 1n > to ? to : start + CHUNK - 1n]);
+  }
+  const out: SwappedLog[] = [];
+  for (let i = 0; i < ranges.length; i += PARALLEL) {
+    const got = await Promise.all(ranges.slice(i, i + PARALLEL).map(([s, e]) => chunkLogs(s, e)));
+    for (const g of got) out.push(...g);
   }
   return out;
 }
 
-type Lot = { side: "long" | "short"; qty: number; orig: number; price: number; tx: Hex; gasUsd: number };
-
-async function readUncached(): Promise<GridWindow> {
-  const client = bscClient();
-  const [from, head, slot] = await Promise.all([
-    deployBlock(),
-    client.getBlockNumber(),
-    client.readContract({ address: WBNB_USDT_POOL, abi: [SLOT0], functionName: "slot0" }).catch(() => null),
-  ]);
-  const logs = await swappedLogs(from, head);
-
+async function toFills(logs: SwappedLog[], client: PublicClient): Promise<Fill[]> {
   const blocks = [...new Set(logs.map((l) => l.blockNumber!))];
   const times = new Map<bigint, string>();
   await Promise.all(
@@ -132,7 +198,7 @@ async function readUncached(): Promise<GridWindow> {
     }),
   );
 
-  const fills: Fill[] = logs.map((l) => {
+  return logs.map((l) => {
     const a = (l as unknown as { args: { tokenIn: Address; amountIn: bigint; amountOut: bigint } }).args;
     const buy = a.tokenIn.toLowerCase() === USDT.toLowerCase();
     const usdt = Number(buy ? a.amountIn : a.amountOut) / 1e18;
@@ -148,7 +214,12 @@ async function readUncached(): Promise<GridWindow> {
       gasBnb: gas.get(l.transactionHash!) ?? null,
     };
   });
+}
 
+type Lot = { side: "long" | "short"; qty: number; orig: number; price: number; tx: Hex; gasUsd: number };
+
+/** The accounting above, over a list of fills and a mark price. Pure. */
+function build(fills: Fill[], toBlock: number, mark: number | null): GridWindow {
   const lots: Lot[] = [];
   const roundTrips: RoundTrip[] = [];
   let realised = 0;
@@ -180,20 +251,19 @@ async function readUncached(): Promise<GridWindow> {
     maxDrawdown = Math.max(maxDrawdown, peak - equity);
   }
 
-  const sqrt = slot ? Number((slot as readonly unknown[])[0] as bigint) / 2 ** 96 : 0;
-  const mark = sqrt > 0 ? 1 / (sqrt * sqrt) : null;
   const unrealised = mark ? lots.reduce((t, l) => t + (l.side === "long" ? (mark - l.price) : (l.price - mark)) * l.qty, 0) : 0;
   const pnl = realised + unrealised - gasUsd;
   maxDrawdown = Math.max(maxDrawdown, peak - pnl);
   const wins = roundTrips.filter((r) => r.win).length;
   const start = fills[0]?.at ?? null;
   const end = fills[fills.length - 1]?.at ?? null;
+  const from = SWAP_BOUND_DEPLOY_BLOCK;
 
   return {
     source: "chain",
     contract: SWAP_BOUND,
     fromBlock: Number(from),
-    toBlock: Number(head),
+    toBlock,
     readAt: new Date().toISOString(),
     fills,
     roundTrips,
@@ -211,7 +281,52 @@ async function readUncached(): Promise<GridWindow> {
   };
 }
 
-export function readGridWindow(opts: { fresh?: boolean } = {}): Promise<GridWindow> {
-  if (opts.fresh) return readUncached();
-  return memo("grid-window", { freshMs: 60_000, staleMs: 15 * 60_000 }, readUncached);
+/** The last stored reading, if it is a prefix of this window. */
+async function storedReading(): Promise<GridWindow | null> {
+  await warm(["grid-window"]).catch(() => undefined);
+  const w = snapshot<GridWindow>("grid-window")?.payload;
+  // A reading of another contract, or one that did not start at the deploy
+  // block, is not a prefix of this window; the read starts again from nothing.
+  if (!w || !Array.isArray(w.fills) || typeof w.toBlock !== "number") return null;
+  if (w.contract?.toLowerCase() !== SWAP_BOUND.toLowerCase() || w.fromBlock !== Number(SWAP_BOUND_DEPLOY_BLOCK)) return null;
+  return w;
+}
+
+async function readUncached(opts: { fromScratch?: boolean } = {}): Promise<GridWindow> {
+  const client = bscClient();
+  const [base, head, slot] = await Promise.all([
+    opts.fromScratch ? null : storedReading(),
+    client.getBlockNumber(),
+    client.readContract({ address: WBNB_USDT_POOL, abi: [SLOT0], functionName: "slot0" }).catch(() => null),
+  ]);
+  const sqrt = slot ? Number((slot as readonly unknown[])[0] as bigint) / 2 ** 96 : 0;
+  const mark = sqrt > 0 ? 1 / (sqrt * sqrt) : null;
+
+  let cursor = base ? BigInt(base.toBlock) - REREAD + 1n : SWAP_BOUND_DEPLOY_BLOCK;
+  if (cursor < SWAP_BOUND_DEPLOY_BLOCK) cursor = SWAP_BOUND_DEPLOY_BLOCK;
+  // A provider behind the stored reading: nothing new to read, so re-mark it.
+  if (base && cursor > head) return build(base.fills, base.toBlock, mark);
+
+  let fills = (base?.fills ?? []).filter((f) => BigInt(f.block) < cursor);
+  let latest: GridWindow | null = null;
+  while (cursor <= head) {
+    const end = cursor + CHUNK * STRETCH - 1n > head ? head : cursor + CHUNK * STRETCH - 1n;
+    fills = fills.concat(await toFills(await swappedLogs(cursor, end), client));
+    latest = build(fills, Number(end), mark);
+    // A read from scratch is how the stored reading gets checked; it must not
+    // replace that reading, stretch by stretch, with a shorter one as it runs.
+    if (!opts.fromScratch) await store("grid-window", latest, latest.readAt).catch(() => undefined);
+    cursor = end + 1n;
+  }
+  return latest ?? build(fills, Number(head), mark);
+}
+
+/**
+ * `fresh` skips the in-process memo; `fromScratch` also ignores the stored
+ * reading and reads every block from the deploy block, which is slow on
+ * purpose and exists for the script that checks the stored reading is right.
+ */
+export function readGridWindow(opts: { fresh?: boolean; fromScratch?: boolean } = {}): Promise<GridWindow> {
+  if (opts.fresh || opts.fromScratch) return readUncached({ fromScratch: opts.fromScratch });
+  return memo("grid-window", { freshMs: 60_000, staleMs: 15 * 60_000 }, () => readUncached());
 }

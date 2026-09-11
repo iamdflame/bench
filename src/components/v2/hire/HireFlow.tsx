@@ -423,7 +423,11 @@ export default function HireFlow({ tokenId, name, category, what }: Props) {
                 ? " Suggested to fit what this wallet holds, with room for gas."
                 : ""}
             </p>
-            {refusal ? <p className="m-error" style={{ marginTop: "0.6rem" }}>{refusal}</p> : null}
+            {refusal ? (
+              <p className="m-error" id="hire-refusal" style={{ marginTop: "0.6rem" }}>
+                {refusal}
+              </p>
+            ) : null}
           </div>
 
           <div className="m-btns">
@@ -431,6 +435,8 @@ export default function HireFlow({ tokenId, name, category, what }: Props) {
               className="m-btn m-btn--primary m-btn--lg"
               type="button"
               disabled={Boolean(refusal)}
+              aria-describedby={refusal ? "hire-refusal" : undefined}
+              title={refusal ?? undefined}
               onClick={() => setStep(1)}
             >
               Set the limits →
@@ -624,7 +630,11 @@ export default function HireFlow({ tokenId, name, category, what }: Props) {
 
           {gate ?? (
             <>
-              {refusal ? <p className="m-error">{refusal}</p> : null}
+              {refusal ? (
+                <p className="m-error" id="hire-refusal-confirm">
+                  {refusal}
+                </p>
+              ) : null}
               <div className="m-btns">
                 <button className="m-btn m-btn--quiet" type="button" onClick={() => setStep(2)}>
                   ← Back
@@ -633,6 +643,8 @@ export default function HireFlow({ tokenId, name, category, what }: Props) {
                   className="m-btn m-btn--primary m-btn--lg"
                   type="button"
                   disabled={Boolean(refusal) || tx.phase === "signing" || tx.phase === "pending"}
+                  aria-describedby={refusal ? "hire-refusal-confirm" : undefined}
+                  title={refusal ?? undefined}
                   onClick={() => void submit()}
                 >
                   {tx.phase === "signing"
