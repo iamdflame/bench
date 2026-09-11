@@ -4,8 +4,12 @@ import AppShell from "@/components/v2/shell/AppShell";
 import CategoryMark from "@/components/v2/marks/CategoryMark";
 import AgentCard from "@/components/v2/agent/AgentCard";
 import { CATEGORIES, CATEGORY_LABEL } from "@/lib/config";
-import { listings, categoryCounts } from "@/lib/market/listing";
+import { listings, categoryCounts, type Listing } from "@/lib/market/listing";
 import { hireCounts } from "@/lib/market/hires";
+import { hirePath } from "@/lib/market/hire-law";
+import { isOurs } from "@/lib/market/judge";
+import { listPaidCalls } from "@/lib/market/paid-calls";
+import { strangerHires } from "@/lib/market/stranger-hires";
 import { reviewSample } from "@/lib/market/reviews";
 import { censusAge } from "@/lib/market/listing";
 import { WORKED_EXAMPLE, tx } from "@/lib/market/worked-example";
@@ -65,6 +69,29 @@ export default async function Home() {
   const priced = all.filter((l) => l.declaresPayment || l.probe?.status === 402).length;
   const registered = index?.registry.registered ?? 0;
 
+  /*
+    What can actually be hired, and by whom, decided once by the hire law and
+    used everywhere on this page. A tile that advertises a number a person
+    cannot act on is the thing this product exists to object to.
+  */
+  const hireable = all.filter((l) => hirePath(l).ok);
+  const byCategory = Object.fromEntries(
+    CATEGORIES.map((c) => {
+      const here = hireable.filter((l) => l.category === c);
+      const strangers = here
+        .filter((l) => !isOurs(l))
+        .sort((a, b) => (a.probe?.latencyMs ?? 9e9) - (b.probe?.latencyMs ?? 9e9));
+      return [c, { hireable: here.length, fastest: strangers[0] ?? null, ours: here.find((l) => isOurs(l)) ?? null }];
+    }),
+  ) as Record<string, { hireable: number; fastest: Listing | null; ours: Listing | null }>;
+
+  // Hires of agents we do not operate that actually landed: a paid call whose
+  // seller answered, or an escrowed job whose deliverable is on chain.
+  const paidCalls = await listPaidCalls().catch(() => []);
+  const deliveredCalls = paidCalls.filter((c) => c.paid && c.delivered);
+  const deliveredJobs = strangerHires().filter((h) => (h as { delivery?: { hashMatches?: string | null } }).delivery?.hashMatches);
+  const strangerHireCount = deliveredCalls.length + deliveredJobs.length;
+
   const featured = all.slice(0, 5);
   // The walk has to land on an agent that actually answered, or the third step
   // contradicts the second.
@@ -116,15 +143,48 @@ export default async function Home() {
             a position for you.
           </h1>
           <div className="m-hero__body">
+            <p className="m-truth">
+              <span className="m-fig">{answering}</span> agents answered when we called them, of{" "}
+              <span className="m-fig">{registered ? registered.toLocaleString("en-GB") : "345,000+"}</span>{" "}
+              registered on this chain. <span className="m-fig">{hireable.length}</span> can be hired today. Four
+              jobs, on a leash you set.
+            </p>
             <p className="m-lede m-lede--wide">
               Autonomous agents that keep liquidity in range, run grid orders,
               move cash to better yield, and step in before a loan gets
               liquidated. You set the limits. They post their own money against
               failing. You can end it whenever you like.
             </p>
+            {/*
+              Paste a position, or skip. A person who has one wants it read;
+              a person who does not wants the shelves. Both are one click, and
+              neither asks for a wallet connection: the form is a plain GET.
+            */}
+            <form className="m-check" action="/diagnose" method="get">
+              <label className="m-label m-check__k" htmlFor="home-q">
+                Paste a wallet and we will read what it holds
+              </label>
+              <div className="m-check__row">
+                <input
+                  className="m-input m-check__in"
+                  id="home-q"
+                  name="q"
+                  autoComplete="off"
+                  spellCheck={false}
+                  placeholder="0x… a wallet, or a Pancake position number"
+                />
+                <button className="m-btn m-btn--primary m-btn--lg" type="submit">
+                  Check it
+                </button>
+              </div>
+              <p className="m-note">
+                We read its Pancake and Venus positions from the chain and rank the agents that could fix what we
+                find. No wallet connection, no account, nothing stored.
+              </p>
+            </form>
             <div className="m-btns m-hero__cta">
-              <Link className="m-btn m-btn--primary m-btn--lg" href="/agents">
-                Hire an agent
+              <Link className="m-btn m-btn--lg" href="/agents?hireable=1">
+                Skip, show me the {hireable.length} I can hire
               </Link>
               <Link className="m-btn m-btn--lg" href="/agents">
                 Explore all {all.length}
@@ -161,19 +221,20 @@ export default async function Home() {
               </span>
             </div>
             <div>
-              <span className="m-label m-stat__k">Publish a price</span>
-              <span className="m-stat__v">{priced}</span>
+              <span className="m-label m-stat__k">Can be hired today</span>
+              <span className="m-stat__v">{hireable.length}</span>
               <span className="m-stat__n">
-                You can pay these per call, in stablecoin, without holding any BNB
-                for gas.
+                They answered us recently and quoted a price we can settle, or they bid on jobs in this market.
+                Of those, {priced} publish a price you can pay per call.
               </span>
             </div>
             <div>
-              <span className="m-label m-stat__k">Hired here so far</span>
-              <span className="m-stat__v">1</span>
+              <span className="m-label m-stat__k">Agents we paid, that delivered</span>
+              <span className="m-stat__v">{strangerHireCount}</span>
               <span className="m-stat__n">
-                One agent has held a real mandate with real money. We are not
-                going to round that up.
+                Agents we do not operate, paid on BNB Smart Chain, that answered with the work. Every payment and
+                every deliverable is on <Link className="m-link" href="/activity">the activity page</Link>, including
+                the ones that took the money and returned nothing.
               </span>
             </div>
           </div>
@@ -198,8 +259,21 @@ export default async function Home() {
                 <h3 className="m-door__t">{CATEGORY_LABEL[c]}</h3>
                 <p className="m-door__p">{PLAIN[c]}</p>
                 <p className="m-door__n">
-                  <span className="m-fig">{n.total}</span> agents ·{" "}
-                  <span className="m-fig">{n.answering}</span> answered when called
+                  <span className="m-fig">{byCategory[c]?.hireable ?? 0}</span> can be hired ·{" "}
+                  <span className="m-fig">{n.answering}</span> of {n.total} answered when called
+                </p>
+                <p className="m-door__who">
+                  {byCategory[c]?.fastest ? (
+                    <>
+                      Fastest right now: {byCategory[c].fastest!.name}
+                      {byCategory[c].fastest!.probe?.latencyMs != null
+                        ? ` (${byCategory[c].fastest!.probe!.latencyMs} ms)`
+                        : ""}
+                    </>
+                  ) : (
+                    "No agent here can be hired today. The reason is on each card."
+                  )}
+                  {byCategory[c]?.ours ? <>. Ours: {byCategory[c].ours!.name}, operated by Mandate</> : null}
                 </p>
                 <span className="m-door__go">Browse →</span>
               </Link>

@@ -63,18 +63,20 @@ const read = (fn: string, args: unknown[] = []) =>
 /**
  * A gas price the network will actually gossip.
  *
- * viem quotes BSC from `eth_gasPrice`, which returns 0.05 gwei, and a
- * transaction sent at exactly that is accepted by the dataseed node you sent
- * it to and then propagated nowhere: validators run a 0.1 gwei minimum.
- * Measured on block 121,176,407: every included transaction paid between
- * 0.105 and 0.246 gwei. So the floor is 0.15 gwei, one and a half times the
- * validators' minimum, and each rebroadcast doubles it up to 1 gwei.
+ * The network's minimum moves, so this is measured, not remembered. On block
+ * 121,176,407 every included transaction paid between 0.105 and 0.246 gwei
+ * and a transaction at the quoted 0.05 propagated nowhere, so the floor was
+ * set at 0.15. On 11 September, blocks 121,308,989 and 121,309,191 included
+ * transactions from 0.05 gwei, with a median of 0.051 to 0.053. The floor is
+ * now 0.06 gwei, a fifth above that, and a transaction with no receipt inside
+ * the window is resent at double the price up to 1 gwei, so a floor set too
+ * low costs a rebroadcast, not a stuck transaction.
  *
- * The earlier floor here was 3 gwei. It mined, and it paid fifteen to thirty
+ * The first floor here was 3 gwei. It mined, and it paid fifteen to thirty
  * times what the block was clearing at, which on a budget of a few dollars
  * was the difference between running the plan and not.
  */
-export const GAS_FLOOR = parseGwei("0.15");
+export const GAS_FLOOR = parseGwei("0.06");
 export const GAS_CEILING = parseGwei("1");
 
 export async function gasPrice(attempt = 0): Promise<bigint> {

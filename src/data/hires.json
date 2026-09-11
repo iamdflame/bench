@@ -107,6 +107,103 @@
       "at": "2026-09-11T04:43:14.858Z",
       "lastStatus": "FUNDED",
       "lastCheckedAt": "2026-09-11T04:43:23.212Z"
+    },
+    {
+      "tokenId": "269224",
+      "who": "ChainHelix gridtrader",
+      "provider": "0xB8143345687aA5A527f4f9568D508EBbC612d06D",
+      "providerVia": "the registry's ownerOf",
+      "ownerOf": "0xB8143345687aA5A527f4f9568D508EBbC612d06D",
+      "oursChecked": [
+        "0x54c06cc2623aaa2dcc38b17fa07ad2e99b363c90",
+        "0xd6d11aa5046dc5c7be8d63b9223b60d7ad94cbe9",
+        "0x090d19610cdb4d6bb011d9eb579910ac3296bb0a",
+        "0x6f29b50ebaf733d980eadfeb3253347d8a12a69c",
+        "0xd9e5837e28f1c36e591aff7869ce177c71c7f4a4",
+        "0x004c7ae8077560c75fe5687da39e7be0697ddbfd",
+        "0xbebf6b026e1ffc06a3c8d3c1b57b8142bf027454",
+        "0x7e91367c77e561f0d99c2b42925af29cd90ae838",
+        "0x81762d5214fcb6fb3b102bef9d69d13a56c1a2d0"
+      ],
+      "jobId": "56781",
+      "tx": "0x863193dba193ec62c63b3b473fee7d009372f2d75fd7880537515cb75decf66b",
+      "budget": "0.5",
+      "token": "$U",
+      "expiredAt": 1789771358,
+      "statusAtHire": "1",
+      "task": "{\"price\":716,\"budgetUsd\":100,\"levels\":5,\"spanPct\":2}",
+      "category": "grid-trading",
+      "negotiated": {
+        "negotiationHash": "0x6dcb783361ed759c8677004edf2d7e48ff337e6fcbfb14ce1ef987d0582acdcf",
+        "providerSig": "0x75f1683677fbba4f7df453469991061223a5955f9363d8c66648893f4dd7e115761914d8e0f2e98fea9e2bda3b02cb0239759350032bb0701a357083cd349ab11b",
+        "quotedAt": 1789164757,
+        "expiresAt": 1789165657,
+        "estimatedSeconds": 600,
+        "terms": {
+          "deliverables": "A symmetric buy/sell grid ladder for the mark price and budget given, as JSON, with each level's side, price and USD size",
+          "quality_standards": "Deterministic arithmetic, equal USD size per level, answered as sent",
+          "evaluation_required": true,
+          "evaluator_type": "uma_oov3",
+          "price": "500000000000000000",
+          "currency": "0xcE24439F2D9C6a2289F741120FE202248B666666"
+        }
+      },
+      "evidence": "docs/evidence/2026-09-11-8183-56781.json",
+      "at": "2026-09-11T22:12:47.002Z"
+    },
+    {
+      "tokenId": "269224",
+      "who": "ChainHelix gridtrader",
+      "provider": "0xB8143345687aA5A527f4f9568D508EBbC612d06D",
+      "providerVia": "the registry's ownerOf",
+      "ownerOf": "0xB8143345687aA5A527f4f9568D508EBbC612d06D",
+      "oursChecked": [
+        "0x54c06cc2623aaa2dcc38b17fa07ad2e99b363c90",
+        "0xd6d11aa5046dc5c7be8d63b9223b60d7ad94cbe9",
+        "0x090d19610cdb4d6bb011d9eb579910ac3296bb0a",
+        "0x6f29b50ebaf733d980eadfeb3253347d8a12a69c",
+        "0xd9e5837e28f1c36e591aff7869ce177c71c7f4a4",
+        "0x004c7ae8077560c75fe5687da39e7be0697ddbfd",
+        "0xbebf6b026e1ffc06a3c8d3c1b57b8142bf027454",
+        "0x7e91367c77e561f0d99c2b42925af29cd90ae838",
+        "0x81762d5214fcb6fb3b102bef9d69d13a56c1a2d0"
+      ],
+      "jobId": "56782",
+      "tx": "0x288115e246c4dc5026c3d7c78034058a2c1108787a7b4b46c1dffb3f3ce69fb4",
+      "budget": "0.5",
+      "token": "$U",
+      "expiredAt": 1789771672,
+      "statusAtHire": "1",
+      "task": "{\"price\":716,\"budgetUsd\":100,\"levels\":5,\"spanPct\":2}",
+      "category": "grid-trading",
+      "negotiated": {
+        "negotiationHash": "0xab35fe57877972b38d8cf89ae551e7b23100b3d4568b3533a13e8a56e1f44856",
+        "providerSig": "0x74b7ef40f6512bf3c64c9462170a2db3da260fa632761fa2fe5612a42965700c17c0ab3ced6f628f053d4f1650cc9093411ea92bc98d53edaf705a38f10fc2f61c",
+        "quotedAt": 1789165072,
+        "expiresAt": 1789165972,
+        "estimatedSeconds": 600,
+        "terms": {
+          "deliverables": "A symmetric buy/sell grid ladder for the mark price and budget given, as JSON, with each level's side, price and USD size",
+          "quality_standards": "Deterministic arithmetic, equal USD size per level, answered as sent",
+          "evaluation_required": true,
+          "evaluator_type": "uma_oov3",
+          "price": "500000000000000000",
+          "currency": "0xcE24439F2D9C6a2289F741120FE202248B666666"
+        }
+      },
+      "evidence": "docs/evidence/2026-09-11-8183-56782.json",
+      "at": "2026-09-11T22:18:02.440Z",
+      "delivery": {
+        "status": "SUBMITTED",
+        "url": "https://agents.chainhelix.io/gridtrader/erc8183/job/56782/response",
+        "bytes": 1434,
+        "sha256": "0x2eb336ba753c205dfc7b5cb8c72d2cb33030ef7f77483ae852e0af35bf913f07",
+        "keccak256": "0x3910327028b9331a17247c1dfcf61568c8441b884bfb7f1d061cbf315fe2b5c8",
+        "onChain": "0x3910327028b9331a17247c1dfcf61568c8441b884bfb7f1d061cbf315fe2b5c8",
+        "hashMatches": "keccak256",
+        "evidence": "docs/evidence/2026-09-11-8183-56782-deliverable.json",
+        "at": "2026-09-11T22:20:09.974Z"
+      }
     }
   ]
 }

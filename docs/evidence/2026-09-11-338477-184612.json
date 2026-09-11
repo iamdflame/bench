@@ -1,0 +1,99 @@
+{
+  "url": "https://hallmark-agents.vercel.app/x402/grid/report",
+  "paid": false,
+  "delivered": false,
+  "refused": "it answered 402 to the signed payment: {}",
+  "requirement": {
+    "x402Version": 2,
+    "raw": {
+      "scheme": "exact",
+      "network": "eip155:56",
+      "amount": "250000000000000000",
+      "asset": "0x55d398326f99059fF775485246999027B3197955",
+      "payTo": "0x38c6Fc4a5525B37f9545423A7132157f69ce08dA",
+      "maxTimeoutSeconds": 120,
+      "extra": {
+        "name": "USDT",
+        "version": "1",
+        "decimals": 18,
+        "assetTransferMethod": "permit2-exact"
+      },
+      "maxAmountRequired": "250000000000000000",
+      "resource": "https://hallmark-agents.vercel.app/x402/grid/report",
+      "mimeType": "application/json",
+      "description": "PancakeSwap Grid Trader — Priced grid report: Everything `analyse` returns, plus a live QuoterV2 simulation of the exact next order — the amount out, the effective price and the impact against the pool mid. Sold over x402."
+    },
+    "scheme": "exact",
+    "network": "eip155:56",
+    "chainId": 56,
+    "asset": "0x55d398326f99059fF775485246999027B3197955",
+    "payTo": "0x38c6Fc4a5525B37f9545423A7132157f69ce08dA",
+    "amount": "250000000000000000",
+    "maxTimeoutSeconds": 120,
+    "method": "permit2",
+    "domain": {
+      "name": "USDT",
+      "version": "1"
+    },
+    "spender": "0x402085c248EeA27D92E8b30b2C58ed07f9E20001",
+    "resource": {
+      "url": "https://hallmark-agents.vercel.app/x402/grid/report",
+      "description": "PancakeSwap Grid Trader — Priced grid report: Everything `analyse` returns, plus a live QuoterV2 simulation of the exact next order — the amount out, the effective price and the impact against the pool mid. Sold over x402.",
+      "mimeType": "application/json"
+    },
+    "header": "PAYMENT-SIGNATURE",
+    "dialect": "b402"
+  },
+  "payer": "0xd6d11Aa5046dc5C7BE8d63B9223b60D7AD94cBe9",
+  "approveTx": "0xdb5d58dde135a3751cade5c60fb903362012d7bb9f849aab06c1c234db54d79a",
+  "settlement": null,
+  "deliverable": {},
+  "exchanges": [
+    {
+      "at": "2026-09-11T18:46:12.429Z",
+      "request": {
+        "method": "GET",
+        "url": "https://hallmark-agents.vercel.app/x402/grid/report",
+        "headers": {
+          "accept": "application/json, text/event-stream"
+        }
+      },
+      "response": {
+        "status": 402,
+        "headers": {
+          "content-type": "application/json",
+          "payment-required": "eyJ4NDAyVmVyc2lvbiI6MiwiZXJyb3IiOiJQcmljZWQgZ3JpZCByZXBvcnQgY29zdHMgMC4yNSBVU0RULiBUaGUgY2hhbGxlbmdlIGlzIGluIHRoZSBwYXltZW50LXJlcXVpcmVkIGhlYWRlcjsgc2lnbiBpdCBhbmQgcmV0cnkgd2l0aCBhIHBheW1lbnQtc2lnbmF0dXJlIGhlYWRlci4iLCJyZXNvdXJjZSI6eyJ1cmwiOiJodHRwczovL2hhbGxtYXJrLWFnZW50cy52ZXJjZWwuYXBwL3g0MDIvZ3JpZC9yZXBvcnQiLCJkZXNjcmlwdGlvbiI6IlByaWNlZCBncmlkIHJlcG9ydCDigJQgRXZlcnl0aGluZyBgYW5hbHlzZWAgcmV0dXJucywgcGx1cyBhIGxpdmUgUXVvdGVyVjIgc2ltdWxhdGlvbiBvZiB0aGUgZXhhY3QgbmV4dCBvcmRlciDigJQgdGhlIGFtb3VudCBvdXQsIHRoZSBlZmZlY3RpdmUgcHJpY2UgYW5kIHRoZSBpbXBhY3QgYWdhaW5zdCB0aGUgcG9vbCBtaWQuIFNvbGQgb3ZlciB4NDAyLiIsIm1pbWVUeXBlIjoiYXBwbGljYXRpb24vanNvbiJ9LCJhY2NlcHRzIjpbeyJzY2hlbWUiOiJleGFjdCIsIm5ldHdvcmsiOiJlaXAxNTU6NTYiLCJhbW91bnQiOiIyNTAwMDAwMDAwMDAwMDAwMDAiLCJhc3NldCI6IjB4NTVkMzk4MzI2Zjk5MDU5ZkY3NzU0ODUyNDY5OTkwMjdCMzE5Nzk1NSIsInBheVRvIjoiMHgzOGM2RmM0YTU1MjVCMzdmOTU0NTQyM0E3MTMyMTU3ZjY5Y2UwOGRBIiwibWF4VGltZW91dFNlY29uZHMiOjEyMCwiZXh0cmEiOnsibmFtZSI6IlVTRFQiLCJ2ZXJzaW9uIjoiMSIsImRlY2ltYWxzIjoxOCwiYXNzZXRUcmFuc2Zlck1ldGhvZCI6InBlcm1pdDItZXhhY3QifSwibWF4QW1vdW50UmVxdWlyZWQiOiIyNTAwMDAwMDAwMDAwMDAwMDAiLCJyZXNvdXJjZSI6Imh0dHBzOi8vaGFsbG1hcmstYWdlbnRzLnZlcmNlbC5hcHAveDQwMi9ncmlkL3JlcG9ydCIsIm1pbWVUeXBlIjoiYXBwbGljYXRpb24vanNvbiIsImRlc2NyaXB0aW9uIjoiUGFuY2FrZVN3YXAgR3JpZCBUcmFkZXIg4oCUIFByaWNlZCBncmlkIHJlcG9ydDogRXZlcnl0aGluZyBgYW5hbHlzZWAgcmV0dXJucywgcGx1cyBhIGxpdmUgUXVvdGVyVjIgc2ltdWxhdGlvbiBvZiB0aGUgZXhhY3QgbmV4dCBvcmRlciDigJQgdGhlIGFtb3VudCBvdXQsIHRoZSBlZmZlY3RpdmUgcHJpY2UgYW5kIHRoZSBpbXBhY3QgYWdhaW5zdCB0aGUgcG9vbCBtaWQuIFNvbGQgb3ZlciB4NDAyLiJ9XX0=",
+          "www-authenticate": "Payment",
+          "x-payment": "eyJ4NDAyVmVyc2lvbiI6MiwiZXJyb3IiOiJQcmljZWQgZ3JpZCByZXBvcnQgY29zdHMgMC4yNSBVU0RULiBUaGUgY2hhbGxlbmdlIGlzIGluIHRoZSBwYXltZW50LXJlcXVpcmVkIGhlYWRlcjsgc2lnbiBpdCBhbmQgcmV0cnkgd2l0aCBhIHBheW1lbnQtc2lnbmF0dXJlIGhlYWRlci4iLCJyZXNvdXJjZSI6eyJ1cmwiOiJodHRwczovL2hhbGxtYXJrLWFnZW50cy52ZXJjZWwuYXBwL3g0MDIvZ3JpZC9yZXBvcnQiLCJkZXNjcmlwdGlvbiI6IlByaWNlZCBncmlkIHJlcG9ydCDigJQgRXZlcnl0aGluZyBgYW5hbHlzZWAgcmV0dXJucywgcGx1cyBhIGxpdmUgUXVvdGVyVjIgc2ltdWxhdGlvbiBvZiB0aGUgZXhhY3QgbmV4dCBvcmRlciDigJQgdGhlIGFtb3VudCBvdXQsIHRoZSBlZmZlY3RpdmUgcHJpY2UgYW5kIHRoZSBpbXBhY3QgYWdhaW5zdCB0aGUgcG9vbCBtaWQuIFNvbGQgb3ZlciB4NDAyLiIsIm1pbWVUeXBlIjoiYXBwbGljYXRpb24vanNvbiJ9LCJhY2NlcHRzIjpbeyJzY2hlbWUiOiJleGFjdCIsIm5ldHdvcmsiOiJlaXAxNTU6NTYiLCJhbW91bnQiOiIyNTAwMDAwMDAwMDAwMDAwMDAiLCJhc3NldCI6IjB4NTVkMzk4MzI2Zjk5MDU5ZkY3NzU0ODUyNDY5OTkwMjdCMzE5Nzk1NSIsInBheVRvIjoiMHgzOGM2RmM0YTU1MjVCMzdmOTU0NTQyM0E3MTMyMTU3ZjY5Y2UwOGRBIiwibWF4VGltZW91dFNlY29uZHMiOjEyMCwiZXh0cmEiOnsibmFtZSI6IlVTRFQiLCJ2ZXJzaW9uIjoiMSIsImRlY2ltYWxzIjoxOCwiYXNzZXRUcmFuc2Zlck1ldGhvZCI6InBlcm1pdDItZXhhY3QifSwibWF4QW1vdW50UmVxdWlyZWQiOiIyNTAwMDAwMDAwMDAwMDAwMDAiLCJyZXNvdXJjZSI6Imh0dHBzOi8vaGFsbG1hcmstYWdlbnRzLnZlcmNlbC5hcHAveDQwMi9ncmlkL3JlcG9ydCIsIm1pbWVUeXBlIjoiYXBwbGljYXRpb24vanNvbiIsImRlc2NyaXB0aW9uIjoiUGFuY2FrZVN3YXAgR3JpZCBUcmFkZXIg4oCUIFByaWNlZCBncmlkIHJlcG9ydDogRXZlcnl0aGluZyBgYW5hbHlzZWAgcmV0dXJucywgcGx1cyBhIGxpdmUgUXVvdGVyVjIgc2ltdWxhdGlvbiBvZiB0aGUgZXhhY3QgbmV4dCBvcmRlciDigJQgdGhlIGFtb3VudCBvdXQsIHRoZSBlZmZlY3RpdmUgcHJpY2UgYW5kIHRoZSBpbXBhY3QgYWdhaW5zdCB0aGUgcG9vbCBtaWQuIFNvbGQgb3ZlciB4NDAyLiJ9XX0="
+        },
+        "body": "{}",
+        "truncated": false,
+        "ms": 1152
+      }
+    },
+    {
+      "at": "2026-09-11T18:46:17.816Z",
+      "request": {
+        "method": "GET",
+        "url": "https://hallmark-agents.vercel.app/x402/grid/report",
+        "headers": {
+          "accept": "application/json, text/event-stream",
+          "PAYMENT-SIGNATURE": "eyJ4NDAyVmVyc2lvbiI6Miwic2NoZW1lIjoiZXhhY3QiLCJuZXR3b3JrIjoiZWlwMTU1OjU2IiwiYWNjZXB0ZWQiOnsic2NoZW1lIjoiZXhhY3QiLCJuZXR3b3JrIjoiZWlwMTU1OjU2IiwiYW1vdW50IjoiMjUwMDAwMDAwMDAwMDAwMDAwIiwiYXNzZXQiOiIweDU1ZDM5ODMyNmY5OTA1OWZGNzc1NDg1MjQ2OTk5MDI3QjMxOTc5NTUiLCJwYXlUbyI6IjB4MzhjNkZjNGE1NTI1QjM3Zjk1NDU0MjNBNzEzMjE1N2Y2OWNlMDhkQSIsIm1heFRpbWVvdXRTZWNvbmRzIjoxMjAsImV4dHJhIjp7Im5hbWUiOiJVU0RUIiwidmVyc2lvbiI6IjEiLCJkZWNpbWFscyI6MTgsImFzc2V0VHJhbnNmZXJNZXRob2QiOiJwZXJtaXQyLWV4YWN0In0sIm1heEFtb3VudFJlcXVpcmVkIjoiMjUwMDAwMDAwMDAwMDAwMDAwIiwicmVzb3VyY2UiOiJodHRwczovL2hhbGxtYXJrLWFnZW50cy52ZXJjZWwuYXBwL3g0MDIvZ3JpZC9yZXBvcnQiLCJtaW1lVHlwZSI6ImFwcGxpY2F0aW9uL2pzb24iLCJkZXNjcmlwdGlvbiI6IlBhbmNha2VTd2FwIEdyaWQgVHJhZGVyIOKAlCBQcmljZWQgZ3JpZCByZXBvcnQ6IEV2ZXJ5dGhpbmcgYGFuYWx5c2VgIHJldHVybnMsIHBsdXMgYSBsaXZlIFF1b3RlclYyIHNpbXVsYXRpb24gb2YgdGhlIGV4YWN0IG5leHQgb3JkZXIg4oCUIHRoZSBhbW91bnQgb3V0LCB0aGUgZWZmZWN0aXZlIHByaWNlIGFuZCB0aGUgaW1wYWN0IGFnYWluc3QgdGhlIHBvb2wgbWlkLiBTb2xkIG92ZXIgeDQwMi4ifSwicmVzb3VyY2UiOnsidXJsIjoiaHR0cHM6Ly9oYWxsbWFyay1hZ2VudHMudmVyY2VsLmFwcC94NDAyL2dyaWQvcmVwb3J0IiwiZGVzY3JpcHRpb24iOiJQYW5jYWtlU3dhcCBHcmlkIFRyYWRlciDigJQgUHJpY2VkIGdyaWQgcmVwb3J0OiBFdmVyeXRoaW5nIGBhbmFseXNlYCByZXR1cm5zLCBwbHVzIGEgbGl2ZSBRdW90ZXJWMiBzaW11bGF0aW9uIG9mIHRoZSBleGFjdCBuZXh0IG9yZGVyIOKAlCB0aGUgYW1vdW50IG91dCwgdGhlIGVmZmVjdGl2ZSBwcmljZSBhbmQgdGhlIGltcGFjdCBhZ2FpbnN0IHRoZSBwb29sIG1pZC4gU29sZCBvdmVyIHg0MDIuIiwibWltZVR5cGUiOiJhcHBsaWNhdGlvbi9qc29uIn0sInBheWxvYWQiOnsic2lnbmF0dXJlIjoiMHgyNjcyMmI1MDlhMjhlOWM2M2RmZmRkNTU4NTg2YmE4MmI0Zjk1NzMxODYyNDRhN2YxZDFmNzViYzIwNjVkNzMxMDhmOTBlNTY5YzFlNzFiODBiY2NjOTAyMDY3NTUyMmI0MmE0OGZlMWUwODNkZjc4YjlmNzNiZjViMmE1ZTg2MTFjIiwiZnJvbSI6IjB4ZDZkMTFBYTUwNDZkYzVDN0JFOGQ2M0I5MjIzYjYwRDdBRDk0Y0JlOSIsInBlcm1pdCI6eyJwZXJtaXR0ZWQiOnsidG9rZW4iOiIweDU1ZDM5ODMyNmY5OTA1OWZGNzc1NDg1MjQ2OTk5MDI3QjMxOTc5NTUiLCJhbW91bnQiOiIyNTAwMDAwMDAwMDAwMDAwMDAifSwic3BlbmRlciI6IjB4NDAyMDg1YzI0OEVlQTI3RDkyRThiMzBiMkM1OGVkMDdmOUUyMDAwMSIsIm5vbmNlIjoiMTY3NTk3NzcyNjE1MzM4ODQ5NjM5MDE0Mzg1NjMyNDc5ODU2MTg4Mzg4NDcyNzYxNDM5MTE4MDI3MDQyMTUzMzQ5NTU1MjA4ODIxMTIiLCJkZWFkbGluZSI6IjE3ODkxNTI0OTciLCJ3aXRuZXNzIjp7InRvIjoiMHgzOGM2RmM0YTU1MjVCMzdmOTU0NTQyM0E3MTMyMTU3ZjY5Y2UwOGRBIiwidmFsaWRBZnRlciI6IjE3ODkxNTIzMTcifX0sInBlcm1pdDJBdXRob3JpemF0aW9uIjp7InBlcm1pdHRlZCI6eyJ0b2tlbiI6IjB4NTVkMzk4MzI2Zjk5MDU5ZkY3NzU0ODUyNDY5OTkwMjdCMzE5Nzk1NSIsImFtb3VudCI6IjI1MDAwMDAwMDAwMDAwMDAwMCJ9LCJzcGVuZGVyIjoiMHg0MDIwODVjMjQ4RWVBMjdEOTJFOGIzMGIyQzU4ZWQwN2Y5RTIwMDAxIiwibm9uY2UiOiIxNjc1OTc3NzI2MTUzMzg4NDk2MzkwMTQzODU2MzI0Nzk4NTYxODgzODg0NzI3NjE0MzkxMTgwMjcwNDIxNTMzNDk1NTUyMDg4MjExMiIsImRlYWRsaW5lIjoiMTc4OTE1MjQ5NyIsIndpdG5lc3MiOnsidG8iOiIweDM4YzZGYzRhNTUyNUIzN2Y5NTQ1NDIzQTcxMzIxNTdmNjljZTA4ZEEiLCJ2YWxpZEFmdGVyIjoiMTc4OTE1MjMxNyJ9LCJmcm9tIjoiMHhkNmQxMUFhNTA0NmRjNUM3QkU4ZDYzQjkyMjNiNjBEN0FEOTRjQmU5In19fQ=="
+        }
+      },
+      "response": {
+        "status": 402,
+        "headers": {
+          "content-type": "application/json",
+          "payment-required": "eyJ4NDAyVmVyc2lvbiI6MiwiZXJyb3IiOiJQYXltZW50IG5vdCBhY2NlcHRlZDogTm8geDQwMiBmYWNpbGl0YXRvciBpcyBjb25maWd1cmVkIGZvciB0aGlzIGRlcGxveW1lbnQsIHNvIHRoZSBwYXltZW50IGNhbm5vdCBiZSB2ZXJpZmllZCBvciBzZXR0bGVkLiBTZXQgWDQwMl9GQUNJTElUQVRPUl9VUkwgdG8gYSBmYWNpbGl0YXRvciB0aGF0IHNlcnZlcyAvdmVyaWZ5IGFuZCAvc2V0dGxlIGZvciB0aGlzIG5ldHdvcmsuIiwicmVzb3VyY2UiOnsidXJsIjoiaHR0cHM6Ly9oYWxsbWFyay1hZ2VudHMudmVyY2VsLmFwcC94NDAyL2dyaWQvcmVwb3J0IiwiZGVzY3JpcHRpb24iOiJQcmljZWQgZ3JpZCByZXBvcnQg4oCUIEV2ZXJ5dGhpbmcgYGFuYWx5c2VgIHJldHVybnMsIHBsdXMgYSBsaXZlIFF1b3RlclYyIHNpbXVsYXRpb24gb2YgdGhlIGV4YWN0IG5leHQgb3JkZXIg4oCUIHRoZSBhbW91bnQgb3V0LCB0aGUgZWZmZWN0aXZlIHByaWNlIGFuZCB0aGUgaW1wYWN0IGFnYWluc3QgdGhlIHBvb2wgbWlkLiBTb2xkIG92ZXIgeDQwMi4iLCJtaW1lVHlwZSI6ImFwcGxpY2F0aW9uL2pzb24ifSwiYWNjZXB0cyI6W3sic2NoZW1lIjoiZXhhY3QiLCJuZXR3b3JrIjoiZWlwMTU1OjU2IiwiYW1vdW50IjoiMjUwMDAwMDAwMDAwMDAwMDAwIiwiYXNzZXQiOiIweDU1ZDM5ODMyNmY5OTA1OWZGNzc1NDg1MjQ2OTk5MDI3QjMxOTc5NTUiLCJwYXlUbyI6IjB4MzhjNkZjNGE1NTI1QjM3Zjk1NDU0MjNBNzEzMjE1N2Y2OWNlMDhkQSIsIm1heFRpbWVvdXRTZWNvbmRzIjoxMjAsImV4dHJhIjp7Im5hbWUiOiJVU0RUIiwidmVyc2lvbiI6IjEiLCJkZWNpbWFscyI6MTgsImFzc2V0VHJhbnNmZXJNZXRob2QiOiJwZXJtaXQyLWV4YWN0In0sIm1heEFtb3VudFJlcXVpcmVkIjoiMjUwMDAwMDAwMDAwMDAwMDAwIiwicmVzb3VyY2UiOiJodHRwczovL2hhbGxtYXJrLWFnZW50cy52ZXJjZWwuYXBwL3g0MDIvZ3JpZC9yZXBvcnQiLCJtaW1lVHlwZSI6ImFwcGxpY2F0aW9uL2pzb24iLCJkZXNjcmlwdGlvbiI6IlBhbmNha2VTd2FwIEdyaWQgVHJhZGVyIOKAlCBQcmljZWQgZ3JpZCByZXBvcnQ6IEV2ZXJ5dGhpbmcgYGFuYWx5c2VgIHJldHVybnMsIHBsdXMgYSBsaXZlIFF1b3RlclYyIHNpbXVsYXRpb24gb2YgdGhlIGV4YWN0IG5leHQgb3JkZXIg4oCUIHRoZSBhbW91bnQgb3V0LCB0aGUgZWZmZWN0aXZlIHByaWNlIGFuZCB0aGUgaW1wYWN0IGFnYWluc3QgdGhlIHBvb2wgbWlkLiBTb2xkIG92ZXIgeDQwMi4ifV19",
+          "www-authenticate": "Payment",
+          "x-payment": "eyJ4NDAyVmVyc2lvbiI6MiwiZXJyb3IiOiJQYXltZW50IG5vdCBhY2NlcHRlZDogTm8geDQwMiBmYWNpbGl0YXRvciBpcyBjb25maWd1cmVkIGZvciB0aGlzIGRlcGxveW1lbnQsIHNvIHRoZSBwYXltZW50IGNhbm5vdCBiZSB2ZXJpZmllZCBvciBzZXR0bGVkLiBTZXQgWDQwMl9GQUNJTElUQVRPUl9VUkwgdG8gYSBmYWNpbGl0YXRvciB0aGF0IHNlcnZlcyAvdmVyaWZ5IGFuZCAvc2V0dGxlIGZvciB0aGlzIG5ldHdvcmsuIiwicmVzb3VyY2UiOnsidXJsIjoiaHR0cHM6Ly9oYWxsbWFyay1hZ2VudHMudmVyY2VsLmFwcC94NDAyL2dyaWQvcmVwb3J0IiwiZGVzY3JpcHRpb24iOiJQcmljZWQgZ3JpZCByZXBvcnQg4oCUIEV2ZXJ5dGhpbmcgYGFuYWx5c2VgIHJldHVybnMsIHBsdXMgYSBsaXZlIFF1b3RlclYyIHNpbXVsYXRpb24gb2YgdGhlIGV4YWN0IG5leHQgb3JkZXIg4oCUIHRoZSBhbW91bnQgb3V0LCB0aGUgZWZmZWN0aXZlIHByaWNlIGFuZCB0aGUgaW1wYWN0IGFnYWluc3QgdGhlIHBvb2wgbWlkLiBTb2xkIG92ZXIgeDQwMi4iLCJtaW1lVHlwZSI6ImFwcGxpY2F0aW9uL2pzb24ifSwiYWNjZXB0cyI6W3sic2NoZW1lIjoiZXhhY3QiLCJuZXR3b3JrIjoiZWlwMTU1OjU2IiwiYW1vdW50IjoiMjUwMDAwMDAwMDAwMDAwMDAwIiwiYXNzZXQiOiIweDU1ZDM5ODMyNmY5OTA1OWZGNzc1NDg1MjQ2OTk5MDI3QjMxOTc5NTUiLCJwYXlUbyI6IjB4MzhjNkZjNGE1NTI1QjM3Zjk1NDU0MjNBNzEzMjE1N2Y2OWNlMDhkQSIsIm1heFRpbWVvdXRTZWNvbmRzIjoxMjAsImV4dHJhIjp7Im5hbWUiOiJVU0RUIiwidmVyc2lvbiI6IjEiLCJkZWNpbWFscyI6MTgsImFzc2V0VHJhbnNmZXJNZXRob2QiOiJwZXJtaXQyLWV4YWN0In0sIm1heEFtb3VudFJlcXVpcmVkIjoiMjUwMDAwMDAwMDAwMDAwMDAwIiwicmVzb3VyY2UiOiJodHRwczovL2hhbGxtYXJrLWFnZW50cy52ZXJjZWwuYXBwL3g0MDIvZ3JpZC9yZXBvcnQiLCJtaW1lVHlwZSI6ImFwcGxpY2F0aW9uL2pzb24iLCJkZXNjcmlwdGlvbiI6IlBhbmNha2VTd2FwIEdyaWQgVHJhZGVyIOKAlCBQcmljZWQgZ3JpZCByZXBvcnQ6IEV2ZXJ5dGhpbmcgYGFuYWx5c2VgIHJldHVybnMsIHBsdXMgYSBsaXZlIFF1b3RlclYyIHNpbXVsYXRpb24gb2YgdGhlIGV4YWN0IG5leHQgb3JkZXIg4oCUIHRoZSBhbW91bnQgb3V0LCB0aGUgZWZmZWN0aXZlIHByaWNlIGFuZCB0aGUgaW1wYWN0IGFnYWluc3QgdGhlIHBvb2wgbWlkLiBTb2xkIG92ZXIgeDQwMi4ifV19"
+        },
+        "body": "{}",
+        "truncated": false,
+        "ms": 807
+      }
+    }
+  ],
+  "ms": 53507
+}

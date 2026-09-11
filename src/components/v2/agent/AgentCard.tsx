@@ -1,18 +1,21 @@
 import Link from "next/link";
 import CategoryMark from "@/components/v2/marks/CategoryMark";
 import type { Listing } from "@/lib/market/listing";
+import { hireHref, hirePath, primaryRail } from "@/lib/market/hire-law";
 
 /**
- * One agent, in three sizes, each carrying a hire control.
+ * One agent, in three sizes.
  *
- * The card used to end at "Details", which put two taps between a person and
- * the only action this site exists for. Every card now offers the hire
- * directly, and the row above it is the evidence for taking it: whether the
- * endpoint answered when we called, how fast, and how it can be paid.
+ * The card offers a hire only when the hire law finds a rail this site can
+ * honour: a price the agent quoted that we can pay, or a job in this market
+ * the agent actually bids on. Otherwise it says why, in the place the button
+ * would have been. It used to end every card in "Hire this agent", which for
+ * an agent we do not operate opened a job only our own keeper ever bid on.
  *
  * Liveness is three states rather than two. An agent nobody has ever called is
  * not a silent agent, and printing "did not answer" over a number we never
- * dialled would be a false claim about somebody else's software.
+ * dialled would be a false claim about somebody else's software. Agents that
+ * did not answer stay listed, dimmed, never hidden.
  */
 
 function Liveness({ l }: { l: Listing }) {
@@ -50,11 +53,19 @@ function Liveness({ l }: { l: Listing }) {
 }
 
 function Price({ l }: { l: Listing }) {
-  if (l.probe?.status === 402) {
+  if (l.quote?.payable) {
     return (
       <span className="m-card__signal">
         <span className="m-dot m-dot--live" />
-        Quoted us a price
+        {l.priceLabel} a call
+      </span>
+    );
+  }
+  if (l.probe?.status === 402) {
+    return (
+      <span className="m-card__signal" title={l.quote?.unpayable ?? undefined}>
+        <span className="m-dot" />
+        Quoted a price we cannot pay
       </span>
     );
   }
@@ -69,7 +80,7 @@ function Price({ l }: { l: Listing }) {
   return (
     <span className="m-card__signal">
       <span className="m-dot m-dot--cold" />
-      Bond only
+      No price quoted
     </span>
   );
 }
@@ -91,39 +102,48 @@ export default function AgentCard({
   forPosition?: string;
 }) {
   const href = `/agents/${listing.tokenId}`;
-  const hireHref = forPosition
-    ? `/hire/${listing.tokenId}?about=${encodeURIComponent(forPosition)}`
-    : `/hire/${listing.tokenId}`;
+  const verdict = hirePath(listing);
+  const act = hireHref(listing.tokenId, verdict, forPosition);
+  const rail = primaryRail(verdict);
+  const label =
+    rail?.kind === "x402" ? `Call it for ${rail.price}` : forPosition ? "Hire for this position" : "Hire this agent";
+  const dim = listing.liveness !== "live";
 
   if (variant === "row") {
     return (
-      <div className="m-row">
+      <div className={`m-row${dim ? " m-row--dim" : ""}`}>
         {listing.category ? <CategoryMark category={listing.category} size={34} /> : <span />}
         <span style={{ minWidth: 0 }}>
           <Link href={href} className="m-row__name">
             {listing.name}
           </Link>
+          {verdict.ours ? <span className="m-ours"> operated by Mandate</span> : null}
           <span className="m-row__what" style={{ display: "block" }}>
             {listing.what ?? "This agent published no description."}
           </span>
         </span>
-        <Link className="m-btn m-btn--sm m-btn--primary" href={hireHref}>
-          Hire
-        </Link>
+        {act ? (
+          <Link className="m-btn m-btn--sm m-btn--primary" href={act}>
+            {rail?.kind === "x402" ? "Call" : "Hire"}
+          </Link>
+        ) : (
+          <Link className="m-btn m-btn--sm" href={href} title={verdict.reason ?? undefined}>
+            Why not
+          </Link>
+        )}
       </div>
     );
   }
 
   return (
-    <article className={`m-card${variant === "feature" ? " m-card--feature" : ""}`}>
+    <article className={`m-card${variant === "feature" ? " m-card--feature" : ""}${dim ? " m-card--dim" : ""}`}>
       <div className="m-card__top">
         <div style={{ minWidth: 0 }}>
-          {listing.categoryLabel ? (
-            <span className="m-card__cat">{listing.categoryLabel}</span>
-          ) : null}
+          {listing.categoryLabel ? <span className="m-card__cat">{listing.categoryLabel}</span> : null}
           <Link href={href} className="m-card__name">
             {listing.name}
           </Link>
+          {verdict.ours ? <span className="m-ours">operated by Mandate</span> : null}
         </div>
         {listing.category ? (
           <CategoryMark
@@ -134,9 +154,7 @@ export default function AgentCard({
         ) : null}
       </div>
 
-      <p className="m-card__what">
-        {listing.what ?? "This agent published no description of what it does."}
-      </p>
+      <p className="m-card__what">{listing.what ?? "This agent published no description of what it does."}</p>
 
       {variant === "feature" && listing.hires > 0 ? (
         <p className="m-small m-callout">
@@ -154,10 +172,13 @@ export default function AgentCard({
         <Link className="m-btn m-btn--sm" href={href}>
           What it does
         </Link>
-        <Link className="m-btn m-btn--sm m-btn--primary" href={hireHref}>
-          {forPosition ? "Hire for this position" : "Hire this agent"}
-        </Link>
+        {act ? (
+          <Link className="m-btn m-btn--sm m-btn--primary" href={act}>
+            {label}
+          </Link>
+        ) : null}
       </div>
+      {act ? null : <p className="m-card__why">{verdict.reason}</p>}
     </article>
   );
 }

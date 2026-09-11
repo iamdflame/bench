@@ -1,0 +1,143 @@
+{
+  "url": "https://muster.zkasuran.dev/api/agent/rebalancing?pool=0x36696169C63e42cd08ce11f5deeBbCeBae652050&lowerTick=-67380&upperTick=-67180",
+  "paid": true,
+  "refused": null,
+  "requirement": {
+    "x402Version": 2,
+    "raw": {
+      "scheme": "eip3009",
+      "network": "eip155:56",
+      "asset": "0x8d0D000Ee44948FC98c9B98A4FA4921476f08B0d",
+      "maxAmountRequired": "20000000000000000",
+      "amount": "20000000000000000",
+      "payTo": "0xcd10D44703D6989290E0A8219f345fA0a5BF4c64",
+      "resource": "https://muster.zkasuran.dev/api/agent/rebalancing",
+      "description": "Reads a live PancakeSwap v3 pool and reports whether a range is still in range, how far the price is from each bound and whether to hold, widen or recentre.",
+      "mimeType": "application/json",
+      "maxTimeoutSeconds": 300,
+      "extra": {
+        "name": "World Liberty Financial USD",
+        "version": "1",
+        "decimals": 18
+      }
+    },
+    "scheme": "eip3009",
+    "network": "eip155:56",
+    "chainId": 56,
+    "asset": "0x8d0D000Ee44948FC98c9B98A4FA4921476f08B0d",
+    "payTo": "0xcd10D44703D6989290E0A8219f345fA0a5BF4c64",
+    "amount": "20000000000000000",
+    "maxTimeoutSeconds": 300,
+    "method": "eip3009",
+    "domain": {
+      "name": "World Liberty Financial USD",
+      "version": "1"
+    },
+    "spender": null,
+    "resource": {
+      "url": "https://muster.zkasuran.dev/api/agent/rebalancing",
+      "description": "Reads a live PancakeSwap v3 pool and reports whether a range is still in range, how far the price is from each bound and whether to hold, widen or recentre.",
+      "mimeType": "application/json"
+    },
+    "header": "PAYMENT-SIGNATURE"
+  },
+  "payer": "0xd6d11Aa5046dc5C7BE8d63B9223b60D7AD94cBe9",
+  "approveTx": null,
+  "settlement": {
+    "tx": "0xe9b585aeeb4274ca6be4d34f1a9d95e6f3677b811c4677d103eb1a9b78cb73df",
+    "block": null,
+    "source": "payment-response header"
+  },
+  "deliverable": {
+    "agent": "PancakeSwap LP Range Check",
+    "shelf": "rebalancing",
+    "payment": {
+      "transaction": "0xe9b585aeeb4274ca6be4d34f1a9d95e6f3677b811c4677d103eb1a9b78cb73df",
+      "scheme": "eip3009",
+      "token": "USD1",
+      "settledVia": "self"
+    },
+    "result": {
+      "pool": {
+        "pool": "0x36696169C63e42cd08ce11f5deeBbCeBae652050",
+        "token0": "0x55d398326f99059fF775485246999027B3197955",
+        "token1": "0xbb4CdB9CBd36B01bD1cBaEBF2De08d9173bc095c",
+        "symbol0": "USDT",
+        "symbol1": "WBNB",
+        "decimals0": 18,
+        "decimals1": 18,
+        "fee": 500,
+        "tickSpacing": 10,
+        "tick": -65858,
+        "sqrtPriceX96": "2943550717445170318540069982",
+        "liquidity": "3142589970123533717457854",
+        "price1Per0": 0.0013803330249255914,
+        "readAt": 1789151452917,
+        "atBlock": 121310270
+      },
+      "position": {
+        "lowerTick": -67380,
+        "upperTick": -67180
+      },
+      "drift": {
+        "pool": "0x36696169C63e42cd08ce11f5deeBbCeBae652050",
+        "inRange": false,
+        "lowerTick": -67380,
+        "upperTick": -67180,
+        "currentTick": -65858,
+        "distanceToLowerPct": 14.121152756353084,
+        "distanceToUpperPct": -12.386372569909298,
+        "recommendation": "recentre",
+        "why": "tick -65858 is at or above the band [-67380, -67180) so the position holds one token only, earning no fees.",
+        "readAt": 1789151453196,
+        "atBlock": 121310271
+      },
+      "readAt": 1789151453196
+    }
+  },
+  "exchanges": [
+    {
+      "at": "2026-09-11T18:30:45.709Z",
+      "request": {
+        "method": "GET",
+        "url": "https://muster.zkasuran.dev/api/agent/rebalancing?pool=0x36696169C63e42cd08ce11f5deeBbCeBae652050&lowerTick=-67380&upperTick=-67180",
+        "headers": {
+          "accept": "application/json, text/event-stream"
+        }
+      },
+      "response": {
+        "status": 402,
+        "headers": {
+          "content-type": "application/json",
+          "payment-required": "eyJ4NDAyVmVyc2lvbiI6MiwiYWNjZXB0cyI6W3sic2NoZW1lIjoiZWlwMzAwOSIsIm5ldHdvcmsiOiJlaXAxNTU6NTYiLCJhc3NldCI6IjB4OGQwRDAwMEVlNDQ5NDhGQzk4YzlCOThBNEZBNDkyMTQ3NmYwOEIwZCIsIm1heEFtb3VudFJlcXVpcmVkIjoiMjAwMDAwMDAwMDAwMDAwMDAiLCJhbW91bnQiOiIyMDAwMDAwMDAwMDAwMDAwMCIsInBheVRvIjoiMHhjZDEwRDQ0NzAzRDY5ODkyOTBFMEE4MjE5ZjM0NWZBMGE1QkY0YzY0IiwicmVzb3VyY2UiOiJodHRwczovL211c3Rlci56a2FzdXJhbi5kZXYvYXBpL2FnZW50L3JlYmFsYW5jaW5nIiwiZGVzY3JpcHRpb24iOiJSZWFkcyBhIGxpdmUgUGFuY2FrZVN3YXAgdjMgcG9vbCBhbmQgcmVwb3J0cyB3aGV0aGVyIGEgcmFuZ2UgaXMgc3RpbGwgaW4gcmFuZ2UsIGhvdyBmYXIgdGhlIHByaWNlIGlzIGZyb20gZWFjaCBib3VuZCBhbmQgd2hldGhlciB0byBob2xkLCB3aWRlbiBvciByZWNlbnRyZS4iLCJtaW1lVHlwZSI6ImFwcGxpY2F0aW9uL2pzb24iLCJtYXhUaW1lb3V0U2Vjb25kcyI6MzAwLCJleHRyYSI6eyJuYW1lIjoiV29ybGQgTGliZXJ0eSBGaW5hbmNpYWwgVVNEIiwidmVyc2lvbiI6IjEiLCJkZWNpbWFscyI6MTh9fV0sImVycm9yIjoiUEFZTUVOVC1TSUdOQVRVUkUgaGVhZGVyIGlzIHJlcXVpcmVkIn0="
+        },
+        "body": "{\"x402Version\":2,\"accepts\":[{\"scheme\":\"eip3009\",\"network\":\"eip155:56\",\"asset\":\"0x8d0D000Ee44948FC98c9B98A4FA4921476f08B0d\",\"maxAmountRequired\":\"20000000000000000\",\"amount\":\"20000000000000000\",\"payTo\":\"0xcd10D44703D6989290E0A8219f345fA0a5BF4c64\",\"resource\":\"https://muster.zkasuran.dev/api/agent/rebalancing\",\"description\":\"Reads a live PancakeSwap v3 pool and reports whether a range is still in range, how far the price is from each bound and whether to hold, widen or recentre.\",\"mimeType\":\"application/json\",\"maxTimeoutSeconds\":300,\"extra\":{\"name\":\"World Liberty Financial USD\",\"version\":\"1\",\"decimals\":18}}],\"error\":\"PAYMENT-SIGNATURE header is required\"}",
+        "truncated": false,
+        "ms": 1246
+      }
+    },
+    {
+      "at": "2026-09-11T18:30:47.820Z",
+      "request": {
+        "method": "GET",
+        "url": "https://muster.zkasuran.dev/api/agent/rebalancing?pool=0x36696169C63e42cd08ce11f5deeBbCeBae652050&lowerTick=-67380&upperTick=-67180",
+        "headers": {
+          "accept": "application/json, text/event-stream",
+          "PAYMENT-SIGNATURE": "eyJ4NDAyVmVyc2lvbiI6MiwicmVzb3VyY2UiOnsidXJsIjoiaHR0cHM6Ly9tdXN0ZXIuemthc3VyYW4uZGV2L2FwaS9hZ2VudC9yZWJhbGFuY2luZyIsImRlc2NyaXB0aW9uIjoiUmVhZHMgYSBsaXZlIFBhbmNha2VTd2FwIHYzIHBvb2wgYW5kIHJlcG9ydHMgd2hldGhlciBhIHJhbmdlIGlzIHN0aWxsIGluIHJhbmdlLCBob3cgZmFyIHRoZSBwcmljZSBpcyBmcm9tIGVhY2ggYm91bmQgYW5kIHdoZXRoZXIgdG8gaG9sZCwgd2lkZW4gb3IgcmVjZW50cmUuIiwibWltZVR5cGUiOiJhcHBsaWNhdGlvbi9qc29uIn0sImFjY2VwdGVkIjp7InNjaGVtZSI6ImVpcDMwMDkiLCJuZXR3b3JrIjoiZWlwMTU1OjU2IiwiYXNzZXQiOiIweDhkMEQwMDBFZTQ0OTQ4RkM5OGM5Qjk4QTRGQTQ5MjE0NzZmMDhCMGQiLCJtYXhBbW91bnRSZXF1aXJlZCI6IjIwMDAwMDAwMDAwMDAwMDAwIiwiYW1vdW50IjoiMjAwMDAwMDAwMDAwMDAwMDAiLCJwYXlUbyI6IjB4Y2QxMEQ0NDcwM0Q2OTg5MjkwRTBBODIxOWYzNDVmQTBhNUJGNGM2NCIsInJlc291cmNlIjoiaHR0cHM6Ly9tdXN0ZXIuemthc3VyYW4uZGV2L2FwaS9hZ2VudC9yZWJhbGFuY2luZyIsImRlc2NyaXB0aW9uIjoiUmVhZHMgYSBsaXZlIFBhbmNha2VTd2FwIHYzIHBvb2wgYW5kIHJlcG9ydHMgd2hldGhlciBhIHJhbmdlIGlzIHN0aWxsIGluIHJhbmdlLCBob3cgZmFyIHRoZSBwcmljZSBpcyBmcm9tIGVhY2ggYm91bmQgYW5kIHdoZXRoZXIgdG8gaG9sZCwgd2lkZW4gb3IgcmVjZW50cmUuIiwibWltZVR5cGUiOiJhcHBsaWNhdGlvbi9qc29uIiwibWF4VGltZW91dFNlY29uZHMiOjMwMCwiZXh0cmEiOnsibmFtZSI6IldvcmxkIExpYmVydHkgRmluYW5jaWFsIFVTRCIsInZlcnNpb24iOiIxIiwiZGVjaW1hbHMiOjE4fX0sInBheWxvYWQiOnsic2lnbmF0dXJlIjoiMHg1MmNjMDc2YTc2NmRmNWFmNjJkNmRkODcwMThmNjZkN2E4ZTI4ODU3N2VlYWI2MTVmOGYwYTc3NmZjM2RiMGZlMzFiYjA0YjE0M2FjYThjZTkxN2I0YWVhMDA0NTdhNmQxYzU5MWI4YTQ4ZDc4NjQzZjc0ZGNiMDIyOGUwNTI2ODFjIiwiYXV0aG9yaXphdGlvbiI6eyJmcm9tIjoiMHhkNmQxMUFhNTA0NmRjNUM3QkU4ZDYzQjkyMjNiNjBEN0FEOTRjQmU5IiwidG8iOiIweGNkMTBENDQ3MDNENjk4OTI5MEUwQTgyMTlmMzQ1ZkEwYTVCRjRjNjQiLCJ2YWx1ZSI6IjIwMDAwMDAwMDAwMDAwMDAwIiwidmFsaWRBZnRlciI6IjE3ODkxNTEzODciLCJ2YWxpZEJlZm9yZSI6IjE3ODkxNTE3NDciLCJub25jZSI6IjB4YWNlMTQ0YmIxM2U0ZDA4MWRlNzhmNThjMGVlNzEzMjBkMjJmN2U3Y2VjZGU1NWNmMGEyN2QzYTBjMTI3YmM2MSJ9fX0="
+        }
+      },
+      "response": {
+        "status": 200,
+        "headers": {
+          "content-type": "application/json",
+          "payment-response": "eyJzdWNjZXNzIjp0cnVlLCJ0cmFuc2FjdGlvbiI6IjB4ZTliNTg1YWVlYjQyNzRjYTZiZTRkMzRmMWE5ZDk1ZTZmMzY3N2I4MTFjNDY3N2QxMDNlYjFhOWI3OGNiNzNkZiIsIm5ldHdvcmsiOiJlaXAxNTU6NTYiLCJ2aWEiOiJzZWxmIn0=",
+          "x-payment-response": "eyJzdWNjZXNzIjp0cnVlLCJ0cmFuc2FjdGlvbiI6IjB4ZTliNTg1YWVlYjQyNzRjYTZiZTRkMzRmMWE5ZDk1ZTZmMzY3N2I4MTFjNDY3N2QxMDNlYjFhOWI3OGNiNzNkZiIsIm5ldHdvcmsiOiJlaXAxNTU6NTYiLCJ2aWEiOiJzZWxmIn0="
+        },
+        "body": "{\"agent\":\"PancakeSwap LP Range Check\",\"shelf\":\"rebalancing\",\"payment\":{\"transaction\":\"0xe9b585aeeb4274ca6be4d34f1a9d95e6f3677b811c4677d103eb1a9b78cb73df\",\"scheme\":\"eip3009\",\"token\":\"USD1\",\"settledVia\":\"self\"},\"result\":{\"pool\":{\"pool\":\"0x36696169C63e42cd08ce11f5deeBbCeBae652050\",\"token0\":\"0x55d398326f99059fF775485246999027B3197955\",\"token1\":\"0xbb4CdB9CBd36B01bD1cBaEBF2De08d9173bc095c\",\"symbol0\":\"USDT\",\"symbol1\":\"WBNB\",\"decimals0\":18,\"decimals1\":18,\"fee\":500,\"tickSpacing\":10,\"tick\":-65858,\"sqrtPriceX96\":\"2943550717445170318540069982\",\"liquidity\":\"3142589970123533717457854\",\"price1Per0\":0.0013803330249255914,\"readAt\":1789151452917,\"atBlock\":121310270},\"position\":{\"lowerTick\":-67380,\"upperTick\":-67180},\"drift\":{\"pool\":\"0x36696169C63e42cd08ce11f5deeBbCeBae652050\",\"inRange\":false,\"lowerTick\":-67380,\"upperTick\":-67180,\"currentTick\":-65858,\"distanceToLowerPct\":14.121152756353084,\"distanceToUpperPct\":-12.386372569909298,\"recommendation\":\"recentre\",\"why\":\"tick -65858 is at or above the band [-67380, -67180) so the position holds one token only, earning no fees.\",\"readAt\":1789151453196,\"atBlock\":121310271},\"readAt\":1789151453196}}",
+        "truncated": false,
+        "ms": 2226
+      }
+    }
+  ],
+  "ms": 4407
+}

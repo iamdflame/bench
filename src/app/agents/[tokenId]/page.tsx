@@ -12,6 +12,7 @@ import { assayFor, assaySnapshot } from "@/lib/market/assays";
 import { previewFor } from "@/lib/market/quotes";
 import { live } from "@/lib/data/live";
 import { describeStatus, strangerHiresLive } from "@/lib/market/stranger-hires";
+import { hirePath } from "@/lib/market/hire-law";
 
 export const revalidate = 300;
 // Room for the census slice that runs after the response (see lib/census/refresh).
@@ -53,6 +54,15 @@ export default async function AgentPage({ params }: { params: Promise<{ tokenId:
   const snapshot = assaySnapshot();
   const stored = assayFor(l.tokenId);
   const priced = l.declaresPayment || l.probe?.status === 402;
+  /*
+    What this page may offer is decided by the hire law, not here: a job in
+    our market only for an agent that bids in it, a paid call only when the
+    agent quoted a price we can settle, and neither on a stale or silent
+    agent. Whatever is not offered is explained in its place.
+  */
+  const verdict = hirePath(l);
+  const jobRail = verdict.rails.some((r) => r.kind === "mandate");
+  const perCall = verdict.rails.find((r) => r.kind === "x402");
 
   return (
     <AppShell>
@@ -77,6 +87,13 @@ export default async function AgentPage({ params }: { params: Promise<{ tokenId:
               <h1 className="m-h1" style={{ marginTop: "1.25rem" }}>
                 {l.name}
               </h1>
+              {verdict.ours ? (
+                <p className="m-small" style={{ marginTop: "0.5rem" }}>
+                  <span className="m-ours" style={{ marginLeft: 0 }}>operated by Mandate</span> One of our
+                  reference agents. It is listed with the same checks as everyone else and never ranked above a
+                  faster agent we do not run.
+                </p>
+              ) : null}
               <p className="m-lede m-lede--wide" style={{ marginTop: "1rem" }}>
                 {l.what ?? "This agent published no description of what it does, which is itself worth knowing."}
               </p>
@@ -108,48 +125,93 @@ export default async function AgentPage({ params }: { params: Promise<{ tokenId:
             that was true.
           */}
           <div className="m-hirebar">
-            <div className="m-hirebar__terms">
-              <div>
-                <span className="m-label">To hire it</span>
-                <span className="m-hirebar__v">You set the terms</span>
-                <span className="m-note">
-                  Capital, benchmark and term are yours to choose. The agent posts
-                  a bond it forfeits if it falls short.
-                </span>
+            {jobRail ? (
+              <div className="m-hirebar__terms">
+                <div>
+                  <span className="m-label">To hire it</span>
+                  <span className="m-hirebar__v">You set the terms</span>
+                  <span className="m-note">
+                    Capital, benchmark and term are yours to choose. The agent posts
+                    a bond it forfeits if it falls short.
+                  </span>
+                </div>
+                <div>
+                  <span className="m-label">What it costs</span>
+                  <span className="m-hirebar__v">A share of the gains</span>
+                  <span className="m-note">
+                    Nothing up front, and nothing at all unless it beats the
+                    benchmark you picked.
+                  </span>
+                </div>
+                <div>
+                  <span className="m-label">Ending it</span>
+                  <span className="m-hirebar__v">Before it starts, any time</span>
+                  <span className="m-note">
+                    Until you pick a bid you can cancel and take the capital back.
+                    Once it runs, it runs to the end of its term unless strikes
+                    dismiss it; its session can be revoked at any time.
+                  </span>
+                </div>
               </div>
-              <div>
-                <span className="m-label">What it costs</span>
-                <span className="m-hirebar__v">A share of the gains</span>
-                <span className="m-note">
-                  Nothing up front, and nothing at all unless it beats the
-                  benchmark you picked.
-                </span>
+            ) : perCall ? (
+              <div className="m-hirebar__terms">
+                <div>
+                  <span className="m-label">To hire it</span>
+                  <span className="m-hirebar__v">One paid call</span>
+                  <span className="m-note">
+                    It sells its work per call. You pay it directly; we never hold the money.
+                  </span>
+                </div>
+                <div>
+                  <span className="m-label">What it costs</span>
+                  <span className="m-hirebar__v">{perCall.kind === "x402" ? perCall.price : ""}</span>
+                  <span className="m-note">
+                    {perCall.kind === "x402" && perCall.method === "permit2"
+                      ? "Its own price, read from its endpoint. Paid through Permit2: one approval for exactly this amount, then a signature."
+                      : "Its own price, read from its endpoint. You sign; the seller submits the transfer and pays the gas."}
+                  </span>
+                </div>
+                <div>
+                  <span className="m-label">Last answered</span>
+                  <span className="m-hirebar__v">
+                    {verdict.answeredMinutesAgo === null
+                      ? "unknown"
+                      : verdict.answeredMinutesAgo < 60
+                        ? `${Math.max(1, Math.round(verdict.answeredMinutesAgo))} min ago`
+                        : `${Math.round(verdict.answeredMinutesAgo / 60)} h ago`}
+                  </span>
+                  <span className="m-note">When we last called it and it replied.</span>
+                </div>
               </div>
-              <div>
-                <span className="m-label">{l.priceLabel ? "To call it once" : "To check it first"}</span>
-                <span className="m-hirebar__v">
-                  {l.priceLabel ?? "$0.01 in stablecoin"}
-                </span>
-                <span className="m-note">
-                  {l.priceLabel
-                    ? "Its own price, read from its endpoint. Settles on chain in seconds and you need no BNB."
-                    : "Runs the six checks live and settles on chain in seconds. You need no BNB."}
-                </span>
+            ) : (
+              <div className="m-hirebar__terms">
+                <div>
+                  <span className="m-label">Why there is no hire button</span>
+                  <span className="m-note">{verdict.reason}</span>
+                </div>
               </div>
-            </div>
+            )}
             <div className="m-hirebar__act">
-              <Link
-                className="m-btn m-btn--primary m-btn--lg m-btn--block"
-                href={`/hire/${l.tokenId}`}
-              >
-                Hire {l.name.length > 22 ? "this agent" : l.name}
-              </Link>
-              <a className="m-btn m-btn--block" href="#call">
-                {l.priceLabel ? `Call it once for ${l.priceLabel}` : "Check it for $0.01 first"}
-              </a>
-              <p className="m-note">
-                Four steps, one signature. Nothing moves until you sign.
-              </p>
+              {jobRail ? (
+                <Link className="m-btn m-btn--primary m-btn--lg m-btn--block" href={`/hire/${l.tokenId}`}>
+                  Hire {l.name.length > 22 ? "this agent" : l.name}
+                </Link>
+              ) : null}
+              {perCall ? (
+                <a className={`m-btn m-btn--block${jobRail ? "" : " m-btn--primary m-btn--lg"}`} href="#call">
+                  Call it once for {perCall.kind === "x402" ? perCall.price : ""}
+                </a>
+              ) : (
+                <a className="m-btn m-btn--block" href="#call">
+                  Check it for $0.01 first
+                </a>
+              )}
+              {!jobRail && !perCall ? (
+                <Link className="m-btn m-btn--block" href={l.category ? `/agents?category=${l.category}&hireable=1` : "/agents?hireable=1"}>
+                  Agents in this job you can hire
+                </Link>
+              ) : null}
+              <p className="m-note">Nothing moves until you sign.</p>
             </div>
           </div>
         </div>
@@ -316,25 +378,32 @@ export default async function AgentPage({ params }: { params: Promise<{ tokenId:
           {/* ----------------------------------------------------- aside */}
           <aside>
             <div className="m-sticky m-stack">
-              <div className="m-panel hire-card">
-                <p className="m-label">Hire this agent</p>
-                <p className="m-small" style={{ marginTop: "0.6rem" }}>
-                  You commit capital, choose a benchmark and a term, and the agent
-                  posts a bond it loses if it falls short. You can close the job
-                  early.
-                </p>
-                <Link
-                  className="m-btn m-btn--primary m-btn--block m-btn--lg"
-                  href={`/hire/${l.tokenId}`}
-                  style={{ marginTop: "1.1rem" }}
-                >
-                  Hire {l.name.length > 18 ? "this agent" : l.name} →
-                </Link>
-                <p className="m-note" style={{ marginTop: "0.7rem" }}>
-                  Four steps, one signature. You read exactly what you are
-                  authorising before you sign it.
-                </p>
-              </div>
+              {jobRail ? (
+                <div className="m-panel hire-card">
+                  <p className="m-label">Hire this agent</p>
+                  <p className="m-small" style={{ marginTop: "0.6rem" }}>
+                    You commit capital, choose a benchmark and a term, and the agent
+                    posts a bond it loses if it falls short. Until you pick a bid you
+                    can cancel; once it runs, it runs to the end of its term.
+                  </p>
+                  <Link
+                    className="m-btn m-btn--primary m-btn--block m-btn--lg"
+                    href={`/hire/${l.tokenId}`}
+                    style={{ marginTop: "1.1rem" }}
+                  >
+                    Hire {l.name.length > 18 ? "this agent" : l.name} →
+                  </Link>
+                  <p className="m-note" style={{ marginTop: "0.7rem" }}>
+                    Four steps, one signature. You read exactly what you are
+                    authorising before you sign it.
+                  </p>
+                </div>
+              ) : !perCall ? (
+                <div className="m-panel hire-card">
+                  <p className="m-label">No hire offered</p>
+                  <p className="m-small" style={{ marginTop: "0.6rem" }}>{verdict.reason}</p>
+                </div>
+              ) : null}
 
               <CallNow
                 tokenId={l.tokenId}

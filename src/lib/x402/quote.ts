@@ -11,16 +11,16 @@
  *   x402 v1  `{ x402Version: 1, accepts: [{ scheme: "exact", maxAmountRequired,
  *              network: "bsc", asset, payTo }] }`, paid with an `X-PAYMENT`
  *              header.
- *   x402 v2  `{ x402Version: 2, accepts: [{ scheme: "eip3009", amount,
- *              network: "eip155:56"... }] }`, and the resource may name a
- *              different URL from the one that answered.
+ *   x402 v2  `{ x402Version: 2, accepts: [{ scheme, amount, network:
+ *              "eip155:56", extra: { assetTransferMethod } }] }`, often in a
+ *              base64 `PAYMENT-REQUIRED` header, paid with `PAYMENT-SIGNATURE`.
  *
- * Both are parsed. Whether we can *pay* one is a separate question from
- * whether we can *read* it, and the two are reported separately, because a
- * button that fails is worse than a price with an honest note under it.
+ * Both are parsed by the same reader the paying client uses (`./pay`), so a
+ * price the site calls payable is one the client can actually pay, and a
+ * price it calls unpayable carries the exact reason.
  */
 
-import { USD1 } from "./index";
+import { readCapped, readRequirements, whyUnpayable, type TransferMethod } from "./pay";
 
 export interface Quote {
   /** The URL that answered with a price. */
@@ -41,10 +41,12 @@ export interface Quote {
   x402Version: number;
   /** The header the server wants the signed payment in. */
   header: "X-PAYMENT" | "PAYMENT-SIGNATURE";
+  /** How the payment moves: EIP-3009 by signature, or Permit2 for tokens without it. */
+  transferMethod: TransferMethod | null;
   /**
-   * Whether this wallet could actually settle it: BNB Smart Chain, USD1, and
-   * an EIP-3009 scheme we already sign, carried in the header we know how to
-   * build. Reading a price we cannot pay is still worth doing.
+   * Whether this marketplace can actually settle it: BNB Smart Chain, a token
+   * it pays in, and a transfer method it signs. Reading a price we cannot pay
+   * is still worth doing.
    */
   payable: boolean;
   /** Why not, when not. */
@@ -61,18 +63,6 @@ const KNOWN_DECIMALS: Record<string, number> = {
   "0xce24439f2d9c6a2289f741120fe202248b666666": 18, // U, BSC
 };
 
-/**
- * Tokens on BNB Smart Chain that cannot carry an EIP-3009 payment.
- *
- * Verified by calling the token, not assumed: `DOMAIN_SEPARATOR()` and
- * `transferWithAuthorization(...)` both revert on BSC USDT, while USD1 answers
- * with a real separator.
- */
-const NO_EIP3009: Record<string, string> = {
-  "0x55d398326f99059ff775485246999027b3197955":
-    "it prices in USDT, and BNB Smart Chain's USDT has no transferWithAuthorization, so an EIP-3009 payment in it cannot be signed by anyone",
-};
-
 const HUMAN = (amount: string, decimals: number): string => {
   const v = BigInt(amount);
   const base = 10n ** BigInt(decimals);
@@ -83,95 +73,48 @@ const HUMAN = (amount: string, decimals: number): string => {
 
 export const humanAmount = HUMAN;
 
-function chainOf(network: string): number | null {
-  const caip = /^eip155:(\d+)$/.exec(network);
-  if (caip) return Number(caip[1]);
-  if (/^(bsc|bnb|binance)/i.test(network)) return 56;
-  if (/^base/i.test(network)) return 8453;
-  return null;
-}
-
-/** Parses a 402 body into a quote, or null when it is not one we understand. */
-export function parseChallenge(
-  endpoint: string,
-  body: unknown,
-  headerHint?: string,
-): Quote | null {
-  const b = body as {
-    x402Version?: number;
-    accepts?: Record<string, unknown>[];
-    error?: string;
-  } | null;
-  const first = b?.accepts?.[0];
-  if (!first) return null;
-
-  const amount = String(first.maxAmountRequired ?? first.amount ?? "");
-  if (!amount || !/^\d+$/.test(amount)) return null;
-
-    const extra = (first.extra ?? {}) as { name?: string; decimals?: number };
-  const asset0 = String(first.asset ?? "");
+/**
+ * Parses a 402 into a quote, or null when it is not one we understand.
+ *
+ * Why we cannot settle is said precisely. The interesting case is BNB Smart
+ * Chain's USDT: it has neither `DOMAIN_SEPARATOR` nor
+ * `transferWithAuthorization`, so nobody can pay it by EIP-3009. It can be
+ * paid by Permit2, though, and a seller that offers Permit2 for USDT is
+ * payable. That distinction used to be collapsed into "USDT cannot be paid",
+ * which was true of our client and false of the seller.
+ */
+export function parseChallenge(endpoint: string, body: unknown, paymentRequiredHeader?: string | null): Quote | null {
+  const offers = readRequirements(body, paymentRequiredHeader);
+  if (!offers.length) return null;
+  // The offer we can pay if there is one; otherwise the first, so the price
+  // is still shown with the reason under it.
+  const offer = offers.find((o) => !whyUnpayable(o)) ?? offers[0];
+  const extra = (offer.raw.extra ?? {}) as { name?: string; decimals?: number };
   /*
-    Decimals, and why guessing eighteen is not good enough.
-
-    Servers are not obliged to state them. Defaulting to eighteen turned
-    USDC's 200000 into "0.00", which is a price of nothing next to a button
-    that charges. Known tokens are looked up; an unknown one keeps the
-    eighteen-decimal default because that is what almost every BSC token uses,
-    and the figure is shown with its asset name so a reader can tell.
+    Decimals, and why guessing eighteen is not good enough. Servers are not
+    obliged to state them. Defaulting to eighteen turned USDC's 200000 into
+    "0.00", a price of nothing next to a button that charges. Known tokens are
+    looked up; an unknown one keeps eighteen, shown with its asset name.
   */
-  const decimals = Number(extra.decimals ?? KNOWN_DECIMALS[asset0.toLowerCase()] ?? 18);
-  const network = String(first.network ?? "");
-  const chainId = chainOf(network);
-  const asset = asset0;
-  const scheme = String(first.scheme ?? "");
-  const version = Number(b?.x402Version ?? 1);
-
-  // The server tells us which header it wants, either by saying so in its
-  // error or by speaking v1, which only ever used X-PAYMENT.
-  const wantsSignature =
-    /PAYMENT-SIGNATURE/i.test(String(b?.error ?? "")) || /PAYMENT-SIGNATURE/i.test(headerHint ?? "");
-  const header: Quote["header"] = wantsSignature ? "PAYMENT-SIGNATURE" : "X-PAYMENT";
-
-  /*
-    Why we cannot settle, said precisely.
-
-    "We do not hold that token" is the lazy answer and it is often false. The
-    interesting case is BNB Smart Chain's USDT: it has neither
-    `DOMAIN_SEPARATOR` nor `transferWithAuthorization`, both revert, checked
-    against the token itself, so no amount of holding it makes an EIP-3009
-    payment possible. An agent pricing in USDT over that scheme has to settle
-    some other way, and saying that is more useful to its operator than saying
-    we are short of funds.
-  */
-  const reasons: string[] = [];
-  if (chainId !== 56) reasons.push(`it settles on ${network}, not BNB Smart Chain`);
-  else if (NO_EIP3009[asset.toLowerCase()]) reasons.push(NO_EIP3009[asset.toLowerCase()]!);
-  else if (asset.toLowerCase() !== USD1.toLowerCase()) {
-    reasons.push(`it prices in ${extra.name ?? "a token"} and this wallet settles in USD1`);
-  }
-  if (!/^(exact|eip3009)$/i.test(scheme)) reasons.push(`its "${scheme}" scheme is one we do not sign`);
-  if (header !== "X-PAYMENT") {
-    reasons.push(
-      "it wants the payment in a PAYMENT-SIGNATURE header whose envelope it does not publish",
-    );
-  }
-
+  const decimals = Number(extra.decimals ?? KNOWN_DECIMALS[offer.asset.toLowerCase()] ?? 18);
+  const reason = whyUnpayable(offer);
   return {
     endpoint,
-    amount,
+    amount: offer.amount.toString(),
     decimals,
-    asset,
+    asset: offer.asset,
     assetName: extra.name ?? null,
-    network,
-    chainId,
-    payTo: String(first.payTo ?? ""),
-    scheme,
-    description: (first.description as string) ?? null,
-    resource: (first.resource as string) ?? null,
-    x402Version: version,
-    header,
-    payable: reasons.length === 0,
-    unpayable: reasons.length ? reasons.join("; ") : null,
+    network: offer.network,
+    chainId: offer.chainId,
+    payTo: offer.payTo,
+    scheme: offer.scheme,
+    description: (offer.raw.description as string | undefined) ?? offer.resource?.description ?? null,
+    resource: offer.resource?.url ?? null,
+    x402Version: offer.x402Version,
+    header: offer.header,
+    transferMethod: offer.method,
+    payable: reason === null,
+    unpayable: reason,
   };
 }
 
@@ -183,8 +126,14 @@ export async function readQuote(endpoint: string, timeoutMs = 8_000): Promise<Qu
       signal: AbortSignal.timeout(timeoutMs),
     });
     if (res.status !== 402) return null;
-    const body = await res.json().catch(() => null);
-    return parseChallenge(endpoint, body, res.headers.get("payment-required") ?? undefined);
+    const { text } = await readCapped(res);
+    let body: unknown = null;
+    try {
+      body = JSON.parse(text);
+    } catch {
+      body = null;
+    }
+    return parseChallenge(endpoint, body, res.headers.get("payment-required"));
   } catch {
     return null;
   }
@@ -213,7 +162,8 @@ export async function readPreview(endpoint: string, timeoutMs = 8_000): Promise<
       signal: AbortSignal.timeout(timeoutMs),
     });
     if (!res.ok) return null;
-    const body = (await res.json()) as Record<string, unknown>;
+    const { text } = await readCapped(res);
+    const body = JSON.parse(text) as Record<string, unknown>;
     if (!body || typeof body !== "object" || "accepts" in body) return null;
     const price = (body.price ?? {}) as { human?: string };
     return {

@@ -908,6 +908,37 @@ html:has(.m-app) body {
   overflow: hidden;
 }
 
+/* An agent that did not answer stays listed, quieter, never hidden. */
+.m-card--dim,
+.m-row--dim {
+  opacity: 0.62;
+}
+.m-card--dim:hover,
+.m-row--dim:hover {
+  opacity: 1;
+}
+
+/* Ours, labelled wherever it appears, in the same voice as everything else. */
+.m-ours {
+  display: inline-block;
+  margin-left: 0.4rem;
+  font-size: 0.72rem;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  color: var(--ink-3);
+  border: 1px solid var(--rule);
+  padding: 0.05rem 0.35rem;
+  vertical-align: middle;
+}
+
+/* Where a hire button would have been, the reason there is none. */
+.m-card__why {
+  margin: 0.6rem 0 0;
+  font-size: 0.8rem;
+  line-height: 1.45;
+  color: var(--ink-3);
+}
+
 .m-card__foot {
   margin-top: auto;
   padding-top: 0.9rem;
@@ -1501,6 +1532,33 @@ a.m-mkt-cat.m-mkt-cat--on:hover {
   margin-top: 1.75rem;
 }
 
+/* One line of measured truth, above everything the page claims. */
+.m-truth {
+  margin: 0 0 1.1rem;
+  font-size: clamp(0.95rem, 2vw, 1.05rem);
+  line-height: 1.5;
+  color: var(--ink-2);
+}
+
+/* Paste a position, or skip. A plain GET form: it works with scripting off. */
+.m-check {
+  margin: 0 0 1.2rem;
+  max-width: 40rem;
+}
+.m-check__k {
+  display: block;
+  margin-bottom: 0.5rem;
+}
+.m-check__row {
+  display: flex;
+  gap: 0.6rem;
+  flex-wrap: wrap;
+}
+.m-check__in {
+  flex: 1 1 18rem;
+  min-width: 0;
+}
+
 .m-hero__note {
   margin-top: 0.9rem;
 }
@@ -1572,6 +1630,14 @@ a.m-mkt-cat.m-mkt-cat--on:hover {
   color: var(--ink-3);
   margin-top: auto;
   padding-top: 0.85rem;
+}
+
+/* The tile says who is fastest right now, and whether one of them is ours. */
+.m-door__who {
+  margin: 0.35rem 0 0;
+  font-size: 0.78rem;
+  line-height: 1.45;
+  color: var(--ink-3);
 }
 
 .m-door__go {

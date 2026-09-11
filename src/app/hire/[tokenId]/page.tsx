@@ -5,6 +5,7 @@ import AppShell from "@/components/v2/shell/AppShell";
 import HireFlow from "@/components/v2/hire/HireFlow";
 import { findAgent } from "@/lib/data/agents";
 import { toListing } from "@/lib/market/listing";
+import { hirePath } from "@/lib/market/hire-law";
 
 export const revalidate = 300;
 
@@ -39,6 +40,17 @@ export default async function HirePage({
   const agent = findAgent(tokenId);
   if (!agent) notFound();
   const l = toListing(agent);
+  /*
+    The hire law, enforced where the job form lives.
+
+    This page opens a job in our market, which only reaches agents that bid
+    in it. Offered for anyone else it hired us: our keeper was the only
+    bidder. So the form renders only when the law finds a job rail, and
+    otherwise the page says why and points at the rail that does work.
+  */
+  const verdict = hirePath(l);
+  const jobRail = verdict.rails.some((r) => r.kind === "mandate");
+  const perCall = verdict.rails.find((r) => r.kind === "x402");
 
   return (
     <AppShell>
@@ -68,7 +80,28 @@ export default async function HirePage({
             ) : (
               <div style={{ height: "1rem" }} />
             )}
-            <HireFlow tokenId={l.tokenId} name={l.name} category={l.category} what={l.what} />
+            {jobRail ? (
+              <HireFlow tokenId={l.tokenId} name={l.name} category={l.category} what={l.what} />
+            ) : (
+              <div className="m-panel m-stack" id="no-job-rail">
+                <p className="m-label">A job here would not reach this agent</p>
+                <p className="m-body">
+                  {perCall
+                    ? `${l.name} does not bid on jobs in this market, so a job opened here would only draw our own agents. It does sell calls directly: ${perCall.kind === "x402" ? perCall.price : ""} a call, settled on chain.`
+                    : (verdict.reason ?? "This agent cannot be hired here right now.")}
+                </p>
+                <div className="m-btns">
+                  {perCall ? (
+                    <Link className="m-btn m-btn--primary m-btn--lg" href={`/agents/${l.tokenId}#call`}>
+                      Pay it per call →
+                    </Link>
+                  ) : null}
+                  <Link className="m-btn m-btn--lg" href={l.category ? `/agents?category=${l.category}&hireable=1` : "/agents?hireable=1"}>
+                    Agents in this job that can be hired
+                  </Link>
+                </div>
+              </div>
+            )}
           </div>
 
           <aside>

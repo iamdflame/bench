@@ -1,0 +1,104 @@
+{
+  "url": "https://continuous-locator-four-christine.trycloudflare.com/grid/status",
+  "paid": false,
+  "refused": "it answered 402 to the signed payment: {\"x402Version\":2,\"error\":\"settlement failed: Invalid parameters were provided to the RPC method.\\nDouble check you have provided the correct parameters.\\n\\nURL: https://bsc-rpc.publicnode.com\\nRequest body: {\\\"method\\\":\\\"eth_getTransactionReceipt\\\",\\\"params\\\":[\\\"0x9e8b50534aed263f41f9b2751e0cff01edbe0b36ef1e8c4c3e61ed74856c5577\\\"]}\\n\\nDetails: Archive requests require a personal token. Get one at:",
+  "requirement": {
+    "x402Version": 2,
+    "raw": {
+      "scheme": "exact",
+      "network": "eip155:56",
+      "asset": "0x55d398326f99059fF775485246999027B3197955",
+      "payTo": "0xD6Db7AdE6ED34d1CF0836d7A1aac5ba3B860c82A",
+      "amount": "50000000000000000",
+      "maxTimeoutSeconds": 300,
+      "extra": {
+        "name": "Tether USD",
+        "version": "1",
+        "assetTransferMethod": "permit2-exact",
+        "spenderAddress": "0x7f922FB740E2036477346f559e5660fA38A2C9E5"
+      }
+    },
+    "scheme": "exact",
+    "network": "eip155:56",
+    "chainId": 56,
+    "asset": "0x55d398326f99059fF775485246999027B3197955",
+    "payTo": "0xD6Db7AdE6ED34d1CF0836d7A1aac5ba3B860c82A",
+    "amount": "50000000000000000",
+    "maxTimeoutSeconds": 300,
+    "method": "permit2",
+    "domain": {
+      "name": "Tether USD",
+      "version": "1"
+    },
+    "spender": "0x7f922FB740E2036477346f559e5660fA38A2C9E5",
+    "resource": null,
+    "header": "X-PAYMENT",
+    "dialect": "b402"
+  },
+  "payer": "0xd6d11Aa5046dc5C7BE8d63B9223b60D7AD94cBe9",
+  "approveTx": null,
+  "settlement": null,
+  "deliverable": {
+    "x402Version": 2,
+    "error": "settlement failed: Invalid parameters were provided to the RPC method.\nDouble check you have provided the correct parameters.\n\nURL: https://bsc-rpc.publicnode.com\nRequest body: {\"method\":\"eth_getTransactionReceipt\",\"params\":[\"0x9e8b50534aed263f41f9b2751e0cff01edbe0b36ef1e8c4c3e61ed74856c5577\"]}\n\nDetails: Archive requests require a personal token. Get one at: https://www.allnodes.com/publicnode\nVersion: viem@2.55.11",
+    "description": "Agripinaa grid agent: live status",
+    "accepts": [
+      {
+        "scheme": "exact",
+        "network": "eip155:56",
+        "asset": "0x55d398326f99059fF775485246999027B3197955",
+        "payTo": "0xD6Db7AdE6ED34d1CF0836d7A1aac5ba3B860c82A",
+        "amount": "50000000000000000",
+        "maxTimeoutSeconds": 300,
+        "extra": {
+          "name": "Tether USD",
+          "version": "1",
+          "assetTransferMethod": "permit2-exact",
+          "spenderAddress": "0x7f922FB740E2036477346f559e5660fA38A2C9E5"
+        }
+      }
+    ]
+  },
+  "exchanges": [
+    {
+      "at": "2026-09-11T18:38:16.825Z",
+      "request": {
+        "method": "GET",
+        "url": "https://continuous-locator-four-christine.trycloudflare.com/grid/status",
+        "headers": {
+          "accept": "application/json, text/event-stream"
+        }
+      },
+      "response": {
+        "status": 402,
+        "headers": {
+          "content-type": "application/json"
+        },
+        "body": "{\"x402Version\":2,\"error\":\"payment required\",\"description\":\"Agripinaa grid agent: live status\",\"accepts\":[{\"scheme\":\"exact\",\"network\":\"eip155:56\",\"asset\":\"0x55d398326f99059fF775485246999027B3197955\",\"payTo\":\"0xD6Db7AdE6ED34d1CF0836d7A1aac5ba3B860c82A\",\"amount\":\"50000000000000000\",\"maxTimeoutSeconds\":300,\"extra\":{\"name\":\"Tether USD\",\"version\":\"1\",\"assetTransferMethod\":\"permit2-exact\",\"spenderAddress\":\"0x7f922FB740E2036477346f559e5660fA38A2C9E5\"}}]}",
+        "truncated": false,
+        "ms": 968
+      }
+    },
+    {
+      "at": "2026-09-11T18:38:18.891Z",
+      "request": {
+        "method": "GET",
+        "url": "https://continuous-locator-four-christine.trycloudflare.com/grid/status",
+        "headers": {
+          "accept": "application/json, text/event-stream",
+          "X-PAYMENT": "eyJ4NDAyVmVyc2lvbiI6Miwic2NoZW1lIjoiZXhhY3QiLCJuZXR3b3JrIjoiZWlwMTU1OjU2IiwiYWNjZXB0ZWQiOnsic2NoZW1lIjoiZXhhY3QiLCJuZXR3b3JrIjoiZWlwMTU1OjU2IiwiYXNzZXQiOiIweDU1ZDM5ODMyNmY5OTA1OWZGNzc1NDg1MjQ2OTk5MDI3QjMxOTc5NTUiLCJwYXlUbyI6IjB4RDZEYjdBZEU2RUQzNGQxQ0YwODM2ZDdBMWFhYzViYTNCODYwYzgyQSIsImFtb3VudCI6IjUwMDAwMDAwMDAwMDAwMDAwIiwibWF4VGltZW91dFNlY29uZHMiOjMwMCwiZXh0cmEiOnsibmFtZSI6IlRldGhlciBVU0QiLCJ2ZXJzaW9uIjoiMSIsImFzc2V0VHJhbnNmZXJNZXRob2QiOiJwZXJtaXQyLWV4YWN0Iiwic3BlbmRlckFkZHJlc3MiOiIweDdmOTIyRkI3NDBFMjAzNjQ3NzM0NmY1NTllNTY2MGZBMzhBMkM5RTUifX0sInBheWxvYWQiOnsic2lnbmF0dXJlIjoiMHg2YzkzYWZhYjM4ODYyN2U3OTBkMjgzZmEwYzE3OWNiZTdmZDI4YmZkMWZiMjFiMGZhYTJlY2FmZGYwYzBhZDM2MDg5N2ZjM2FmMTA2MTdjZTAwNTc4YTg3MjJkZDgxOGY0ZjAzNmYxMGVlODhlYTYwZWIxMGM5NDUyNWUzNTAwZjFjIiwiZnJvbSI6IjB4ZDZkMTFBYTUwNDZkYzVDN0JFOGQ2M0I5MjIzYjYwRDdBRDk0Y0JlOSIsInBlcm1pdCI6eyJwZXJtaXR0ZWQiOnsidG9rZW4iOiIweDU1ZDM5ODMyNmY5OTA1OWZGNzc1NDg1MjQ2OTk5MDI3QjMxOTc5NTUiLCJhbW91bnQiOiI1MDAwMDAwMDAwMDAwMDAwMCJ9LCJzcGVuZGVyIjoiMHg3ZjkyMkZCNzQwRTIwMzY0NzczNDZmNTU5ZTU2NjBmQTM4QTJDOUU1Iiwibm9uY2UiOiIxMTAzNjc2NTUxMDQ3OTE2Mzc0NzAwNjQ4OTE3MjE2MTk2NTUzMjcxMjE1MjYyMzM2Nzg5Mjg3NjExMjY3MDcwMTI0NDY2NDIzOTA2ODMiLCJkZWFkbGluZSI6IjE3ODkxNTIxOTgiLCJ3aXRuZXNzIjp7InRvIjoiMHhENkRiN0FkRTZFRDM0ZDFDRjA4MzZkN0ExYWFjNWJhM0I4NjBjODJBIiwidmFsaWRBZnRlciI6IjE3ODkxNTE4MzgifX0sInBlcm1pdDJBdXRob3JpemF0aW9uIjp7InBlcm1pdHRlZCI6eyJ0b2tlbiI6IjB4NTVkMzk4MzI2Zjk5MDU5ZkY3NzU0ODUyNDY5OTkwMjdCMzE5Nzk1NSIsImFtb3VudCI6IjUwMDAwMDAwMDAwMDAwMDAwIn0sInNwZW5kZXIiOiIweDdmOTIyRkI3NDBFMjAzNjQ3NzM0NmY1NTllNTY2MGZBMzhBMkM5RTUiLCJub25jZSI6IjExMDM2NzY1NTEwNDc5MTYzNzQ3MDA2NDg5MTcyMTYxOTY1NTMyNzEyMTUyNjIzMzY3ODkyODc2MTEyNjcwNzAxMjQ0NjY0MjM5MDY4MyIsImRlYWRsaW5lIjoiMTc4OTE1MjE5OCIsIndpdG5lc3MiOnsidG8iOiIweEQ2RGI3QWRFNkVEMzRkMUNGMDgzNmQ3QTFhYWM1YmEzQjg2MGM4MkEiLCJ2YWxpZEFmdGVyIjoiMTc4OTE1MTgzOCJ9LCJmcm9tIjoiMHhkNmQxMUFhNTA0NmRjNUM3QkU4ZDYzQjkyMjNiNjBEN0FEOTRjQmU5In19fQ=="
+        }
+      },
+      "response": {
+        "status": 402,
+        "headers": {
+          "content-type": "application/json"
+        },
+        "body": "{\"x402Version\":2,\"error\":\"settlement failed: Invalid parameters were provided to the RPC method.\\nDouble check you have provided the correct parameters.\\n\\nURL: https://bsc-rpc.publicnode.com\\nRequest body: {\\\"method\\\":\\\"eth_getTransactionReceipt\\\",\\\"params\\\":[\\\"0x9e8b50534aed263f41f9b2751e0cff01edbe0b36ef1e8c4c3e61ed74856c5577\\\"]}\\n\\nDetails: Archive requests require a personal token. Get one at: https://www.allnodes.com/publicnode\\nVersion: viem@2.55.11\",\"description\":\"Agripinaa grid agent: live status\",\"accepts\":[{\"scheme\":\"exact\",\"network\":\"eip155:56\",\"asset\":\"0x55d398326f99059fF775485246999027B3197955\",\"payTo\":\"0xD6Db7AdE6ED34d1CF0836d7A1aac5ba3B860c82A\",\"amount\":\"50000000000000000\",\"maxTimeoutSeconds\":300,\"extra\":{\"name\":\"Tether USD\",\"version\":\"1\",\"assetTransferMethod\":\"permit2-exact\",\"spenderAddress\":\"0x7f922FB740E2036477346f559e5660fA38A2C9E5\"}}]}",
+        "truncated": false,
+        "ms": 927
+      }
+    }
+  ],
+  "ms": 3071
+}

@@ -1,0 +1,545 @@
+{
+  "at": "2026-09-11T18:49:07.241Z",
+  "calls": [
+    {
+      "id": "342377:0x458442975cc2ea35f47268f5fab71ef21c4ed3b2d72ba8780c2311fb7495b866",
+      "tokenId": "342377",
+      "name": "Venus Health Factor Watch",
+      "category": "health-factor",
+      "rail": "x402",
+      "url": "https://muster.zkasuran.dev/api/agent/health-factor?account=0x54c06cC2623aAA2Dcc38B17fA07aD2e99b363C90",
+      "payer": "0xd6d11Aa5046dc5C7BE8d63B9223b60D7AD94cBe9",
+      "payTo": "0xcd10D44703D6989290E0A8219f345fA0a5BF4c64",
+      "asset": "0x8d0D000Ee44948FC98c9B98A4FA4921476f08B0d",
+      "amount": "20000000000000000",
+      "method": "eip3009",
+      "paid": true,
+      "refused": null,
+      "tx": "0x458442975cc2ea35f47268f5fab71ef21c4ed3b2d72ba8780c2311fb7495b866",
+      "block": null,
+      "approveTx": null,
+      "sponsored": false,
+      "subject": "0x54c06cC2623aAA2Dcc38B17fA07aD2e99b363C90",
+      "evidence": "docs/evidence/2026-09-11-342377-182945.json",
+      "transcriptSha256": "dff0c9671b70285676e955b9ba033a8c0d1e4c118b6e2de4805292873a841407",
+      "deliverable": {
+        "agent": "Venus Health Factor Watch",
+        "shelf": "health-factor",
+        "payment": {
+          "transaction": "0x458442975cc2ea35f47268f5fab71ef21c4ed3b2d72ba8780c2311fb7495b866",
+          "scheme": "eip3009",
+          "token": "USD1",
+          "settledVia": "self"
+        },
+        "result": {
+          "account": "0x54c06cC2623aAA2Dcc38B17fA07aD2e99b363C90",
+          "healthFactor": 3.9998721024757464,
+          "verdict": "comfortable",
+          "totalCollateralUsd": 0.23994617932065657,
+          "totalBorrowUsd": 0.059988462924137086,
+          "liquidityUsd": 0.1799577163965195,
+          "shortfallUsd": 0,
+          "priceDropToLiquidationPct": 74.99920061491356,
+          "markets": [
+            {
+              "symbol": "vUSDT",
+              "suppliedUsd": 0.29993272415082073,
+              "liquidationThreshold": 0.8,
+              "weightedCollateralUsd": 0.23994617932065657,
+              "borrowedUsd": 0.059988462924137086,
+              "collateralFactor": 0.8
+            }
+          ],
+          "formula": "HF = sumCollateral(liquidationThreshold) / sumBorrowPlusEffects. Venus publishes liquidity and shortfall, never a health factor, so this is derived. Per entered market, collateral = liquidationThreshold * exchangeRateStored / 1e18 * oraclePrice / 1e18 * vTokenBalance / 1e18 and debt = oraclePrice * borrowBalance / 1e18, both USD scaled 1e18, all integer truncating. VAIController.getVAIRepayAmount is added to the debt side. Venus liquidates when shortfall is non-zero, which is exactly HF < 1.",
+          "atBlock": 121310144,
+          "readAt": 1789151396206
+        }
+      },
+      "at": "2026-09-11T18:29:45.743Z",
+      "ms": 7472,
+      "delivered": true
+    },
+    {
+      "id": "269703:2026-09-11T18:30:01.021Z",
+      "tokenId": "269703",
+      "name": "Agripinaa Grid",
+      "category": "grid-trading",
+      "rail": "x402",
+      "url": "https://continuous-locator-four-christine.trycloudflare.com/grid/status",
+      "payer": "0xd6d11Aa5046dc5C7BE8d63B9223b60D7AD94cBe9",
+      "payTo": "0xD6Db7AdE6ED34d1CF0836d7A1aac5ba3B860c82A",
+      "asset": "0x55d398326f99059fF775485246999027B3197955",
+      "amount": "50000000000000000",
+      "method": "permit2",
+      "paid": false,
+      "refused": "it answered 402 to the signed payment: {\"x402Version\":2,\"error\":\"payment required\",\"description\":\"Agripinaa grid agent: live status\",\"accepts\":[{\"scheme\":\"exact\",\"network\":\"eip155:56\",\"asset\":\"0x55d398326f99059fF775485246999027B3197955\",\"payTo\":\"0xD6Db7AdE6ED34d1CF0836d7A1aac5ba3B860c82A\",\"amount\":\"50000000000000000\",\"maxTimeoutSeconds\":300,\"extra\":{\"name\":\"Tether USD\",\"version\":\"1\",\"assetTransferMethod\":\"permit2-exact\",\"spenderAddress\":\"0x7f922FB740E2036477346f559e5660fA38A2C9E5\"}}]}",
+      "tx": null,
+      "block": null,
+      "approveTx": "0x676e86c4f4d6007772489550b96ef525bc29a4bb98abf99535d04be729d75822",
+      "sponsored": false,
+      "subject": "grid status",
+      "evidence": "docs/evidence/2026-09-11-269703-183001.json",
+      "transcriptSha256": "c6ab42b2d42f169ceb4d04f0eb751d97e84467c93db9d530dadd99fc7a513576",
+      "deliverable": {
+        "x402Version": 2,
+        "error": "payment required",
+        "description": "Agripinaa grid agent: live status",
+        "accepts": [
+          {
+            "scheme": "exact",
+            "network": "eip155:56",
+            "asset": "0x55d398326f99059fF775485246999027B3197955",
+            "payTo": "0xD6Db7AdE6ED34d1CF0836d7A1aac5ba3B860c82A",
+            "amount": "50000000000000000",
+            "maxTimeoutSeconds": 300,
+            "extra": {
+              "name": "Tether USD",
+              "version": "1",
+              "assetTransferMethod": "permit2-exact",
+              "spenderAddress": "0x7f922FB740E2036477346f559e5660fA38A2C9E5"
+            }
+          }
+        ]
+      },
+      "at": "2026-09-11T18:30:01.021Z",
+      "ms": 4598,
+      "delivered": false
+    },
+    {
+      "id": "342379:0xe9b585aeeb4274ca6be4d34f1a9d95e6f3677b811c4677d103eb1a9b78cb73df",
+      "tokenId": "342379",
+      "name": "PancakeSwap LP Range Check",
+      "category": "rebalancing",
+      "rail": "x402",
+      "url": "https://muster.zkasuran.dev/api/agent/rebalancing?pool=0x36696169C63e42cd08ce11f5deeBbCeBae652050&lowerTick=-67380&upperTick=-67180",
+      "payer": "0xd6d11Aa5046dc5C7BE8d63B9223b60D7AD94cBe9",
+      "payTo": "0xcd10D44703D6989290E0A8219f345fA0a5BF4c64",
+      "asset": "0x8d0D000Ee44948FC98c9B98A4FA4921476f08B0d",
+      "amount": "20000000000000000",
+      "method": "eip3009",
+      "paid": true,
+      "refused": null,
+      "tx": "0xe9b585aeeb4274ca6be4d34f1a9d95e6f3677b811c4677d103eb1a9b78cb73df",
+      "block": null,
+      "approveTx": null,
+      "sponsored": false,
+      "subject": "0x36696169C63e42cd08ce11f5deeBbCeBae652050 [-67380, -67180)",
+      "evidence": "docs/evidence/2026-09-11-342379-183045.json",
+      "transcriptSha256": "c35e1e229fb4a63c6de3a3187637b9e8ea08b495ca9b3b5d8d408775c4237fe5",
+      "deliverable": {
+        "agent": "PancakeSwap LP Range Check",
+        "shelf": "rebalancing",
+        "payment": {
+          "transaction": "0xe9b585aeeb4274ca6be4d34f1a9d95e6f3677b811c4677d103eb1a9b78cb73df",
+          "scheme": "eip3009",
+          "token": "USD1",
+          "settledVia": "self"
+        },
+        "result": {
+          "pool": {
+            "pool": "0x36696169C63e42cd08ce11f5deeBbCeBae652050",
+            "token0": "0x55d398326f99059fF775485246999027B3197955",
+            "token1": "0xbb4CdB9CBd36B01bD1cBaEBF2De08d9173bc095c",
+            "symbol0": "USDT",
+            "symbol1": "WBNB",
+            "decimals0": 18,
+            "decimals1": 18,
+            "fee": 500,
+            "tickSpacing": 10,
+            "tick": -65858,
+            "sqrtPriceX96": "2943550717445170318540069982",
+            "liquidity": "3142589970123533717457854",
+            "price1Per0": 0.0013803330249255914,
+            "readAt": 1789151452917,
+            "atBlock": 121310270
+          },
+          "position": {
+            "lowerTick": -67380,
+            "upperTick": -67180
+          },
+          "drift": {
+            "pool": "0x36696169C63e42cd08ce11f5deeBbCeBae652050",
+            "inRange": false,
+            "lowerTick": -67380,
+            "upperTick": -67180,
+            "currentTick": -65858,
+            "distanceToLowerPct": 14.121152756353084,
+            "distanceToUpperPct": -12.386372569909298,
+            "recommendation": "recentre",
+            "why": "tick -65858 is at or above the band [-67380, -67180) so the position holds one token only, earning no fees.",
+            "readAt": 1789151453196,
+            "atBlock": 121310271
+          },
+          "readAt": 1789151453196
+        }
+      },
+      "at": "2026-09-11T18:30:45.709Z",
+      "ms": 4407,
+      "delivered": true
+    },
+    {
+      "id": "269703:0x9e8b50534aed263f41f9b2751e0cff01edbe0b36ef1e8c4c3e61ed74856c5577",
+      "tokenId": "269703",
+      "name": "Agripinaa Grid",
+      "category": "grid-trading",
+      "rail": "x402",
+      "url": "https://continuous-locator-four-christine.trycloudflare.com/grid/status",
+      "payer": "0xd6d11Aa5046dc5C7BE8d63B9223b60D7AD94cBe9",
+      "payTo": "0xD6Db7AdE6ED34d1CF0836d7A1aac5ba3B860c82A",
+      "asset": "0x55d398326f99059fF775485246999027B3197955",
+      "amount": "50000000000000000",
+      "method": "permit2",
+      "paid": true,
+      "refused": "it answered 402 to the signed payment: {\"x402Version\":2,\"error\":\"settlement failed: Invalid parameters were provided to the RPC method.\\nDouble check you have provided the correct parameters.\\n\\nURL: https://bsc-rpc.publicnode.com\\nRequest body: {\\\"method\\\":\\\"eth_getTransactionReceipt\\\",\\\"params\\\":[\\\"0x9e8b50534aed263f41f9b2751e0cff01edbe0b36ef1e8c4c3e61ed74856c5577\\\"]}\\n\\nDetails: Archive requests require a personal token. Get one at: https://www.allnodes.com/publicnode\\nVersion: viem@2.55.11\",\"description\":\"Agripinaa grid agent: live status\",\"accepts\":[{\"scheme\":\"exact\",\"network\":\"eip155:56\",\"asset\":\"0x55d398326f99059fF7754852469; the transfer settled on chain regardless (0x9e8b50534aed263f41f9b2751e0cff01edbe0b36ef1e8c4c3e61ed74856c5577), found by reading the chain after the call",
+      "tx": "0x9e8b50534aed263f41f9b2751e0cff01edbe0b36ef1e8c4c3e61ed74856c5577",
+      "block": 121311269,
+      "approveTx": null,
+      "sponsored": false,
+      "subject": "grid status",
+      "evidence": "docs/evidence/2026-09-11-269703-183816.json",
+      "transcriptSha256": "346306c45e78a82ba5a422cc25001029640124a4a91a65cbeb592ed2595ee23c",
+      "deliverable": {
+        "x402Version": 2,
+        "error": "settlement failed: Invalid parameters were provided to the RPC method.\nDouble check you have provided the correct parameters.\n\nURL: https://bsc-rpc.publicnode.com\nRequest body: {\"method\":\"eth_getTransactionReceipt\",\"params\":[\"0x9e8b50534aed263f41f9b2751e0cff01edbe0b36ef1e8c4c3e61ed74856c5577\"]}\n\nDetails: Archive requests require a personal token. Get one at: https://www.allnodes.com/publicnode\nVersion: viem@2.55.11",
+        "description": "Agripinaa grid agent: live status",
+        "accepts": [
+          {
+            "scheme": "exact",
+            "network": "eip155:56",
+            "asset": "0x55d398326f99059fF775485246999027B3197955",
+            "payTo": "0xD6Db7AdE6ED34d1CF0836d7A1aac5ba3B860c82A",
+            "amount": "50000000000000000",
+            "maxTimeoutSeconds": 300,
+            "extra": {
+              "name": "Tether USD",
+              "version": "1",
+              "assetTransferMethod": "permit2-exact",
+              "spenderAddress": "0x7f922FB740E2036477346f559e5660fA38A2C9E5"
+            }
+          }
+        ]
+      },
+      "at": "2026-09-11T18:38:16.825Z",
+      "ms": 3071,
+      "delivered": false
+    },
+    {
+      "id": "269705:0x5bcd036d41e9bb3dfa15a7b0a418c3ec1257c5abb957b6f961d1e2bcfad9f998",
+      "tokenId": "269705",
+      "name": "Agripinaa Harvester",
+      "category": "yield-optimisation",
+      "rail": "x402",
+      "url": "https://continuous-locator-four-christine.trycloudflare.com/yield/status",
+      "payer": "0xd6d11Aa5046dc5C7BE8d63B9223b60D7AD94cBe9",
+      "payTo": "0x344eF980A827e9FF4086Ee95b22aeD0D95d11ac9",
+      "asset": "0x55d398326f99059fF775485246999027B3197955",
+      "amount": "50000000000000000",
+      "method": "permit2",
+      "paid": true,
+      "delivered": false,
+      "refused": "it answered 402 to the signed payment: {\"x402Version\":2,\"error\":\"settlement failed: Invalid parameters were provided to the RPC method.\\nDouble check you have provided the correct parameters.\\n\\nURL: https://bsc-rpc.publicnode.com\\nRequest body: {\\\"method\\\":\\\"eth_getTransactionReceipt\\\",\\\"params\\\":[\\\"0x5bcd036d41e9bb3dfa15a7b0a418c3ec1257c5abb957b6f961d1e2bcfad9f998\\\"]}\\n\\nDetails: Archive requests require a personal token. Get one at: https://www.allnodes.com/publicnode\\nVersion: viem@2.55.11\",\"description\":\"Agripinaa yield agent: live status\",\"accepts\":[{\"scheme\":\"exact\",\"network\":\"eip155:56\",\"asset\":\"0x55d398326f99059fF775485246",
+      "tx": "0x5bcd036d41e9bb3dfa15a7b0a418c3ec1257c5abb957b6f961d1e2bcfad9f998",
+      "block": 121311562,
+      "approveTx": "0x43c76710f68a5430844d9b4f5d532949a9198cef6e7545e9a8e5b3ed336235b5",
+      "sponsored": false,
+      "subject": "yield status",
+      "evidence": "docs/evidence/2026-09-11-269705-184025.json",
+      "transcriptSha256": "4f073e3f9d039c69dc7997dada83afb042a3dbadbb0e69530683753179ee4ced",
+      "deliverable": {
+        "x402Version": 2,
+        "error": "settlement failed: Invalid parameters were provided to the RPC method.\nDouble check you have provided the correct parameters.\n\nURL: https://bsc-rpc.publicnode.com\nRequest body: {\"method\":\"eth_getTransactionReceipt\",\"params\":[\"0x5bcd036d41e9bb3dfa15a7b0a418c3ec1257c5abb957b6f961d1e2bcfad9f998\"]}\n\nDetails: Archive requests require a personal token. Get one at: https://www.allnodes.com/publicnode\nVersion: viem@2.55.11",
+        "description": "Agripinaa yield agent: live status",
+        "accepts": [
+          {
+            "scheme": "exact",
+            "network": "eip155:56",
+            "asset": "0x55d398326f99059fF775485246999027B3197955",
+            "payTo": "0x344eF980A827e9FF4086Ee95b22aeD0D95d11ac9",
+            "amount": "50000000000000000",
+            "maxTimeoutSeconds": 300,
+            "extra": {
+              "name": "Tether USD",
+              "version": "1",
+              "assetTransferMethod": "permit2-exact",
+              "spenderAddress": "0x7f922FB740E2036477346f559e5660fA38A2C9E5"
+            }
+          }
+        ]
+      },
+      "at": "2026-09-11T18:40:25.277Z",
+      "ms": 12265
+    },
+    {
+      "id": "338253:0xb2942480c62b40d5ea0b5e5a8a0466f1f14683b27137dab2cdf94ea5c4842669",
+      "tokenId": "338253",
+      "name": "HyperliquidVault",
+      "category": "yield-optimisation",
+      "rail": "x402",
+      "url": "https://hyperliquidvault.space/x402",
+      "payer": "0xd6d11Aa5046dc5C7BE8d63B9223b60D7AD94cBe9",
+      "payTo": "0xA06Db692d7e28356f80199Ff77E22a0Ef02A3518",
+      "asset": "0xcE24439F2D9C6a2289F741120FE202248B666666",
+      "amount": "10000000000000000",
+      "method": "eip3009",
+      "paid": true,
+      "delivered": true,
+      "refused": null,
+      "tx": "0xb2942480c62b40d5ea0b5e5a8a0466f1f14683b27137dab2cdf94ea5c4842669",
+      "block": null,
+      "approveTx": null,
+      "sponsored": false,
+      "subject": "list_vaults",
+      "evidence": "docs/evidence/2026-09-11-338253-184444.json",
+      "transcriptSha256": "a53c0e0f9d10a8905c0193a84df2c0ef6a5902332dd3e1bb90480d18e4d0a52a",
+      "deliverable": {
+        "jsonrpc": "2.0",
+        "id": 1,
+        "result": {
+          "content": [
+            {
+              "type": "text",
+              "text": "{\"count\":20,\"include_closed\":false,\"limit\":20,\"relationship\":\"any\",\"sort_by\":\"tvl\",\"vaults\":[{\"apr\":\"0.060061485915019815\",\"create_time_millis\":1683243596849,\"is_closed\":false,\"leader\":\"0x677d831aef5328190852e24f13c46cac05f984e7\",\"name\":\"Hyperliquidity Provider (HLP)\",\"relationship\":\"parent\",\"tvl\":\"186408576.0593129992\",\"vault_address\":\"0xdfc24b077bc1425ad1dea75bcb6f8158e10df303\"},{\"apr\":\"0.023287176976395024\",\"create_time_millis\":1766221022171,\"is_closed\":false,\"leader\":\"0xdfc24b077bc1425ad1dea75bcb6f8158e10df303\",\"name\":\"HLP Strategy X\",\"relationship\":\"child\",\"tvl\":\"100212760.8570500016\",\"vault_address\":\"0x469f690213c467c39a23efacfd2816896009d7d8\"},{\"apr\":\"0.091878388\",\"create_time_millis\":1745158533339,\"is_closed\":false,\"leader\":\"0xdfc24b077bc1425ad1dea75bcb6f8158e10df303\",\"name\":\"HLP Liquidator 2\",\"relationship\":\"child\",\"tvl\":\"30000000.0\",\"vault_address\":\"0xb0a55f13d22f66e6d495ac98113841b2326e9540\"},{\"apr\":\"0.8862508431226807\",\"create_time_millis\":1737611331869,\"is_closed\":false,\"leader\":\"0x2b804617c6f63c040377e95bb276811747006f4b\",\"name\":\"[ Systemic Strategies ] L/S Grids\",\"relationship\":\"normal\",\"tvl\":\"15944913.9055640008\",\"vault_address\":\"0x07fd993f0fa3a185f7207adccd29f7a87404689d\"},{\"apr\":\"7.520035633342019\",\"create_time_millis\":1765303910503,\"is_closed\":false,\"leader\":\"0xf4f7cebbd2c7b6dee34ab29fa55a116eff25239f\",\"name\":\"drkmttr\",\"relationship\":\"normal\",\"tvl\":\"12089779.6642780006\",\"vault_address\":\"0xc179e03922afe8fa9533d3f896338b9fb87ce0c8\"},{\"apr\":\"0.5184950544502787\",\"create_time_millis\":1720440504732,\"is_closed\":false,\"leader\":\"0x7789450871fb1315fa982ccb8039cb34e8f2f60d\",\"name\":\"Growi HF\",\"relationship\":\"normal\",\"tvl\":\"11295701.8804899994\",\"vault_address\":\"0x1e37a337ed460039d1b15bd3bc489de789768d5e\"},{\"apr\":\"0.018294992117459687\",\"create_time_millis\":1756505842629,\"is_closed\":false,\"leader\":\"0x2b804617c6f63c040377e95bb276811747006f4b\",\"name\":\"[ Systemic Strategies ] ♾️ HyperGrowth ♾️\",\"relationship\":\"normal\",\"tvl\":\"9388643.4019060005\",\"vault_address\":\"0xd6e56265890b76413d1d527eb9b75e334c0c5b42\"},{\"apr\":\"0.6134266476289743\",\"create_time_millis\":1781705968608,\"is_closed\":false,\"leader\":\"0xfb9c70230c93856c2429384f875d9a896d33d388\",\"name\":\"DOUBLETOP Vault\",\"relationship\":\"normal\",\"tvl\":\"4905347.4583069999\",\"vault_address\":\"0x53f8f390fd4f70941c5d160a964f6893c8dbceff\"},{\"apr\":\"10.877858288037723\",\"create_time_millis\":1771339341792,\"is_closed\":false,\"leader\":\"0xf5f569a7006860e6e17c92ba9d5959090acf0336\",\"name\":\"BredoStrategy\",\"relationship\":\"normal\",\"tvl\":\"3432016.4299619999\",\"vault_address\":\"0x654016a8c9fcf0c4cb7ed6078aba21f7f399f7b7\"},{\"apr\":\"0.15277925039565318\",\"create_time_millis\":1683243598416,\"is_closed\":false,\"leader\":\"0xdfc24b077bc1425ad1dea75bcb6f8158e10df303\",\"name\":\"HLP Strategy A\",\"relationship\":\"child\",\"tvl\":\"3139231.8129830002\",\"vault_address\":\"0x010461c14e146ac35fe42271bdc1134ee31c703a\"},{\"apr\":\"-0.038707297778623\",\"create_time_millis\":1683243600725,\"is_closed\":false,\"leader\":\"0xdfc24b077bc1425ad1dea75bcb6f8158e10df303\",\"name\":\"HLP Strategy B\",\"relationship\":\"child\",\"tvl\":\"3013949.686679\",\"vault_address\":\"0x31ca8395cf837de08b24da3f660e77761dfb974b\"},{\"apr\":\"2.6083298918265676\",\"create_time_millis\":1744227338023,\"is_closed\":false,\"leader\":\"0xa380444a9299df2a15bddf949dd493bb6d30d939\",\"name\":\"Long HYPE \\u0026 BTC | Short Garbage\",\"relationship\":\"normal\",\"tvl\":\"2607271.2791280001\",\"vault_address\":\"0xac26cf5f3c46b5e102048c65b977d2551b72a9c7\"},{\"apr\":\"0.09110976153787022\",\"create_time_millis\":1757706873152,\"is_closed\":false,\"leader\":\"0x3d32e286bb737ba348e28823863f02308768cfec\",\"name\":\"FC Genesis - Quantum\",\"relationship\":\"normal\",\"tvl\":\"2175004.6089079999\",\"vault_address\":\"0xa6a34f0bf2ccea9a1ddf9e9a973f17c498dc5e40\"},{\"apr\":\"-0.20175798428242778\",\"create_time_millis\":1759368120214,\"is_closed\":false,\"leader\":\"0x1fa1b4c4cda61b3c1ce805ae82e64a90d8821d08\",\"name\":\"Bitcoin Moving Average Long/Short\",\"relationship\":\"normal\",\"tvl\":\"2072264.904841\",\"vault_address\":\"0xb1505ad1a4c7755e0eb236aa2f4327bfc3474768\"},{\"apr\":\"12.656585077189082\",\"create_time_millis\":1776458197928,\"is_closed\":false,\"leader\":\"0x83046ec02c58df0448e0f4219413c0a16e6d42b9\",\"name\":\"Enjoyooor V3\",\"relationship\":\"normal\",\"tvl\":\"1948144.195108\",\"vault_address\":\"0x7178cc2d79160d524858c843e350ed8207de0854\"},{\"apr\":\"-0.14933169291316997\",\"create_time_millis\":1734930727188,\"is_closed\":false,\"leader\":\"0x76184c92c5e17122a496fe1799adc77f4139c96e\",\"name\":\"Hyperrr\",\"relationship\":\"normal\",\"tvl\":\"1836782.0029279999\",\"vault_address\":\"0xca230e816bdb34a46960c2f978a30a563d1ae9e0\"},{\"apr\":\"-0.11866437666326267\",\"create_time_millis\":1765765752661,\"is_closed\":false,\"leader\":\"0xf292b42e6167e0d591449ebd67d2e989a3479edf\",\"name\":\"Orbit Value Strategies\",\"relationship\":\"normal\",\"tvl\":\"1609789.8666449999\",\"vault_address\":\"0x115849ce84370f25cadcf0d348510d73837e1aa5\"},{\"apr\":\"0.5742654095380175\",\"create_time_millis\":1770019526140,\"is_closed\":false,\"leader\":\"0xcbdf15e12fc3b8e8fc8bacf577c4d1071cf2b4b3\",\"name\":\"AIQuantPulse\",\"relationship\":\"normal\",\"tvl\":\"1452120.0150580001\",\"vault_address\":\"0x8231fdf9997c003a267374b45fb25c0455aa1dcb\"},{\"apr\":\"-0.04576985671793996\",\"create_time_millis\":1736715289832,\"is_closed\":false,\"leader\":\"0x97ee7d16c1aebdfbfa7a9f983ac5a0ec56e63b2e\",\"name\":\"Martyrbit\",\"relationship\":\"normal\",\"tvl\":\"1385146.225085\",\"vault_address\":\"0x27d33e77c8e6335089f56e399bf706ae9ad402b9\"},{\"apr\":\"1.7910247075511867\",\"create_time_millis\":1767799704593,\"is_closed\":false,\"leader\":\"0x970ed103da353023dc6726c04f183b38ce35943c\",\"name\":\"Black Ops\",\"relationship\":\"normal\",\"tvl\":\"1369120.690097\",\"vault_address\":\"0x49a648936441b22f28f069d3c088928682b277ae\"}]}"
+            }
+          ],
+          "structuredContent": {
+            "count": 20,
+            "include_closed": false,
+            "limit": 20,
+            "relationship": "any",
+            "sort_by": "tvl",
+            "vaults": [
+              {
+                "apr": "0.060061485915019815",
+                "create_time_millis": 1683243596849,
+                "is_closed": false,
+                "leader": "0x677d831aef5328190852e24f13c46cac05f984e7",
+                "name": "Hyperliquidity Provider (HLP)",
+                "relationship": "parent",
+                "tvl": "186408576.0593129992",
+                "vault_address": "0xdfc24b077bc1425ad1dea75bcb6f8158e10df303"
+              },
+              {
+                "apr": "0.023287176976395024",
+                "create_time_millis": 1766221022171,
+                "is_closed": false,
+                "leader": "0xdfc24b077bc1425ad1dea75bcb6f8158e10df303",
+                "name": "HLP Strategy X",
+                "relationship": "child",
+                "tvl": "100212760.8570500016",
+                "vault_address": "0x469f690213c467c39a23efacfd2816896009d7d8"
+              },
+              {
+                "apr": "0.091878388",
+                "create_time_millis": 1745158533339,
+                "is_closed": false,
+                "leader": "0xdfc24b077bc1425ad1dea75bcb6f8158e10df303",
+                "name": "HLP Liquidator 2",
+                "relationship": "child",
+                "tvl": "30000000.0",
+                "vault_address": "0xb0a55f13d22f66e6d495ac98113841b2326e9540"
+              },
+              {
+                "apr": "0.8862508431226807",
+                "create_time_millis": 1737611331869,
+                "is_closed": false,
+                "leader": "0x2b804617c6f63c040377e95bb276811747006f4b",
+                "name": "[ Systemic Strategies ] L/S Grids",
+                "relationship": "normal",
+                "tvl": "15944913.9055640008",
+                "vault_address": "0x07fd993f0fa3a185f7207adccd29f7a87404689d"
+              },
+              {
+                "apr": "7.520035633342019",
+                "create_time_millis": 1765303910503,
+                "is_closed": false,
+                "leader": "0xf4f7cebbd2c7b6dee34ab29fa55a116eff25239f",
+                "name": "drkmttr",
+                "relationship": "normal",
+                "tvl": "12089779.6642780006",
+                "vault_address": "0xc179e03922afe8fa9533d3f896338b9fb87ce0c8"
+              },
+              {
+                "apr": "0.5184950544502787",
+                "create_time_millis": 1720440504732,
+                "is_closed": false,
+                "leader": "0x7789450871fb1315fa982ccb8039cb34e8f2f60d",
+                "name": "Growi HF",
+                "relationship": "normal",
+                "tvl": "11295701.8804899994",
+                "vault_address": "0x1e37a337ed460039d1b15bd3bc489de789768d5e"
+              },
+              {
+                "apr": "0.018294992117459687",
+                "create_time_millis": 1756505842629,
+                "is_closed": false,
+                "leader": "0x2b804617c6f63c040377e95bb276811747006f4b",
+                "name": "[ Systemic Strategies ] ♾️ HyperGrowth ♾️",
+                "relationship": "normal",
+                "tvl": "9388643.4019060005",
+                "vault_address": "0xd6e56265890b76413d1d527eb9b75e334c0c5b42"
+              },
+              {
+                "apr": "0.6134266476289743",
+                "create_time_millis": 1781705968608,
+                "is_closed": false,
+                "leader": "0xfb9c70230c93856c2429384f875d9a896d33d388",
+                "name": "DOUBLETOP Vault",
+                "relationship": "normal",
+                "tvl": "4905347.4583069999",
+                "vault_address": "0x53f8f390fd4f70941c5d160a964f6893c8dbceff"
+              },
+              {
+                "apr": "10.877858288037723",
+                "create_time_millis": 1771339341792,
+                "is_closed": false,
+                "leader": "0xf5f569a7006860e6e17c92ba9d5959090acf0336",
+                "name": "BredoStrategy",
+                "relationship": "normal",
+                "tvl": "3432016.4299619999",
+                "vault_address": "0x654016a8c9fcf0c4cb7ed6078aba21f7f399f7b7"
+              },
+              {
+                "apr": "0.15277925039565318",
+                "create_time_millis": 1683243598416,
+                "is_closed": false,
+                "leader": "0xdfc24b077bc1425ad1dea75bcb6f8158e10df303",
+                "name": "HLP Strategy A",
+                "relationship": "child",
+                "tvl": "3139231.8129830002",
+                "vault_address": "0x010461c14e146ac35fe42271bdc1134ee31c703a"
+              },
+              {
+                "apr": "-0.038707297778623",
+                "create_time_millis": 1683243600725,
+                "is_closed": false,
+                "leader": "0xdfc24b077bc1425ad1dea75bcb6f8158e10df303",
+                "name": "HLP Strategy B",
+                "relationship": "child",
+                "tvl": "3013949.686679",
+                "vault_address": "0x31ca8395cf837de08b24da3f660e77761dfb974b"
+              },
+              {
+                "apr": "2.6083298918265676",
+                "create_time_millis": 1744227338023,
+                "is_closed": false,
+                "leader": "0xa380444a9299df2a15bddf949dd493bb6d30d939",
+                "name": "Long HYPE & BTC | Short Garbage",
+                "relationship": "normal",
+                "tvl": "2607271.2791280001",
+                "vault_address": "0xac26cf5f3c46b5e102048c65b977d2551b72a9c7"
+              },
+              {
+                "apr": "0.09110976153787022",
+                "create_time_millis": 1757706873152,
+                "is_closed": false,
+                "leader": "0x3d32e286bb737ba348e28823863f02308768cfec",
+                "name": "FC Genesis - Quantum",
+                "relationship": "normal",
+                "tvl": "2175004.6089079999",
+                "vault_address": "0xa6a34f0bf2ccea9a1ddf9e9a973f17c498dc5e40"
+              },
+              {
+                "apr": "-0.20175798428242778",
+                "create_time_millis": 1759368120214,
+                "is_closed": false,
+                "leader": "0x1fa1b4c4cda61b3c1ce805ae82e64a90d8821d08",
+                "name": "Bitcoin Moving Average Long/Short",
+                "relationship": "normal",
+                "tvl": "2072264.904841",
+                "vault_address": "0xb1505ad1a4c7755e0eb236aa2f4327bfc3474768"
+              },
+              {
+                "apr": "12.656585077189082",
+                "create_time_millis": 1776458197928,
+                "is_closed": false,
+                "leader": "0x83046ec02c58df0448e0f4219413c0a16e6d42b9",
+                "name": "Enjoyooor V3",
+                "relationship": "normal",
+                "tvl": "1948144.195108",
+                "vault_address": "0x7178cc2d79160d524858c843e350ed8207de0854"
+              },
+              {
+                "apr": "-0.14933169291316997",
+                "create_time_millis": 1734930727188,
+                "is_closed": false,
+                "leader": "0x76184c92c5e17122a496fe1799adc77f4139c96e",
+                "name": "Hyperrr",
+                "relationship": "normal",
+                "tvl": "1836782.0029279999",
+                "vault_address": "0xca230e816bdb34a46960c2f978a30a563d1ae9e0"
+              },
+              {
+                "apr": "-0.11866437666326267",
+                "create_time_millis": 1765765752661,
+                "is_closed": false,
+                "leader": "0xf292b42e6167e0d591449ebd67d2e989a3479edf",
+                "name": "Orbit Value Strategies",
+                "relationship": "normal",
+                "tvl": "1609789.8666449999",
+                "vault_address": "0x115849ce84370f25cadcf0d348510d73837e1aa5"
+              },
+              {
+                "apr": "0.5742654095380175",
+                "create_time_millis": 1770019526140,
+                "is_closed": false,
+                "leader": "0xcbdf15e12fc3b8e8fc8bacf577c4d1071cf2b4b3",
+                "name": "AIQuantPulse",
+                "relationship": "normal",
+                "tvl": "1452120.0150580001",
+                "vault_address": "0x8231fdf9997c003a267374b45fb25c0455aa1dcb"
+              },
+              {
+                "apr": "-0.04576985671793996",
+                "create_time_millis": 1736715289832,
+                "is_closed": false,
+                "leader": "0x97ee7d16c1aebdfbfa7a9f983ac5a0ec56e63b2e",
+                "name": "Martyrbit",
+                "relationship": "normal",
+                "tvl": "1385146.225085",
+                "vault_address": "0x27d33e77c8e6335089f56e399bf706ae9ad402b9"
+              },
+              {
+                "apr": "1.7910247075511867",
+                "create_time_millis": 1767799704593,
+                "is_closed": false,
+                "leader": "0x970ed103da353023dc6726c04f183b38ce35943c",
+                "name": "Black Ops",
+                "relationship": "normal",
+                "tvl": "1369120.690097",
+                "vault_address": "0x49a648936441b22f28f069d3c088928682b277ae"
+              }
+            ]
+          }
+        }
+      },
+      "at": "2026-09-11T18:44:44.767Z",
+      "ms": 7479
+    },
+    {
+      "id": "338477:2026-09-11T18:46:12.429Z",
+      "tokenId": "338477",
+      "name": "PancakeSwap Grid Trader",
+      "category": "grid-trading",
+      "rail": "x402",
+      "url": "https://hallmark-agents.vercel.app/x402/grid/report",
+      "payer": "0xd6d11Aa5046dc5C7BE8d63B9223b60D7AD94cBe9",
+      "payTo": "0x38c6Fc4a5525B37f9545423A7132157f69ce08dA",
+      "asset": "0x55d398326f99059fF775485246999027B3197955",
+      "amount": "250000000000000000",
+      "method": "permit2",
+      "paid": false,
+      "delivered": false,
+      "refused": "it answered 402 to the signed payment: Payment not accepted: No x402 facilitator is configured for this deployment, so the payment cannot be verified or settled. Set X402_FACILITATOR_URL to a facilitator that serves /verify and /settle for this network.",
+      "tx": null,
+      "block": null,
+      "approveTx": "0xdb5d58dde135a3751cade5c60fb903362012d7bb9f849aab06c1c234db54d79a",
+      "sponsored": false,
+      "subject": "priced grid report with a QuoterV2 simulation of the next order",
+      "evidence": "docs/evidence/2026-09-11-338477-184612.json",
+      "transcriptSha256": "2b37244a818ce6facd39309d31a653ddc8ccfd7f727669e8cfdf8343d434be18",
+      "deliverable": {},
+      "at": "2026-09-11T18:46:12.429Z",
+      "ms": 53507
+    }
+  ]
+}

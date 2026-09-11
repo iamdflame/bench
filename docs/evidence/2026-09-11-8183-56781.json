@@ -1,0 +1,104 @@
+{
+  "target": {
+    "tokenId": "269224",
+    "who": "ChainHelix gridtrader",
+    "category": "grid-trading",
+    "a2a": "https://agents.chainhelix.io/gridtrader/",
+    "spec": {
+      "price": 716,
+      "budgetUsd": 100,
+      "levels": 5,
+      "spanPct": 2
+    },
+    "deliverables": "A symmetric buy/sell grid ladder for the mark price and budget given, as JSON, with each level's side, price and USD size",
+    "standards": "Deterministic arithmetic, equal USD size per level, answered as sent"
+  },
+  "provider": "0xB8143345687aA5A527f4f9568D508EBbC612d06D",
+  "negotiation": {
+    "jsonrpc": "2.0",
+    "id": 1,
+    "result": {
+      "kind": "message",
+      "role": "agent",
+      "messageId": "95175a5c-e451-42c2-bcb8-93dde0098c44",
+      "parts": [
+        {
+          "kind": "data",
+          "data": {
+            "request": {
+              "task_description": "{\"price\":716,\"budgetUsd\":100,\"levels\":5,\"spanPct\":2}",
+              "terms": {
+                "deliverables": "A symmetric buy/sell grid ladder for the mark price and budget given, as JSON, with each level's side, price and USD size",
+                "quality_standards": "Deterministic arithmetic, equal USD size per level, answered as sent",
+                "evaluation_required": true,
+                "evaluator_type": "uma_oov3"
+              }
+            },
+            "request_hash": "0xbb7168b4612dc511a89bcd03b33e88c7d811fbbf6d065f758372ab31d8ae8280",
+            "response": {
+              "accepted": true,
+              "terms": {
+                "deliverables": "A symmetric buy/sell grid ladder for the mark price and budget given, as JSON, with each level's side, price and USD size",
+                "quality_standards": "Deterministic arithmetic, equal USD size per level, answered as sent",
+                "evaluation_required": true,
+                "evaluator_type": "uma_oov3",
+                "price": "500000000000000000",
+                "currency": "0xcE24439F2D9C6a2289F741120FE202248B666666"
+              },
+              "estimated_completion_seconds": 600,
+              "quote_expires_at": 1789165657,
+              "negotiated_at": 1789164757
+            },
+            "response_hash": "0x9a7aaae3dcac697293d1a0c72fd1c077eacce01c95b462c921c7295b16746f4c",
+            "negotiation_hash": "0x6dcb783361ed759c8677004edf2d7e48ff337e6fcbfb14ce1ef987d0582acdcf",
+            "provider_sig": "0x75f1683677fbba4f7df453469991061223a5955f9363d8c66648893f4dd7e115761914d8e0f2e98fea9e2bda3b02cb0239759350032bb0701a357083cd349ab11b",
+            "chain_id": 56,
+            "verifying_contract": "0xea4daa3100a767e86fded867729ae7446476eba6"
+          }
+        }
+      ],
+      "contextId": "33bcdfe0-bd00-42ff-bbe5-a238c3beba4f",
+      "taskId": "925c9914-c5bd-449e-a560-96251363d089"
+    }
+  },
+  "hire": {
+    "jobId": "56781",
+    "tx": "0x863193dba193ec62c63b3b473fee7d009372f2d75fd7880537515cb75decf66b",
+    "expiredAt": 1789771358
+  },
+  "notifyFunded": {
+    "jsonrpc": "2.0",
+    "id": 1,
+    "result": {
+      "kind": "message",
+      "role": "agent",
+      "messageId": "044d02fb-9e61-42cf-86a9-2356f8e3ca37",
+      "parts": [
+        {
+          "kind": "data",
+          "data": {
+            "status": "rejected",
+            "job_id": 56781,
+            "reason": "no signed quote anchored in job description"
+          }
+        }
+      ],
+      "contextId": "1d2ff580-d0e2-486d-8cba-f173889ac950",
+      "taskId": "3a9b6c64-dcc3-4502-abd7-0a9f31b5315a"
+    }
+  },
+  "jobAtHire": {
+    "id": "56781",
+    "client": "0x54c06cC2623aAA2Dcc38B17fA07aD2e99b363C90",
+    "provider": "0xB8143345687aA5A527f4f9568D508EBbC612d06D",
+    "evaluator": "0x51895229E12F9876011789B04f8698af06cCD6DA",
+    "description": "{\"request\":{\"task_description\":\"{\\\"price\\\":716,\\\"budgetUsd\\\":100,\\\"levels\\\":5,\\\"spanPct\\\":2}\",\"terms\":{\"deliverables\":\"A symmetric buy/sell grid ladder for the mark price and budget given, as JSON, with each level's side, price and USD size\",\"quality_standards\":\"Deterministic arithmetic, equal USD size per level, answered as sent\",\"evaluation_required\":true,\"evaluator_type\":\"uma_oov3\"}},\"request_hash\":\"0xbb7168b4612dc511a89bcd03b33e88c7d811fbbf6d065f758372ab31d8ae8280\",\"response\":{\"accepted\":true,\"terms\":{\"deliverables\":\"A symmetric buy/sell grid ladder for the mark price and budget given, as JSON, with each level's side, price and USD size\",\"quality_standards\":\"Deterministic arithmetic, equal USD size per level, answered as sent\",\"evaluation_required\":true,\"evaluator_type\":\"uma_oov3\",\"price\":\"500000000000000000\",\"currency\":\"0xcE24439F2D9C6a2289F741120FE202248B666666\"},\"estimated_completion_seconds\":600,\"quote_expires_at\":1789165657,\"negotiated_at\":1789164757},\"response_hash\":\"0x9a7aaae3dcac697293d1a0c72fd1c077eacce01c95b462c921c7295b16746f4c\",\"negotiation_hash\":\"0x6dcb783361ed759c8677004edf2d7e48ff337e6fcbfb14ce1ef987d0582acdcf\",\"provider_sig\":\"0x75f1683677fbba4f7df453469991061223a5955f9363d8c66648893f4dd7e115761914d8e0f2e98fea9e2bda3b02cb0239759350032bb0701a357083cd349ab11b\",\"chain_id\":56,\"verifying_contract\":\"0xea4daa3100a767e86fded867729ae7446476eba6\"}",
+    "budget": "500000000000000000",
+    "expiredAt": "1789771358",
+    "status": 1,
+    "hook": "0x51895229E12F9876011789B04f8698af06cCD6DA",
+    "submittedAt": "0",
+    "deliverable": "0x0000000000000000000000000000000000000000000000000000000000000000",
+    "statusName": "FUNDED"
+  }
+}

@@ -6,6 +6,8 @@ import CategoryMark from "@/components/v2/marks/CategoryMark";
 import { CATEGORIES, CATEGORY_LABEL, type Category } from "@/lib/config";
 import { listings, censusAge, type Listing } from "@/lib/market/listing";
 import { hireCounts } from "@/lib/market/hires";
+import { hirePath } from "@/lib/market/hire-law";
+import { isOurs } from "@/lib/market/judge";
 import { live } from "@/lib/data/live";
 
 export const metadata: Metadata = {
@@ -45,6 +47,7 @@ const PAGE = 24;
 
 interface Query {
   category: Category | null;
+  hireable: boolean;
   live: boolean;
   priced: boolean;
   reviewed: boolean;
@@ -57,6 +60,7 @@ function href(query: Query, patch: Partial<Query>): string {
   const next = { ...query, ...patch };
   const p = new URLSearchParams();
   if (next.category) p.set("category", next.category);
+  if (next.hireable) p.set("hireable", "1");
   if (next.live) p.set("live", "1");
   if (next.priced) p.set("priced", "1");
   if (next.reviewed) p.set("reviewed", "1");
@@ -71,6 +75,7 @@ function apply(all: Listing[], q: Query): Listing[] {
   const needle = q.q.trim().toLowerCase();
   const out = all.filter((l) => {
     if (q.category && l.category !== q.category) return false;
+    if (q.hireable && !hirePath(l).ok) return false;
     if (q.live && l.liveness !== "live") return false;
     if (q.priced && !(l.declaresPayment || l.probe?.status === 402)) return false;
     if (q.reviewed && l.reviews < 1) return false;
@@ -79,6 +84,12 @@ function apply(all: Listing[], q: Query): Listing[] {
   });
   if (q.sort === "reviews") out.sort((a, b) => b.reviews - a.reviews || b.readiness - a.readiness);
   else if (q.sort === "name") out.sort((a, b) => a.name.localeCompare(b.name));
+  /*
+    Our own agents never rank above an agent we do not run that scored the
+    same. The readiness figure already ignores who operates an agent; this is
+    the tie-break that keeps the shelf honest when it is level.
+  */
+  else out.sort((a, b) => b.readiness - a.readiness || Number(isOurs(a)) - Number(isOurs(b)) || b.confidence - a.confidence);
   return out;
 }
 
@@ -93,6 +104,7 @@ export default async function AgentsPage({
 
   const query: Query = {
     category: CATEGORIES.includes(one("category") as Category) ? (one("category") as Category) : null,
+    hireable: one("hireable") === "1",
     live: one("live") === "1",
     priced: one("priced") === "1",
     reviewed: one("reviewed") === "1",
@@ -115,13 +127,14 @@ export default async function AgentsPage({
     liveByCat: Object.fromEntries(
       CATEGORIES.map((c) => [c, all.filter((l) => l.category === c && l.liveness === "live").length]),
     ) as Record<Category, number>,
+    hireable: all.filter((l) => hirePath(l).ok).length,
     live: all.filter((l) => l.liveness === "live").length,
     priced: all.filter((l) => l.declaresPayment || l.probe?.status === 402).length,
     reviewed: all.filter((l) => l.reviews > 0).length,
   };
 
   const filtered =
-    Boolean(query.category) || query.live || query.priced || query.reviewed || query.q.trim() !== "";
+    Boolean(query.category) || query.hireable || query.live || query.priced || query.reviewed || query.q.trim() !== "";
 
   return (
     <AppShell>
@@ -200,6 +213,14 @@ export default async function AgentsPage({
           </div>
 
           <div className="m-mkt-checks">
+            <Link
+              className={`m-mkt-check${query.hireable ? " m-mkt-check--on" : ""}`}
+              href={href(query, { hireable: !query.hireable, n: PAGE })}
+              title="It answered us recently and there is a way to pay it that we can settle"
+            >
+              <span className="m-mkt-box" aria-hidden="true">{query.hireable ? "✓" : ""}</span>
+              Can be hired today <span className="m-note">({counts.hireable})</span>
+            </Link>
             <Link
               className={`m-mkt-check${query.live ? " m-mkt-check--on" : ""}`}
               href={href(query, { live: !query.live, n: PAGE })}

@@ -1,0 +1,13 @@
+{
+  "jobId": "56782",
+  "status": "SUBMITTED",
+  "url": "https://agents.chainhelix.io/gridtrader/erc8183/job/56782/response",
+  "httpStatus": 200,
+  "bytes": 1434,
+  "sha256": "0x2eb336ba753c205dfc7b5cb8c72d2cb33030ef7f77483ae852e0af35bf913f07",
+  "keccak256": "0x3910327028b9331a17247c1dfcf61568c8441b884bfb7f1d061cbf315fe2b5c8",
+  "onChain": "0x3910327028b9331a17247c1dfcf61568c8441b884bfb7f1d061cbf315fe2b5c8",
+  "hashMatches": "keccak256",
+  "body": "{\"chain_id\":56,\"contracts\":{\"commerce\":\"0xEa4DAa3100A767e86FDed867729ae7446476EBA6\",\"policy\":\"0x9C01845705b3078Aa2e8cfF7520a6376FD766dE5\",\"router\":\"0x51895229E12F9876011789B04f8698af06cCD6DA\"},\"job_id\":56782,\"metadata\":{\"built_with\":\"https://github.com/bnb-chain/bnbagent-studio\",\"generator\":\"gridtrader\",\"job_id\":56782},\"response\":{\"content\":\"{\\\"category\\\":\\\"grid\\\",\\\"ok\\\":true,\\\"mark\\\":716,\\\"spanPct\\\":2,\\\"levelsPerSide\\\":5,\\\"perLevelUsd\\\":10,\\\"budgetUsd\\\":100,\\\"allocatedUsd\\\":100,\\\"buys\\\":[{\\\"side\\\":\\\"buy\\\",\\\"price\\\":713.136,\\\"sizeUsd\\\":10,\\\"amount\\\":0.01402257},{\\\"side\\\":\\\"buy\\\",\\\"price\\\":710.272,\\\"sizeUsd\\\":10,\\\"amount\\\":0.01407911},{\\\"side\\\":\\\"buy\\\",\\\"price\\\":707.408,\\\"sizeUsd\\\":10,\\\"amount\\\":0.01413611},{\\\"side\\\":\\\"buy\\\",\\\"price\\\":704.544,\\\"sizeUsd\\\":10,\\\"amount\\\":0.01419358},{\\\"side\\\":\\\"buy\\\",\\\"price\\\":701.68,\\\"sizeUsd\\\":10,\\\"amount\\\":0.01425151}],\\\"sells\\\":[{\\\"side\\\":\\\"sell\\\",\\\"price\\\":718.864,\\\"sizeUsd\\\":10,\\\"amount\\\":0.01391084},{\\\"side\\\":\\\"sell\\\",\\\"price\\\":721.728,\\\"sizeUsd\\\":10,\\\"amount\\\":0.01385564},{\\\"side\\\":\\\"sell\\\",\\\"price\\\":724.592,\\\"sizeUsd\\\":10,\\\"amount\\\":0.01380087},{\\\"side\\\":\\\"sell\\\",\\\"price\\\":727.456,\\\"sizeUsd\\\":10,\\\"amount\\\":0.01374654},{\\\"side\\\":\\\"sell\\\",\\\"price\\\":730.32,\\\"sizeUsd\\\":10,\\\"amount\\\":0.01369263}],\\\"wallsSupplied\\\":0,\\\"levelsOnWalls\\\":0,\\\"note\\\":\\\"no wall map supplied; levels are spacing-only; supply walls[] for placement-aware grids\\\"}\",\"content_type\":\"text/plain\"},\"version\":1}",
+  "at": "2026-09-11T22:20:09.972Z"
+}

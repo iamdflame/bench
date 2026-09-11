@@ -1,0 +1,321 @@
+{
+  "url": "https://hyperliquidvault.space/x402",
+  "paid": true,
+  "delivered": true,
+  "refused": null,
+  "requirement": {
+    "x402Version": 2,
+    "raw": {
+      "scheme": "exact",
+      "network": "eip155:56",
+      "amount": "10000000000000000",
+      "asset": "0xcE24439F2D9C6a2289F741120FE202248B666666",
+      "payTo": "0xA06Db692d7e28356f80199Ff77E22a0Ef02A3518",
+      "maxTimeoutSeconds": 600,
+      "extra": {
+        "assetTransferMethod": "eip3009",
+        "decimals": 18,
+        "name": "United Stables",
+        "symbol": "U",
+        "version": "1"
+      }
+    },
+    "scheme": "exact",
+    "network": "eip155:56",
+    "chainId": 56,
+    "asset": "0xcE24439F2D9C6a2289F741120FE202248B666666",
+    "payTo": "0xA06Db692d7e28356f80199Ff77E22a0Ef02A3518",
+    "amount": "10000000000000000",
+    "maxTimeoutSeconds": 600,
+    "method": "eip3009",
+    "domain": {
+      "name": "United Stables",
+      "version": "1"
+    },
+    "spender": null,
+    "resource": {
+      "url": "https://hyperliquidvault.space/mcp",
+      "description": "Hyperliquid Vault Strategy Intelligence: discover Hyperliquid vaults and review a vault's key strategy metrics (TVL, APR, leader, followers, capacity, withdrawal availability, commission terms, deposit status) from the public Hyperliquid API. · MCP tool \"list_vaults\" · 0.01 U per call",
+      "mimeType": "application/json"
+    },
+    "header": "PAYMENT-SIGNATURE",
+    "dialect": "x402"
+  },
+  "payer": "0xd6d11Aa5046dc5C7BE8d63B9223b60D7AD94cBe9",
+  "approveTx": null,
+  "settlement": {
+    "tx": "0xb2942480c62b40d5ea0b5e5a8a0466f1f14683b27137dab2cdf94ea5c4842669",
+    "block": null,
+    "source": "payment-response header"
+  },
+  "deliverable": {
+    "jsonrpc": "2.0",
+    "id": 1,
+    "result": {
+      "content": [
+        {
+          "type": "text",
+          "text": "{\"count\":20,\"include_closed\":false,\"limit\":20,\"relationship\":\"any\",\"sort_by\":\"tvl\",\"vaults\":[{\"apr\":\"0.060061485915019815\",\"create_time_millis\":1683243596849,\"is_closed\":false,\"leader\":\"0x677d831aef5328190852e24f13c46cac05f984e7\",\"name\":\"Hyperliquidity Provider (HLP)\",\"relationship\":\"parent\",\"tvl\":\"186408576.0593129992\",\"vault_address\":\"0xdfc24b077bc1425ad1dea75bcb6f8158e10df303\"},{\"apr\":\"0.023287176976395024\",\"create_time_millis\":1766221022171,\"is_closed\":false,\"leader\":\"0xdfc24b077bc1425ad1dea75bcb6f8158e10df303\",\"name\":\"HLP Strategy X\",\"relationship\":\"child\",\"tvl\":\"100212760.8570500016\",\"vault_address\":\"0x469f690213c467c39a23efacfd2816896009d7d8\"},{\"apr\":\"0.091878388\",\"create_time_millis\":1745158533339,\"is_closed\":false,\"leader\":\"0xdfc24b077bc1425ad1dea75bcb6f8158e10df303\",\"name\":\"HLP Liquidator 2\",\"relationship\":\"child\",\"tvl\":\"30000000.0\",\"vault_address\":\"0xb0a55f13d22f66e6d495ac98113841b2326e9540\"},{\"apr\":\"0.8862508431226807\",\"create_time_millis\":1737611331869,\"is_closed\":false,\"leader\":\"0x2b804617c6f63c040377e95bb276811747006f4b\",\"name\":\"[ Systemic Strategies ] L/S Grids\",\"relationship\":\"normal\",\"tvl\":\"15944913.9055640008\",\"vault_address\":\"0x07fd993f0fa3a185f7207adccd29f7a87404689d\"},{\"apr\":\"7.520035633342019\",\"create_time_millis\":1765303910503,\"is_closed\":false,\"leader\":\"0xf4f7cebbd2c7b6dee34ab29fa55a116eff25239f\",\"name\":\"drkmttr\",\"relationship\":\"normal\",\"tvl\":\"12089779.6642780006\",\"vault_address\":\"0xc179e03922afe8fa9533d3f896338b9fb87ce0c8\"},{\"apr\":\"0.5184950544502787\",\"create_time_millis\":1720440504732,\"is_closed\":false,\"leader\":\"0x7789450871fb1315fa982ccb8039cb34e8f2f60d\",\"name\":\"Growi HF\",\"relationship\":\"normal\",\"tvl\":\"11295701.8804899994\",\"vault_address\":\"0x1e37a337ed460039d1b15bd3bc489de789768d5e\"},{\"apr\":\"0.018294992117459687\",\"create_time_millis\":1756505842629,\"is_closed\":false,\"leader\":\"0x2b804617c6f63c040377e95bb276811747006f4b\",\"name\":\"[ Systemic Strategies ] ♾️ HyperGrowth ♾️\",\"relationship\":\"normal\",\"tvl\":\"9388643.4019060005\",\"vault_address\":\"0xd6e56265890b76413d1d527eb9b75e334c0c5b42\"},{\"apr\":\"0.6134266476289743\",\"create_time_millis\":1781705968608,\"is_closed\":false,\"leader\":\"0xfb9c70230c93856c2429384f875d9a896d33d388\",\"name\":\"DOUBLETOP Vault\",\"relationship\":\"normal\",\"tvl\":\"4905347.4583069999\",\"vault_address\":\"0x53f8f390fd4f70941c5d160a964f6893c8dbceff\"},{\"apr\":\"10.877858288037723\",\"create_time_millis\":1771339341792,\"is_closed\":false,\"leader\":\"0xf5f569a7006860e6e17c92ba9d5959090acf0336\",\"name\":\"BredoStrategy\",\"relationship\":\"normal\",\"tvl\":\"3432016.4299619999\",\"vault_address\":\"0x654016a8c9fcf0c4cb7ed6078aba21f7f399f7b7\"},{\"apr\":\"0.15277925039565318\",\"create_time_millis\":1683243598416,\"is_closed\":false,\"leader\":\"0xdfc24b077bc1425ad1dea75bcb6f8158e10df303\",\"name\":\"HLP Strategy A\",\"relationship\":\"child\",\"tvl\":\"3139231.8129830002\",\"vault_address\":\"0x010461c14e146ac35fe42271bdc1134ee31c703a\"},{\"apr\":\"-0.038707297778623\",\"create_time_millis\":1683243600725,\"is_closed\":false,\"leader\":\"0xdfc24b077bc1425ad1dea75bcb6f8158e10df303\",\"name\":\"HLP Strategy B\",\"relationship\":\"child\",\"tvl\":\"3013949.686679\",\"vault_address\":\"0x31ca8395cf837de08b24da3f660e77761dfb974b\"},{\"apr\":\"2.6083298918265676\",\"create_time_millis\":1744227338023,\"is_closed\":false,\"leader\":\"0xa380444a9299df2a15bddf949dd493bb6d30d939\",\"name\":\"Long HYPE \\u0026 BTC | Short Garbage\",\"relationship\":\"normal\",\"tvl\":\"2607271.2791280001\",\"vault_address\":\"0xac26cf5f3c46b5e102048c65b977d2551b72a9c7\"},{\"apr\":\"0.09110976153787022\",\"create_time_millis\":1757706873152,\"is_closed\":false,\"leader\":\"0x3d32e286bb737ba348e28823863f02308768cfec\",\"name\":\"FC Genesis - Quantum\",\"relationship\":\"normal\",\"tvl\":\"2175004.6089079999\",\"vault_address\":\"0xa6a34f0bf2ccea9a1ddf9e9a973f17c498dc5e40\"},{\"apr\":\"-0.20175798428242778\",\"create_time_millis\":1759368120214,\"is_closed\":false,\"leader\":\"0x1fa1b4c4cda61b3c1ce805ae82e64a90d8821d08\",\"name\":\"Bitcoin Moving Average Long/Short\",\"relationship\":\"normal\",\"tvl\":\"2072264.904841\",\"vault_address\":\"0xb1505ad1a4c7755e0eb236aa2f4327bfc3474768\"},{\"apr\":\"12.656585077189082\",\"create_time_millis\":1776458197928,\"is_closed\":false,\"leader\":\"0x83046ec02c58df0448e0f4219413c0a16e6d42b9\",\"name\":\"Enjoyooor V3\",\"relationship\":\"normal\",\"tvl\":\"1948144.195108\",\"vault_address\":\"0x7178cc2d79160d524858c843e350ed8207de0854\"},{\"apr\":\"-0.14933169291316997\",\"create_time_millis\":1734930727188,\"is_closed\":false,\"leader\":\"0x76184c92c5e17122a496fe1799adc77f4139c96e\",\"name\":\"Hyperrr\",\"relationship\":\"normal\",\"tvl\":\"1836782.0029279999\",\"vault_address\":\"0xca230e816bdb34a46960c2f978a30a563d1ae9e0\"},{\"apr\":\"-0.11866437666326267\",\"create_time_millis\":1765765752661,\"is_closed\":false,\"leader\":\"0xf292b42e6167e0d591449ebd67d2e989a3479edf\",\"name\":\"Orbit Value Strategies\",\"relationship\":\"normal\",\"tvl\":\"1609789.8666449999\",\"vault_address\":\"0x115849ce84370f25cadcf0d348510d73837e1aa5\"},{\"apr\":\"0.5742654095380175\",\"create_time_millis\":1770019526140,\"is_closed\":false,\"leader\":\"0xcbdf15e12fc3b8e8fc8bacf577c4d1071cf2b4b3\",\"name\":\"AIQuantPulse\",\"relationship\":\"normal\",\"tvl\":\"1452120.0150580001\",\"vault_address\":\"0x8231fdf9997c003a267374b45fb25c0455aa1dcb\"},{\"apr\":\"-0.04576985671793996\",\"create_time_millis\":1736715289832,\"is_closed\":false,\"leader\":\"0x97ee7d16c1aebdfbfa7a9f983ac5a0ec56e63b2e\",\"name\":\"Martyrbit\",\"relationship\":\"normal\",\"tvl\":\"1385146.225085\",\"vault_address\":\"0x27d33e77c8e6335089f56e399bf706ae9ad402b9\"},{\"apr\":\"1.7910247075511867\",\"create_time_millis\":1767799704593,\"is_closed\":false,\"leader\":\"0x970ed103da353023dc6726c04f183b38ce35943c\",\"name\":\"Black Ops\",\"relationship\":\"normal\",\"tvl\":\"1369120.690097\",\"vault_address\":\"0x49a648936441b22f28f069d3c088928682b277ae\"}]}"
+        }
+      ],
+      "structuredContent": {
+        "count": 20,
+        "include_closed": false,
+        "limit": 20,
+        "relationship": "any",
+        "sort_by": "tvl",
+        "vaults": [
+          {
+            "apr": "0.060061485915019815",
+            "create_time_millis": 1683243596849,
+            "is_closed": false,
+            "leader": "0x677d831aef5328190852e24f13c46cac05f984e7",
+            "name": "Hyperliquidity Provider (HLP)",
+            "relationship": "parent",
+            "tvl": "186408576.0593129992",
+            "vault_address": "0xdfc24b077bc1425ad1dea75bcb6f8158e10df303"
+          },
+          {
+            "apr": "0.023287176976395024",
+            "create_time_millis": 1766221022171,
+            "is_closed": false,
+            "leader": "0xdfc24b077bc1425ad1dea75bcb6f8158e10df303",
+            "name": "HLP Strategy X",
+            "relationship": "child",
+            "tvl": "100212760.8570500016",
+            "vault_address": "0x469f690213c467c39a23efacfd2816896009d7d8"
+          },
+          {
+            "apr": "0.091878388",
+            "create_time_millis": 1745158533339,
+            "is_closed": false,
+            "leader": "0xdfc24b077bc1425ad1dea75bcb6f8158e10df303",
+            "name": "HLP Liquidator 2",
+            "relationship": "child",
+            "tvl": "30000000.0",
+            "vault_address": "0xb0a55f13d22f66e6d495ac98113841b2326e9540"
+          },
+          {
+            "apr": "0.8862508431226807",
+            "create_time_millis": 1737611331869,
+            "is_closed": false,
+            "leader": "0x2b804617c6f63c040377e95bb276811747006f4b",
+            "name": "[ Systemic Strategies ] L/S Grids",
+            "relationship": "normal",
+            "tvl": "15944913.9055640008",
+            "vault_address": "0x07fd993f0fa3a185f7207adccd29f7a87404689d"
+          },
+          {
+            "apr": "7.520035633342019",
+            "create_time_millis": 1765303910503,
+            "is_closed": false,
+            "leader": "0xf4f7cebbd2c7b6dee34ab29fa55a116eff25239f",
+            "name": "drkmttr",
+            "relationship": "normal",
+            "tvl": "12089779.6642780006",
+            "vault_address": "0xc179e03922afe8fa9533d3f896338b9fb87ce0c8"
+          },
+          {
+            "apr": "0.5184950544502787",
+            "create_time_millis": 1720440504732,
+            "is_closed": false,
+            "leader": "0x7789450871fb1315fa982ccb8039cb34e8f2f60d",
+            "name": "Growi HF",
+            "relationship": "normal",
+            "tvl": "11295701.8804899994",
+            "vault_address": "0x1e37a337ed460039d1b15bd3bc489de789768d5e"
+          },
+          {
+            "apr": "0.018294992117459687",
+            "create_time_millis": 1756505842629,
+            "is_closed": false,
+            "leader": "0x2b804617c6f63c040377e95bb276811747006f4b",
+            "name": "[ Systemic Strategies ] ♾️ HyperGrowth ♾️",
+            "relationship": "normal",
+            "tvl": "9388643.4019060005",
+            "vault_address": "0xd6e56265890b76413d1d527eb9b75e334c0c5b42"
+          },
+          {
+            "apr": "0.6134266476289743",
+            "create_time_millis": 1781705968608,
+            "is_closed": false,
+            "leader": "0xfb9c70230c93856c2429384f875d9a896d33d388",
+            "name": "DOUBLETOP Vault",
+            "relationship": "normal",
+            "tvl": "4905347.4583069999",
+            "vault_address": "0x53f8f390fd4f70941c5d160a964f6893c8dbceff"
+          },
+          {
+            "apr": "10.877858288037723",
+            "create_time_millis": 1771339341792,
+            "is_closed": false,
+            "leader": "0xf5f569a7006860e6e17c92ba9d5959090acf0336",
+            "name": "BredoStrategy",
+            "relationship": "normal",
+            "tvl": "3432016.4299619999",
+            "vault_address": "0x654016a8c9fcf0c4cb7ed6078aba21f7f399f7b7"
+          },
+          {
+            "apr": "0.15277925039565318",
+            "create_time_millis": 1683243598416,
+            "is_closed": false,
+            "leader": "0xdfc24b077bc1425ad1dea75bcb6f8158e10df303",
+            "name": "HLP Strategy A",
+            "relationship": "child",
+            "tvl": "3139231.8129830002",
+            "vault_address": "0x010461c14e146ac35fe42271bdc1134ee31c703a"
+          },
+          {
+            "apr": "-0.038707297778623",
+            "create_time_millis": 1683243600725,
+            "is_closed": false,
+            "leader": "0xdfc24b077bc1425ad1dea75bcb6f8158e10df303",
+            "name": "HLP Strategy B",
+            "relationship": "child",
+            "tvl": "3013949.686679",
+            "vault_address": "0x31ca8395cf837de08b24da3f660e77761dfb974b"
+          },
+          {
+            "apr": "2.6083298918265676",
+            "create_time_millis": 1744227338023,
+            "is_closed": false,
+            "leader": "0xa380444a9299df2a15bddf949dd493bb6d30d939",
+            "name": "Long HYPE & BTC | Short Garbage",
+            "relationship": "normal",
+            "tvl": "2607271.2791280001",
+            "vault_address": "0xac26cf5f3c46b5e102048c65b977d2551b72a9c7"
+          },
+          {
+            "apr": "0.09110976153787022",
+            "create_time_millis": 1757706873152,
+            "is_closed": false,
+            "leader": "0x3d32e286bb737ba348e28823863f02308768cfec",
+            "name": "FC Genesis - Quantum",
+            "relationship": "normal",
+            "tvl": "2175004.6089079999",
+            "vault_address": "0xa6a34f0bf2ccea9a1ddf9e9a973f17c498dc5e40"
+          },
+          {
+            "apr": "-0.20175798428242778",
+            "create_time_millis": 1759368120214,
+            "is_closed": false,
+            "leader": "0x1fa1b4c4cda61b3c1ce805ae82e64a90d8821d08",
+            "name": "Bitcoin Moving Average Long/Short",
+            "relationship": "normal",
+            "tvl": "2072264.904841",
+            "vault_address": "0xb1505ad1a4c7755e0eb236aa2f4327bfc3474768"
+          },
+          {
+            "apr": "12.656585077189082",
+            "create_time_millis": 1776458197928,
+            "is_closed": false,
+            "leader": "0x83046ec02c58df0448e0f4219413c0a16e6d42b9",
+            "name": "Enjoyooor V3",
+            "relationship": "normal",
+            "tvl": "1948144.195108",
+            "vault_address": "0x7178cc2d79160d524858c843e350ed8207de0854"
+          },
+          {
+            "apr": "-0.14933169291316997",
+            "create_time_millis": 1734930727188,
+            "is_closed": false,
+            "leader": "0x76184c92c5e17122a496fe1799adc77f4139c96e",
+            "name": "Hyperrr",
+            "relationship": "normal",
+            "tvl": "1836782.0029279999",
+            "vault_address": "0xca230e816bdb34a46960c2f978a30a563d1ae9e0"
+          },
+          {
+            "apr": "-0.11866437666326267",
+            "create_time_millis": 1765765752661,
+            "is_closed": false,
+            "leader": "0xf292b42e6167e0d591449ebd67d2e989a3479edf",
+            "name": "Orbit Value Strategies",
+            "relationship": "normal",
+            "tvl": "1609789.8666449999",
+            "vault_address": "0x115849ce84370f25cadcf0d348510d73837e1aa5"
+          },
+          {
+            "apr": "0.5742654095380175",
+            "create_time_millis": 1770019526140,
+            "is_closed": false,
+            "leader": "0xcbdf15e12fc3b8e8fc8bacf577c4d1071cf2b4b3",
+            "name": "AIQuantPulse",
+            "relationship": "normal",
+            "tvl": "1452120.0150580001",
+            "vault_address": "0x8231fdf9997c003a267374b45fb25c0455aa1dcb"
+          },
+          {
+            "apr": "-0.04576985671793996",
+            "create_time_millis": 1736715289832,
+            "is_closed": false,
+            "leader": "0x97ee7d16c1aebdfbfa7a9f983ac5a0ec56e63b2e",
+            "name": "Martyrbit",
+            "relationship": "normal",
+            "tvl": "1385146.225085",
+            "vault_address": "0x27d33e77c8e6335089f56e399bf706ae9ad402b9"
+          },
+          {
+            "apr": "1.7910247075511867",
+            "create_time_millis": 1767799704593,
+            "is_closed": false,
+            "leader": "0x970ed103da353023dc6726c04f183b38ce35943c",
+            "name": "Black Ops",
+            "relationship": "normal",
+            "tvl": "1369120.690097",
+            "vault_address": "0x49a648936441b22f28f069d3c088928682b277ae"
+          }
+        ]
+      }
+    }
+  },
+  "exchanges": [
+    {
+      "at": "2026-09-11T18:44:44.767Z",
+      "request": {
+        "method": "POST",
+        "url": "https://hyperliquidvault.space/x402",
+        "headers": {
+          "accept": "application/json, text/event-stream",
+          "content-type": "application/json"
+        },
+        "body": "{\"jsonrpc\":\"2.0\",\"id\":1,\"method\":\"tools/call\",\"params\":{\"name\":\"list_vaults\",\"arguments\":{}}}"
+      },
+      "response": {
+        "status": 402,
+        "headers": {
+          "content-type": "application/json",
+          "payment-required": "eyJ4NDAyVmVyc2lvbiI6MiwicmVzb3VyY2UiOnsidXJsIjoiaHR0cHM6Ly9oeXBlcmxpcXVpZHZhdWx0LnNwYWNlL21jcCIsImRlc2NyaXB0aW9uIjoiSHlwZXJsaXF1aWQgVmF1bHQgU3RyYXRlZ3kgSW50ZWxsaWdlbmNlOiBkaXNjb3ZlciBIeXBlcmxpcXVpZCB2YXVsdHMgYW5kIHJldmlldyBhIHZhdWx0J3Mga2V5IHN0cmF0ZWd5IG1ldHJpY3MgKFRWTCwgQVBSLCBsZWFkZXIsIGZvbGxvd2VycywgY2FwYWNpdHksIHdpdGhkcmF3YWwgYXZhaWxhYmlsaXR5LCBjb21taXNzaW9uIHRlcm1zLCBkZXBvc2l0IHN0YXR1cykgZnJvbSB0aGUgcHVibGljIEh5cGVybGlxdWlkIEFQSS4gwrcgTUNQIHRvb2wgXCJsaXN0X3ZhdWx0c1wiIMK3IDAuMDEgVSBwZXIgY2FsbCIsIm1pbWVUeXBlIjoiYXBwbGljYXRpb24vanNvbiJ9LCJhY2NlcHRzIjpbeyJzY2hlbWUiOiJleGFjdCIsIm5ldHdvcmsiOiJlaXAxNTU6NTYiLCJhbW91bnQiOiIxMDAwMDAwMDAwMDAwMDAwMCIsImFzc2V0IjoiMHhjRTI0NDM5RjJEOUM2YTIyODlGNzQxMTIwRkUyMDIyNDhCNjY2NjY2IiwicGF5VG8iOiIweEEwNkRiNjkyZDdlMjgzNTZmODAxOTlGZjc3RTIyYTBFZjAyQTM1MTgiLCJtYXhUaW1lb3V0U2Vjb25kcyI6NjAwLCJleHRyYSI6eyJhc3NldFRyYW5zZmVyTWV0aG9kIjoiZWlwMzAwOSIsImRlY2ltYWxzIjoxOCwibmFtZSI6IlVuaXRlZCBTdGFibGVzIiwic3ltYm9sIjoiVSIsInZlcnNpb24iOiIxIn19XX0="
+        },
+        "body": "{\"x402Version\":2,\"resource\":{\"url\":\"https://hyperliquidvault.space/mcp\",\"description\":\"Hyperliquid Vault Strategy Intelligence: discover Hyperliquid vaults and review a vault's key strategy metrics (TVL, APR, leader, followers, capacity, withdrawal availability, commission terms, deposit status) from the public Hyperliquid API. · MCP tool \\\"list_vaults\\\" · 0.01 U per call\",\"mimeType\":\"application/json\"},\"accepts\":[{\"scheme\":\"exact\",\"network\":\"eip155:56\",\"amount\":\"10000000000000000\",\"asset\":\"0xcE24439F2D9C6a2289F741120FE202248B666666\",\"payTo\":\"0xA06Db692d7e28356f80199Ff77E22a0Ef02A3518\",\"maxTimeoutSeconds\":600,\"extra\":{\"assetTransferMethod\":\"eip3009\",\"decimals\":18,\"name\":\"United Stables\",\"symbol\":\"U\",\"version\":\"1\"}}]}",
+        "truncated": false,
+        "ms": 1487
+      }
+    },
+    {
+      "at": "2026-09-11T18:44:47.495Z",
+      "request": {
+        "method": "POST",
+        "url": "https://hyperliquidvault.space/x402",
+        "headers": {
+          "accept": "application/json, text/event-stream",
+          "content-type": "application/json",
+          "PAYMENT-SIGNATURE": "eyJ4NDAyVmVyc2lvbiI6MiwicmVzb3VyY2UiOnsidXJsIjoiaHR0cHM6Ly9oeXBlcmxpcXVpZHZhdWx0LnNwYWNlL21jcCIsImRlc2NyaXB0aW9uIjoiSHlwZXJsaXF1aWQgVmF1bHQgU3RyYXRlZ3kgSW50ZWxsaWdlbmNlOiBkaXNjb3ZlciBIeXBlcmxpcXVpZCB2YXVsdHMgYW5kIHJldmlldyBhIHZhdWx0J3Mga2V5IHN0cmF0ZWd5IG1ldHJpY3MgKFRWTCwgQVBSLCBsZWFkZXIsIGZvbGxvd2VycywgY2FwYWNpdHksIHdpdGhkcmF3YWwgYXZhaWxhYmlsaXR5LCBjb21taXNzaW9uIHRlcm1zLCBkZXBvc2l0IHN0YXR1cykgZnJvbSB0aGUgcHVibGljIEh5cGVybGlxdWlkIEFQSS4gwrcgTUNQIHRvb2wgXCJsaXN0X3ZhdWx0c1wiIMK3IDAuMDEgVSBwZXIgY2FsbCIsIm1pbWVUeXBlIjoiYXBwbGljYXRpb24vanNvbiJ9LCJhY2NlcHRlZCI6eyJzY2hlbWUiOiJleGFjdCIsIm5ldHdvcmsiOiJlaXAxNTU6NTYiLCJhbW91bnQiOiIxMDAwMDAwMDAwMDAwMDAwMCIsImFzc2V0IjoiMHhjRTI0NDM5RjJEOUM2YTIyODlGNzQxMTIwRkUyMDIyNDhCNjY2NjY2IiwicGF5VG8iOiIweEEwNkRiNjkyZDdlMjgzNTZmODAxOTlGZjc3RTIyYTBFZjAyQTM1MTgiLCJtYXhUaW1lb3V0U2Vjb25kcyI6NjAwLCJleHRyYSI6eyJhc3NldFRyYW5zZmVyTWV0aG9kIjoiZWlwMzAwOSIsImRlY2ltYWxzIjoxOCwibmFtZSI6IlVuaXRlZCBTdGFibGVzIiwic3ltYm9sIjoiVSIsInZlcnNpb24iOiIxIn19LCJwYXlsb2FkIjp7InNpZ25hdHVyZSI6IjB4OTc0YWVkYTkwNDdhOTExMThmNzlmZDk3MDgzZDAwNTc4YjA3N2MwM2IzZjllYTJjZGM2ODRlZWZiZDliMDUxZTQzZmI1Y2QwZWRkOWFmMDE5ZWZhMTg0NjZiZTY2NzFkM2FhZGE3MTJkY2VjZDVkNDg3MmNkOGM1MjEwODQyODYxYiIsImF1dGhvcml6YXRpb24iOnsiZnJvbSI6IjB4ZDZkMTFBYTUwNDZkYzVDN0JFOGQ2M0I5MjIzYjYwRDdBRDk0Y0JlOSIsInRvIjoiMHhBMDZEYjY5MmQ3ZTI4MzU2ZjgwMTk5RmY3N0UyMmEwRWYwMkEzNTE4IiwidmFsdWUiOiIxMDAwMDAwMDAwMDAwMDAwMCIsInZhbGlkQWZ0ZXIiOiIxNzg5MTUyMjI3IiwidmFsaWRCZWZvcmUiOiIxNzg5MTUyODg3Iiwibm9uY2UiOiIweDM0OThlY2I0OTZkNmNmNmViNDMwNDdhZTM3MzllNWZhNTlhNjdiNDc2ZTEyZDg3ZGFhZWRmMWVkOGEyYTg1NTQifX19"
+        },
+        "body": "{\"jsonrpc\":\"2.0\",\"id\":1,\"method\":\"tools/call\",\"params\":{\"name\":\"list_vaults\",\"arguments\":{}}}"
+      },
+      "response": {
+        "status": 200,
+        "headers": {
+          "content-type": "application/json",
+          "payment-response": "eyJzdWNjZXNzIjp0cnVlLCJ0cmFuc2FjdGlvbiI6IjB4YjI5NDI0ODBjNjJiNDBkNWVhMGI1ZTVhOGEwNDY2ZjFmMTQ2ODNiMjcxMzdkYWIyY2RmOTRlYTVjNDg0MjY2OSIsIm5ldHdvcmsiOiJlaXAxNTU6NTYiLCJwYXllciI6IjB4ZDZkMTFBYTUwNDZkYzVDN0JFOGQ2M0I5MjIzYjYwRDdBRDk0Y0JlOSJ9",
+          "x-payment-response": "eyJzdWNjZXNzIjp0cnVlLCJ0cmFuc2FjdGlvbiI6IjB4YjI5NDI0ODBjNjJiNDBkNWVhMGI1ZTVhOGEwNDY2ZjFmMTQ2ODNiMjcxMzdkYWIyY2RmOTRlYTVjNDg0MjY2OSIsIm5ldHdvcmsiOiJlaXAxNTU6NTYiLCJwYXllciI6IjB4ZDZkMTFBYTUwNDZkYzVDN0JFOGQ2M0I5MjIzYjYwRDdBRDk0Y0JlOSJ9"
+        },
+        "body": "{\"jsonrpc\":\"2.0\",\"id\":1,\"result\":{\"content\":[{\"type\":\"text\",\"text\":\"{\\\"count\\\":20,\\\"include_closed\\\":false,\\\"limit\\\":20,\\\"relationship\\\":\\\"any\\\",\\\"sort_by\\\":\\\"tvl\\\",\\\"vaults\\\":[{\\\"apr\\\":\\\"0.060061485915019815\\\",\\\"create_time_millis\\\":1683243596849,\\\"is_closed\\\":false,\\\"leader\\\":\\\"0x677d831aef5328190852e24f13c46cac05f984e7\\\",\\\"name\\\":\\\"Hyperliquidity Provider (HLP)\\\",\\\"relationship\\\":\\\"parent\\\",\\\"tvl\\\":\\\"186408576.0593129992\\\",\\\"vault_address\\\":\\\"0xdfc24b077bc1425ad1dea75bcb6f8158e10df303\\\"},{\\\"apr\\\":\\\"0.023287176976395024\\\",\\\"create_time_millis\\\":1766221022171,\\\"is_closed\\\":false,\\\"leader\\\":\\\"0xdfc24b077bc1425ad1dea75bcb6f8158e10df303\\\",\\\"name\\\":\\\"HLP Strategy X\\\",\\\"relationship\\\":\\\"child\\\",\\\"tvl\\\":\\\"100212760.8570500016\\\",\\\"vault_address\\\":\\\"0x469f690213c467c39a23efacfd2816896009d7d8\\\"},{\\\"apr\\\":\\\"0.091878388\\\",\\\"create_time_millis\\\":1745158533339,\\\"is_closed\\\":false,\\\"leader\\\":\\\"0xdfc24b077bc1425ad1dea75bcb6f8158e10df303\\\",\\\"name\\\":\\\"HLP Liquidator 2\\\",\\\"relationship\\\":\\\"child\\\",\\\"tvl\\\":\\\"30000000.0\\\",\\\"vault_address\\\":\\\"0xb0a55f13d22f66e6d495ac98113841b2326e9540\\\"},{\\\"apr\\\":\\\"0.8862508431226807\\\",\\\"create_time_millis\\\":1737611331869,\\\"is_closed\\\":false,\\\"leader\\\":\\\"0x2b804617c6f63c040377e95bb276811747006f4b\\\",\\\"name\\\":\\\"[ Systemic Strategies ] L/S Grids\\\",\\\"relationship\\\":\\\"normal\\\",\\\"tvl\\\":\\\"15944913.9055640008\\\",\\\"vault_address\\\":\\\"0x07fd993f0fa3a185f7207adccd29f7a87404689d\\\"},{\\\"apr\\\":\\\"7.520035633342019\\\",\\\"create_time_millis\\\":1765303910503,\\\"is_closed\\\":false,\\\"leader\\\":\\\"0xf4f7cebbd2c7b6dee34ab29fa55a116eff25239f\\\",\\\"name\\\":\\\"drkmttr\\\",\\\"relationship\\\":\\\"normal\\\",\\\"tvl\\\":\\\"12089779.6642780006\\\",\\\"vault_address\\\":\\\"0xc179e03922afe8fa9533d3f896338b9fb87ce0c8\\\"},{\\\"apr\\\":\\\"0.5184950544502787\\\",\\\"create_time_millis\\\":1720440504732,\\\"is_closed\\\":false,\\\"leader\\\":\\\"0x7789450871fb1315fa982ccb8039cb34e8f2f60d\\\",\\\"name\\\":\\\"Growi HF\\\",\\\"relationship\\\":\\\"normal\\\",\\\"tvl\\\":\\\"11295701.8804899994\\\",\\\"vault_address\\\":\\\"0x1e37a337ed460039d1b15bd3bc489de789768d5e\\\"},{\\\"apr\\\":\\\"0.018294992117459687\\\",\\\"create_time_millis\\\":1756505842629,\\\"is_closed\\\":false,\\\"leader\\\":\\\"0x2b804617c6f63c040377e95bb276811747006f4b\\\",\\\"name\\\":\\\"[ Systemic Strategies ] ♾️ HyperGrowth ♾️\\\",\\\"relationship\\\":\\\"normal\\\",\\\"tvl\\\":\\\"9388643.4019060005\\\",\\\"vault_address\\\":\\\"0xd6e56265890b76413d1d527eb9b75e334c0c5b42\\\"},{\\\"apr\\\":\\\"0.6134266476289743\\\",\\\"create_time_millis\\\":1781705968608,\\\"is_closed\\\":false,\\\"leader\\\":\\\"0xfb9c70230c93856c2429384f875d9a896d33d388\\\",\\\"name\\\":\\\"DOUBLETOP Vault\\\",\\\"relationship\\\":\\\"normal\\\",\\\"tvl\\\":\\\"4905347.4583069999\\\",\\\"vault_address\\\":\\\"0x53f8f390fd4f70941c5d160a964f6893c8dbceff\\\"},{\\\"apr\\\":\\\"10.877858288037723\\\",\\\"create_time_millis\\\":1771339341792,\\\"is_closed\\\":false,\\\"leader\\\":\\\"0xf5f569a7006860e6e17c92ba9d5959090acf0336\\\",\\\"name\\\":\\\"BredoStrategy\\\",\\\"relationship\\\":\\\"normal\\\",\\\"tvl\\\":\\\"3432016.4299619999\\\",\\\"vault_address\\\":\\\"0x654016a8c9fcf0c4cb7ed6078aba21f7f399f7b7\\\"},{\\\"apr\\\":\\\"0.15277925039565318\\\",\\\"create_time_millis\\\":1683243598416,\\\"is_closed\\\":false,\\\"leader\\\":\\\"0xdfc24b077bc1425ad1dea75bcb6f8158e10df303\\\",\\\"name\\\":\\\"HLP Strategy A\\\",\\\"relationship\\\":\\\"child\\\",\\\"tvl\\\":\\\"3139231.8129830002\\\",\\\"vault_address\\\":\\\"0x010461c14e146ac35fe42271bdc1134ee31c703a\\\"},{\\\"apr\\\":\\\"-0.038707297778623\\\",\\\"create_time_millis\\\":1683243600725,\\\"is_closed\\\":false,\\\"leader\\\":\\\"0xdfc24b077bc1425ad1dea75bcb6f8158e10df303\\\",\\\"name\\\":\\\"HLP Strategy B\\\",\\\"relationship\\\":\\\"child\\\",\\\"tvl\\\":\\\"3013949.686679\\\",\\\"vault_address\\\":\\\"0x31ca8395cf837de08b24da3f660e77761dfb974b\\\"},{\\\"apr\\\":\\\"2.6083298918265676\\\",\\\"create_time_millis\\\":1744227338023,\\\"is_closed\\\":false,\\\"leader\\\":\\\"0xa380444a9299df2a15bddf949dd493bb6d30d939\\\",\\\"name\\\":\\\"Long HYPE \\\\u0026 BTC | Short Garbage\\\",\\\"relationship\\\":\\\"normal\\\",\\\"tvl\\\":\\\"2607271.2791280001\\\",\\\"vault_address\\\":\\\"0xac26cf5f3c46b5e102048c65b977d2551b72a9c7\\\"},{\\\"apr\\\":\\\"0.09110976153787022\\\",\\\"create_time_millis\\\":1757706873152,\\\"is_closed\\\":false,\\\"leader\\\":\\\"0x3d32e286bb737ba348e28823863f02308768cfec\\\",\\\"name\\\":\\\"FC Genesis - Quantum\\\",\\\"relationship\\\":\\\"normal\\\",\\\"tvl\\\":\\\"2175004.6089079999\\\",\\\"vault_address\\\":\\\"0xa6a34f0bf2ccea9a1ddf9e9a973f17c498dc5e40\\\"},{\\\"apr\\\":\\\"-0.20175798428242778\\\",\\\"create_time_millis\\\":1759368120214,\\\"is_closed\\\":false,\\\"leader\\\":\\\"0x1fa1b4c4cda61b3c1ce805ae82e64a90d8821d08\\\",\\\"name\\\":\\\"Bitcoin Moving Average Long/Short\\\",\\\"relationship\\\":\\\"normal\\\",\\\"tvl\\\":\\\"2072264.904841\\\",\\\"vault_address\\\":\\\"0xb1505ad1a4c7755e0eb236aa2f4327bfc3474768\\\"},{\\\"apr\\\":\\\"12.656585077189082\\\",\\\"create_time_millis\\\":1776458197928,\\\"is_closed\\\":false,\\\"leader\\\":\\\"0x83046ec02c58df0448e0f4219413c0a16e6d42b9\\\",\\\"name\\\":\\\"Enjoyooor V3\\\",\\\"relationship\\\":\\\"normal\\\",\\\"tvl\\\":\\\"1948144.195108\\\",\\\"vault_address\\\":\\\"0x7178cc2d79160d524858c843e350ed8207de0854\\\"},{\\\"apr\\\":\\\"-0.14933169291316997\\\",\\\"create_time_millis\\\":1734930727188,\\\"is_closed\\\":false,\\\"leader\\\":\\\"0x76184c92c5e17122a496fe1799adc77f4139c96e\\\",\\\"name\\\":\\\"Hyperrr\\\",\\\"relationship\\\":\\\"normal\\\",\\\"tvl\\\":\\\"1836782.0029279999\\\",\\\"vault_address\\\":\\\"0xca230e816bdb34a46960c2f978a30a563d1ae9e0\\\"},{\\\"apr\\\":\\\"-0.11866437666326267\\\",\\\"create_time_millis\\\":1765765752661,\\\"is_closed\\\":false,\\\"leader\\\":\\\"0xf292b42e6167e0d591449ebd67d2e989a3479edf\\\",\\\"name\\\":\\\"Orbit Value Strategies\\\",\\\"relationship\\\":\\\"normal\\\",\\\"tvl\\\":\\\"1609789.8666449999\\\",\\\"vault_address\\\":\\\"0x115849ce84370f25cadcf0d348510d73837e1aa5\\\"},{\\\"apr\\\":\\\"0.5742654095380175\\\",\\\"create_time_millis\\\":1770019526140,\\\"is_closed\\\":false,\\\"leader\\\":\\\"0xcbdf15e12fc3b8e8fc8bacf577c4d1071cf2b4b3\\\",\\\"name\\\":\\\"AIQuantPulse\\\",\\\"relationship\\\":\\\"normal\\\",\\\"tvl\\\":\\\"1452120.0150580001\\\",\\\"vault_address\\\":\\\"0x8231fdf9997c003a267374b45fb25c0455aa1dcb\\\"},{\\\"apr\\\":\\\"-0.04576985671793996\\\",\\\"create_time_millis\\\":1736715289832,\\\"is_closed\\\":false,\\\"leader\\\":\\\"0x97ee7d16c1aebdfbfa7a9f983ac5a0ec56e63b2e\\\",\\\"name\\\":\\\"Martyrbit\\\",\\\"relationship\\\":\\\"normal\\\",\\\"tvl\\\":\\\"1385146.225085\\\",\\\"vault_address\\\":\\\"0x27d33e77c8e6335089f56e399bf706ae9ad402b9\\\"},{\\\"apr\\\":\\\"1.7910247075511867\\\",\\\"create_time_millis\\\":1767799704593,\\\"is_closed\\\":false,\\\"leader\\\":\\\"0x970ed103da353023dc6726c04f183b38ce35943c\\\",\\\"name\\\":\\\"Black Ops\\\",\\\"relationship\\\":\\\"normal\\\",\\\"tvl\\\":\\\"1369120.690097\\\",\\\"vault_address\\\":\\\"0x49a648936441b22f28f069d3c088928682b277ae\\\"}]}\"}],\"structuredContent\":{\"count\":20,\"include_closed\":false,\"limit\":20,\"relationship\":\"any\",\"sort_by\":\"tvl\",\"vaults\":[{\"apr\":\"0.060061485915019815\",\"create_time_millis\":1683243596849,\"is_closed\":false,\"leader\":\"0x677d831aef5328190852e24f13c46cac05f984e7\",\"name\":\"Hyperliquidity Provider (HLP)\",\"relationship\":\"parent\",\"tvl\":\"186408576.0593129992\",\"vault_address\":\"0xdfc24b077bc1425ad1dea75bcb6f8158e10df303\"},{\"apr\":\"0.023287176976395024\",\"create_time_millis\":1766221022171,\"is_closed\":false,\"leader\":\"0xdfc24b077bc1425ad1dea75bcb6f8158e10df303\",\"name\":\"HLP Strategy X\",\"relationship\":\"child\",\"tvl\":\"100212760.8570500016\",\"vault_address\":\"0x469f690213c467c39a23efacfd2816896009d7d8\"},{\"apr\":\"0.091878388\",\"create_time_millis\":1745158533339,\"is_closed\":false,\"leader\":\"0xdfc24b077bc1425ad1dea75bcb6f8158e10df303\",\"name\":\"HLP Liquidator 2\",\"relationship\":\"child\",\"tvl\":\"30000000.0\",\"vault_address\":\"0xb0a55f13d22f66e6d495ac98113841b2326e9540\"},{\"apr\":\"0.8862508431226807\",\"create_time_millis\":1737611331869,\"is_closed\":false,\"leader\":\"0x2b804617c6f63c040377e95bb276811747006f4b\",\"name\":\"[ Systemic Strategies ] L/S Grids\",\"relationship\":\"normal\",\"tvl\":\"15944913.9055640008\",\"vault_address\":\"0x07fd993f0fa3a185f7207adccd29f7a87404689d\"},{\"apr\":\"7.520035633342019\",\"create_time_millis\":1765303910503,\"is_closed\":false,\"leader\":\"0xf4f7cebbd2c7b6dee34ab29fa55a116eff25239f\",\"name\":\"drkmttr\",\"relationship\":\"normal\",\"tvl\":\"12089779.6642780006\",\"vault_address\":\"0xc179e03922afe8fa9533d3f896338b9fb87ce0c8\"},{\"apr\":\"0.5184950544502787\",\"create_time_millis\":1720440504732,\"is_closed\":false,\"leader\":\"0x7789450871fb1315fa982ccb8039cb34e8f2f60d\",\"name\":\"Growi HF\",\"relationship\":\"normal\",\"tvl\":\"11295701.8804899994\",\"vault_address\":\"0x1e37a337ed460039d1b15bd3bc489de789768d5e\"},{\"apr\":\"0.018294992117459687\",\"create_time_millis\":1756505842629,\"is_closed\":false,\"leader\":\"0x2b804617c6f63c040377e95bb276811747006f4b\",\"name\":\"[ Systemic Strategies ] ♾️ HyperGrowth ♾️\",\"relationship\":\"normal\",\"tvl\":\"9388643.4019060005\",\"vault_address\":\"0xd6e56265890b76413d1d527eb9b75e334c0c5b42\"},{\"apr\":\"0.6134266476289743\",\"create_time_millis\":1781705968608,\"is_closed\":false,\"leader\":\"0xfb9c70230c93856c2429384f875d9a896d33d388\",\"name\":\"DOUBLETOP Vault\",\"relationship\":\"normal\",\"tvl\":\"4905347.4583069999\",\"vault_address\":\"0x53f8f390fd4f70941c5d160a964f6893c8dbceff\"},{\"apr\":\"10.877858288037723\",\"create_time_millis\":1771339341792,\"is_closed\":false,\"leader\":\"0xf5f569a7006860e6e17c92ba9d5959090acf0336\",\"name\":\"BredoStrategy\",\"relationship\":\"normal\",\"tvl\":\"3432016.4299619999\",\"vault_address\":\"0x654016a8c9fcf0c4cb7ed6078aba21f7f399f7b7\"},{\"apr\":\"0.15277925039565318\",\"create_time_millis\":1683243598416,\"is_closed\":false,\"leader\":\"0xdfc24b077bc1425ad1dea75bcb6f8158e10df303\",\"name\":\"HLP Strategy A\",\"relationship\":\"child\",\"tvl\":\"3139231.8129830002\",\"vault_address\":\"0x010461c14e146ac35fe42271bdc1134ee31c703a\"},{\"apr\":\"-0.038707297778623\",\"create_time_millis\":1683243600725,\"is_closed\":false,\"leader\":\"0xdfc24b077bc1425ad1dea75bcb6f8158e10df303\",\"name\":\"HLP Strategy B\",\"relationship\":\"child\",\"tvl\":\"3013949.686679\",\"vault_address\":\"0x31ca8395cf837de08b24da3f660e77761dfb974b\"},{\"apr\":\"2.6083298918265676\",\"create_time_millis\":1744227338023,\"is_closed\":false,\"leader\":\"0xa380444a9299df2a15bddf949dd493bb6d30d939\",\"name\":\"Long HYPE \\u0026 BTC | Short Garbage\",\"relationship\":\"normal\",\"tvl\":\"2607271.2791280001\",\"vault_address\":\"0xac26cf5f3c46b5e102048c65b977d2551b72a9c7\"},{\"apr\":\"0.09110976153787022\",\"create_time_millis\":1757706873152,\"is_closed\":false,\"leader\":\"0x3d32e286bb737ba348e28823863f02308768cfec\",\"name\":\"FC Genesis - Quantum\",\"relationship\":\"normal\",\"tvl\":\"2175004.6089079999\",\"vault_address\":\"0xa6a34f0bf2ccea9a1ddf9e9a973f17c498dc5e40\"},{\"apr\":\"-0.20175798428242778\",\"create_time_millis\":1759368120214,\"is_closed\":false,\"leader\":\"0x1fa1b4c4cda61b3c1ce805ae82e64a90d8821d08\",\"name\":\"Bitcoin Moving Average Long/Short\",\"relationship\":\"normal\",\"tvl\":\"2072264.904841\",\"vault_address\":\"0xb1505ad1a4c7755e0eb236aa2f4327bfc3474768\"},{\"apr\":\"12.656585077189082\",\"create_time_millis\":1776458197928,\"is_closed\":false,\"leader\":\"0x83046ec02c58df0448e0f4219413c0a16e6d42b9\",\"name\":\"Enjoyooor V3\",\"relationship\":\"normal\",\"tvl\":\"1948144.195108\",\"vault_address\":\"0x7178cc2d79160d524858c843e350ed8207de0854\"},{\"apr\":\"-0.14933169291316997\",\"create_time_millis\":1734930727188,\"is_closed\":false,\"leader\":\"0x76184c92c5e17122a496fe1799adc77f4139c96e\",\"name\":\"Hyperrr\",\"relationship\":\"normal\",\"tvl\":\"1836782.0029279999\",\"vault_address\":\"0xca230e816bdb34a46960c2f978a30a563d1ae9e0\"},{\"apr\":\"-0.11866437666326267\",\"create_time_millis\":1765765752661,\"is_closed\":false,\"leader\":\"0xf292b42e6167e0d591449ebd67d2e989a3479edf\",\"name\":\"Orbit Value Strategies\",\"relationship\":\"normal\",\"tvl\":\"1609789.8666449999\",\"vault_address\":\"0x115849ce84370f25cadcf0d348510d73837e1aa5\"},{\"apr\":\"0.5742654095380175\",\"create_time_millis\":1770019526140,\"is_closed\":false,\"leader\":\"0xcbdf15e12fc3b8e8fc8bacf577c4d1071cf2b4b3\",\"name\":\"AIQuantPulse\",\"relationship\":\"normal\",\"tvl\":\"1452120.0150580001\",\"vault_address\":\"0x8231fdf9997c003a267374b45fb25c0455aa1dcb\"},{\"apr\":\"-0.04576985671793996\",\"create_time_millis\":1736715289832,\"is_closed\":false,\"leader\":\"0x97ee7d16c1aebdfbfa7a9f983ac5a0ec56e63b2e\",\"name\":\"Martyrbit\",\"relationship\":\"normal\",\"tvl\":\"1385146.225085\",\"vault_address\":\"0x27d33e77c8e6335089f56e399bf706ae9ad402b9\"},{\"apr\":\"1.7910247075511867\",\"create_time_millis\":1767799704593,\"is_closed\":false,\"leader\":\"0x970ed103da353023dc6726c04f183b38ce35943c\",\"name\":\"Black Ops\",\"relationship\":\"normal\",\"tvl\":\"1369120.690097\",\"vault_address\":\"0x49a648936441b22f28f069d3c088928682b277ae\"}]}}}",
+        "truncated": false,
+        "ms": 4683
+      }
+    }
+  ],
+  "ms": 7479
+}
