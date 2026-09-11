@@ -1,0 +1,11 @@
+{
+  "anchorUsd": 711.1034173901272,
+  "lastLevel": 3,
+  "fills": 5,
+  "updatedAt": "2026-09-11T05:15:02.526Z",
+  "stepBps": 25,
+  "levels": 4,
+  "clipWbnb": "0.0002",
+  "priceNow": 716.2886398001075,
+  "correctedBecause": "the relay answered PENDING without a hash for the level-3 sell at $715.71 and SwapBound's spent counter did not move; the fill never happened"
+}

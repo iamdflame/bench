@@ -4,7 +4,7 @@
  * Measured across nine public BSC endpoints on 6 September 2026:
  *
  *   bsc.rpc.blxrbdn.com     serves ranges, capped at 5,000 blocks
- *   bsc-rpc.publicnode.com  recent ranges only — "archive requests require a
+ *   bsc-rpc.publicnode.com  recent ranges only, "archive requests require a
  *                           personal token" beyond a few hours
  *   bsc.drpc.org            rate-limits a public caller within a few requests
  *   bsc-dataseed*           "limit exceeded" for any span at all
@@ -12,7 +12,7 @@
  *   bsc.blockrazor.xyz      twenty-five blocks
  *
  * So there is effectively one provider, one cap, and four hundred and forty
- * thousand blocks of history between this market's deploy block and the head —
+ * thousand blocks of history between this market's deploy block and the head,
  * eighty-nine requests. Walked one at a time that is a minute, which is why
  * every page that needed log history either timed out or printed the
  * provider's refusal at the reader.
@@ -49,7 +49,7 @@ export const MAX_SPAN = 4_000n;
  *
  * Six is measured, not guessed: it brings the full history inside the budget a
  * page render can afford, and above it the single provider that serves these
- * queries begins refusing — which would trade a slow answer for a wrong one.
+ * queries begins refusing, which would trade a slow answer for a wrong one.
  */
 export const CONCURRENCY = 6;
 

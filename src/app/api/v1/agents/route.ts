@@ -9,6 +9,7 @@ import { readAgentIndex } from "@/lib/data/agents";
 import { placeAgent, readMarketSets } from "@/lib/rung";
 import { CATEGORIES, CHAIN_ID, type Category } from "@/lib/config";
 import { fail, gate, ok, preflight } from "@/lib/api/respond";
+import { live } from "@/lib/data/live";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
@@ -21,6 +22,7 @@ export function OPTIONS() {
 }
 
 export async function GET(request: Request) {
+  await live();
   const g = gate(request, LIMIT, CHAIN_ID);
   if (!g.allowed) return g.response;
 

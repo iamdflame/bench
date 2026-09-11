@@ -1,19 +1,41 @@
 /**
- * The walk for somebody who has no wallet.
+ * The four picks on /judges: one third-party agent per category.
  *
- * A judge with a phone and ninety seconds cannot install a wallet, fund it and
- * sign. The competition solves this on testnet, where the money is imaginary.
- * This solves it on mainnet by paying for them out of an account we control,
- * for the four agents that will actually answer.
- *
- * What sponsorship can and cannot be here is set by what the wallet holds, and
- * the page says so rather than promising four free calls and running dry on
- * the second. Everything sponsored is capped, logged and refuses outside the
- * four agents named below.
+ * The rule is fixed and stated: the fastest agent in the category that
+ * answered when we last called it, preferring one that publishes a price.
+ * Agents we operate are excluded by token and by owner; they appear beside the
+ * picks as reference agents, labelled as ours. We do not pay for the picks'
+ * calls from this page.
  */
 
 import type { Category } from "@/lib/config";
 import { listings, type Listing } from "@/lib/market/listing";
+import { HOUSE, REFERENCE, referenceRegistrations } from "@/lib/house";
+import { DEMO_ADDRESS } from "@/lib/demo";
+
+/**
+ * Every token and owner we control. The picks are "somebody else's agent that
+ * answered", so none of these may ever be one: Mandate's own registration,
+ * the two keeper wallets, the four reference agents and the keys behind them.
+ */
+function ours(): { tokens: Set<string>; owners: Set<string> } {
+  const regs = referenceRegistrations();
+  const tokens = new Set<string>(["336161", ...HOUSE.map((h) => h.tokenId).filter((t): t is string => Boolean(t)), ...REFERENCE.map((r) => regs[r.slug]?.tokenId).filter((t): t is string => Boolean(t))]);
+  const owners = new Set<string>(
+    [
+      DEMO_ADDRESS,
+      ...HOUSE.map((h) => h.wallet),
+      ...REFERENCE.map((r) => regs[r.slug]?.owner).filter((o): o is `0x${string}` => Boolean(o)),
+      "0x6F29B50ebaF733D980EadfeB3253347d8a12A69C",
+    ].map((a) => a.toLowerCase()),
+  );
+  return { tokens, owners };
+}
+
+export const isOurs = (l: Pick<Listing, "tokenId"> & { owner?: string | null }): boolean => {
+  const o = ours();
+  return o.tokens.has(l.tokenId) || Boolean(l.owner && o.owners.has(l.owner.toLowerCase()));
+};
 
 export interface JudgePick {
   category: Category;
@@ -41,7 +63,7 @@ export function judgePicks(hires?: Map<string, number>): JudgePick[] {
 
   for (const category of categories) {
     const live = all
-      .filter((l) => l.category === category && l.liveness === "live")
+      .filter((l) => l.category === category && l.liveness === "live" && !isOurs(l as Listing & { owner?: string | null }))
       .sort((a, b) => (a.probe?.latencyMs ?? 1e9) - (b.probe?.latencyMs ?? 1e9));
     const priced = live.find((l) => l.quote);
     const pick = priced ?? live[0];

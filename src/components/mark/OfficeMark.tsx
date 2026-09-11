@@ -1,5 +1,5 @@
 /**
- * The office mark — MANDATE's own punch.
+ * The office mark, MANDATE's own punch.
  *
  * A struck surround with a balance beam knocked out of it. The balance is the
  * Vienna Convention's Common Control Mark reduced to its minimum: it is the
@@ -31,7 +31,7 @@ export default function OfficeMark({
         A balance in equilibrium, knocked out of the punch.
 
         An earlier cut hung the pans off a centre column and the whole device
-        read as a capital T at any size below 48px — the column and the beam
+        read as a capital T at any size below 48px, the column and the beam
         closed into one another and the pans were lost against the chamfer.
         This one keeps the beam clear of everything, drops the pans well
         outside the fulcrum's spread, and lets the fulcrum carry the vertical,

@@ -11,7 +11,7 @@ const trim = (v: string) => (v.length > 52 ? `${v.slice(0, 22)}…${v.slice(-14)
  *
  * The failure reason sits inline under the row that failed, not behind a
  * tooltip. An assay that says "custody: FAILED" and makes you hunt for why is
- * the same unaccountable verdict this product was built to replace — so the
+ * the same unaccountable verdict this product was built to replace, so the
  * finding is always on screen beside the bar, in the agent's own terms:
  * `agent_wallet == owner_address`, `nonce 1 · balance 0`.
  *
@@ -32,7 +32,7 @@ export default function AssayBar({
    * The run stopped before these could be reached.
    *
    * A bar that pulses "running" forever after the stream has died is the one
-   * dishonest state this component can be in — it claims work is happening
+   * dishonest state this component can be in, it claims work is happening
    * that stopped. Halted rows say "not run", still, and the reason sits above
    * them.
    */

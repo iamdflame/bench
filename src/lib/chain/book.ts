@@ -3,7 +3,7 @@
  *
  * The floor rendered nothing without JavaScript. Its counts, its rows and its
  * "verify on BscScan" link all came from a client component, so the first
- * thing a judge with a slow connection — or a crawler, or a preview card — saw
+ * thing a judge with a slow connection, or a crawler, or a preview card, saw
  * was "0 mandates active" and "0 opened all-time" beside ledgers that said
  * Active. The market appeared empty on the page whose entire job is to show
  * that it is not.
@@ -15,8 +15,8 @@
  * canonical contract; the older books stay open and stay counted.
  */
 
-import { createPublicClient, http, type Address, type PublicClient } from "viem";
-import { bsc } from "viem/chains";
+import { type Address, type PublicClient } from "viem";
+import { bscClient } from "./rpc";
 import { MANDATE_MARKET_ABI } from "./abi";
 import { MANDATE_MARKET_V2_ABI } from "./abiV2";
 import { DEPLOYMENTS, MARKET_V2, type Deployment } from "./deployments";
@@ -55,20 +55,13 @@ export interface Book {
   unread: string[];
 }
 
-const clientFor = (d: Deployment): PublicClient =>
-  createPublicClient({
-    chain: bsc,
-    transport: http(process.env.MARKET_RPC_URL || "https://bsc-dataseed1.binance.org", {
-      timeout: 12_000,
-      batch: { wait: 12 },
-    }),
-  });
+const clientFor = (_d: Deployment): PublicClient => bscClient();
 
 /*
   The ABI a deployment actually answers.
 
   V2's Mandate is V1's struct with four fields appended, so a V1 decode of a V2
-  read happens to give the right answer for the shared prefix — and that is
+  read happens to give the right answer for the shared prefix, and that is
   luck, not design. `getBids` under the same assumption is wrong outright,
   because its element stride changed. Reading each contract through its own ABI
   costs one line and removes the class of bug entirely.
@@ -185,7 +178,7 @@ export function readBook(): Promise<Book> {
  *
  * Lets the server hand the client component a populated first render instead
  * of `null`. A client component still renders on the server for the initial
- * HTML, so the floor's emptiness was never about being interactive — it was
+ * HTML, so the floor's emptiness was never about being interactive, it was
  * that its only source of data was an effect, which does not run there.
  */
 export function bookToSnapshot(book: Book) {

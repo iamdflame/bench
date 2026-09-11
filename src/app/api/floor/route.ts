@@ -70,7 +70,7 @@ async function readSnapshot(): Promise<FloorSnapshot> {
 
     The page is now server-rendered from every deployment this office has run,
     so a stream that read only the canonical market would have replaced eight
-    rows with one the instant it connected — the floor filling in correctly and
+    rows with one the instant it connected, the floor filling in correctly and
     then emptying itself in front of the visitor, which is worse than never
     having rendered.
 
@@ -88,7 +88,7 @@ async function readSnapshot(): Promise<FloorSnapshot> {
   /*
     The successor, derived rather than asked for.
 
-    This used to call `successor(uint256)`, which V1 has and **V2 does not** —
+    This used to call `successor(uint256)`, which V1 has and **V2 does not**,
     so on the canonical market every one of these reverted, the `.catch`
     swallowed it, and the column has been permanently blank rather than wrong.
     Blank is the better failure of the two, but it is still a column that has
@@ -128,7 +128,7 @@ async function readSnapshot(): Promise<FloorSnapshot> {
           Read with V2's ABI, because V2's `Bid` carries a fifth field.
 
           Decoded with V1's four-field shape the first element happens to be
-          right and every element after it is read at the wrong stride — so the
+          right and every element after it is read at the wrong stride, so the
           floor would attribute bonds to addresses that do not exist. The live
           market has one bid, which is the only reason this has not shown yet;
           the second bid anybody places would have made it visible.

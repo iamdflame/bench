@@ -2,7 +2,7 @@
  * The last census this office actually ran.
  *
  * Rung 2's sentence is "its endpoint answered a call we made", and the number
- * under it came from 8004scan's `is_endpoint_verified` flag — somebody else's
+ * under it came from 8004scan's `is_endpoint_verified` flag, somebody else's
  * probe, at a time they do not publish, by a method they do not describe. The
  * rung was not true of its own figure.
  *
@@ -10,34 +10,40 @@
  * and see the status and latency of every endpoint behind the number.
  */
 
-import { readFileSync } from "node:fs";
-import { join } from "node:path";
 import type { ProbeResult } from "@/lib/probe";
+import type { Quote } from "@/lib/x402/quote";
+import { onSnapshotChange, snapshot } from "@/lib/data/snapshots";
 
 export interface ProbeIndex {
   at: string;
   probed: number;
   answered: number;
+  quotes?: Record<string, Quote>;
+  previews?: Record<string, unknown>;
   results: ProbeResult[];
 }
 
 const EMPTY: ProbeIndex = { at: new Date(0).toISOString(), probed: 0, answered: 0, results: [] };
 
 let cached: ProbeIndex | null = null;
+let byToken: Map<string, ProbeResult> | null = null;
 
+// A newer census loaded from the database replaces the cached parse.
+onSnapshotChange("probe", () => {
+  cached = null;
+  byToken = null;
+});
+
+/**
+ * The current census: the newest of the committed file and the database.
+ * Pages call `warm()` from `@/lib/data/snapshots` before rendering so a
+ * deployed instance sees readings taken after its build.
+ */
 export function getProbes(): ProbeIndex {
   if (cached) return cached;
-  try {
-    cached = JSON.parse(
-      readFileSync(join(process.cwd(), "src/data/probe.json"), "utf8"),
-    ) as ProbeIndex;
-  } catch {
-    cached = EMPTY;
-  }
+  cached = (snapshot<ProbeIndex>("probe")?.payload as ProbeIndex | undefined) ?? EMPTY;
   return cached;
 }
-
-let byToken: Map<string, ProbeResult> | null = null;
 
 /** The last call made to one agent, if it has ever been probed. */
 export function probeFor(tokenId: string): ProbeResult | null {
@@ -50,8 +56,8 @@ export function probeFor(tokenId: string): ProbeResult | null {
 /**
  * Whether an agent answered when we called it.
  *
- * A 402 counts. It is the x402 rail working exactly as specified — every one
- * of Agripinaa's eight answers 402 — and an agent that quotes a price for its
+ * A 402 counts. It is the x402 rail working exactly as specified, every one
+ * of Agripinaa's eight answers 402, and an agent that quotes a price for its
  * answer is more alive than one that returns 200 and nothing. Silence is what
  * does not count.
  */

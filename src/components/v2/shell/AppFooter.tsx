@@ -35,7 +35,9 @@ export default function AppFooter() {
           <div>
             <h4>Verification</h4>
             <ul>
-              <li><Link href="/judges">The 90 second walk</Link></li>
+              <li><Link href="/judges">The six-beat walk</Link></li>
+              <li><Link href="/desk">Keys beside the KeyStore</Link></li>
+              <li><Link href="/status">Is it working right now</Link></li>
               <li><Link href="/verify">How we check agents</Link></li>
               <li><Link href="/assay">The six tests</Link></li>
               <li><Link href="/evidence">Evidence and method</Link></li>

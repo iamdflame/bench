@@ -295,7 +295,7 @@ samp {
 /*
   The twelve columns, actually used.
 
-  `BRAND.md` specifies a twelve-column grid at 1,440 and then says the
+  The design spec specified a twelve-column grid at 1,440 and then says the
   governing decision is density — that the data structure carries the argument.
   The site kept the first half and inverted the second: prose was capped at a
   46-character measure and left to float alone, so the pages that carry the
@@ -683,7 +683,7 @@ tr:has(.strike[data-striking="1"]),
 /*
   The rule brightens; the row does not fill.
 
-  `BRAND.md` gives hover exactly one expression — the hairline moving from
+  The design spec gave hover exactly one expression — the hairline moving from
   `--score` to `--pewter-500` over 120ms — and this rule was already doing that
   on the cell borders while also washing the whole row in `--iron`. On a
   register whose argument is a column of blanks, filling the row makes the
@@ -1871,7 +1871,7 @@ p code {
 /*
   A row lights its own rule, it does not fill.
 
-  `BRAND.md` specifies the hover as the hairline brightening from `--score` to
+  The design spec specified the hover as the hairline brightening from `--score` to
   `--pewter-500` over 120ms. Filling the row with `--iron` instead is a bigger
   gesture than the doctrine allows for moving a mouse, and on a register of
   three thousand rows it makes the pointer the loudest thing on the page.
@@ -4123,3 +4123,12 @@ p code {
 }
 
 .buycall__failed { display: grid; gap: .5rem; }
+
+/* Tables for /desk and /status: records, not decoration. */
+.m-table { width: 100%; border-collapse: collapse; font-size: 0.875rem; }
+.m-table th, .m-table td { text-align: left; padding: 0.55rem 0.9rem 0.55rem 0; border-bottom: 1px solid var(--rule-hair); vertical-align: top; }
+.m-table th { font-weight: 600; color: var(--ink-2); font-size: 0.78rem; letter-spacing: 0.01em; }
+.m-table td.m-num, .m-table th.m-num { text-align: right; font-variant-numeric: tabular-nums; white-space: nowrap; }
+.m-table tr:last-child td { border-bottom: 0; }
+.m-revoke { display: flex; gap: 0.5rem; flex-wrap: wrap; align-items: center; }
+.m-revoke .m-input { max-width: 14rem; min-width: 0; }

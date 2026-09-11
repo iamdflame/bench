@@ -3,8 +3,8 @@
  *
  * The registry ships `categories: []` and `tags: []` for every agent on BSC, so
  * the four categories the brief requires do not exist in the data. Every
- * marketplace has to derive them. We derive them from the agent's own words —
- * card name, description, and declared skills — and then the Capability assay
+ * marketplace has to derive them. We derive them from the agent's own words,
+ * card name, description, and declared skills, and then the Capability assay
  * independently checks whether the chain agrees with the label.
  *
  * That two-step matters: classification says what an agent *claims to be*,
@@ -18,9 +18,9 @@ interface Signal {
   /**
    * Matched case-insensitively, and only where a word starts.
    *
-   * Most signals here are deliberately stems — `rebalanc` is meant to catch
+   * Most signals here are deliberately stems, `rebalanc` is meant to catch
    * rebalancing, rebalance and rebalancer, and `spread` is meant to catch
-   * spreads and spreading — so the match is a prefix test at a word boundary
+   * spreads and spreading, so the match is a prefix test at a word boundary
    * rather than a whole-word one. What it is not is a bare substring test:
    * that is what this used to be, and it read `dca` out of "broadcaster",
    * "podcast" and "broadcast", and `apr` out of "AuraPro816".
@@ -34,7 +34,7 @@ interface Signal {
    * words that mean nothing like them: `apr` begins "April", `dca` ends
    * "broadcast", and a three-letter prefix rule is too loose to tell an annual
    * rate from a month. A trailing "s" is still allowed, because "the best
-   * APYs" is the plural of the signal and not a different word — dropping it
+   * APYs" is the plural of the signal and not a different word, dropping it
    * cost a real classification the first time this rule was written.
    */
   whole?: boolean;
@@ -107,7 +107,7 @@ export interface Classification {
  * Does this signal fire against the agent's own text?
  *
  * A word character before the phrase means the phrase is buried inside a
- * longer word rather than starting one, and that is not a match — "podcast"
+ * longer word rather than starting one, and that is not a match, "podcast"
  * is not a DCA bot. `whole` additionally requires the phrase to end where a
  * word ends, which is what separates the rate from the month.
  */

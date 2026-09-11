@@ -80,7 +80,7 @@ jobs:
           # Pinned: an exported NODE_ENV=development in a shell silently
           # mis-builds Next, and it cost an afternoon to find.
           NODE_ENV: production
-          NEXT_PUBLIC_MARKET_ADDRESS: "0xeD331c44183EFF1e8eDc31f6C60AfDA187681544"
+          NEXT_PUBLIC_MARKET_ADDRESS: "0x6052C0ab83a99Fb37aC598c23b8E369fB21C71B2"
           NEXT_PUBLIC_MARKET_CHAIN_ID: "56"
           NEXT_PUBLIC_MARKET_DEPLOY_BLOCK: "119898276"
         run: npm run build

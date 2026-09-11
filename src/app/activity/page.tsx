@@ -7,6 +7,8 @@ import { CATEGORIES, CATEGORY_LABEL } from "@/lib/config";
 import { readBook } from "@/lib/chain/book";
 import { mandatePath } from "@/lib/chain/deployments";
 import { WORKED_EXAMPLE, tx } from "@/lib/market/worked-example";
+import { describeStatus, strangerHiresLive } from "@/lib/market/stranger-hires";
+import { OPERATED_WALLETS } from "@/lib/market/hires";
 
 export const metadata: Metadata = {
   title: "Activity | Mandate",
@@ -39,6 +41,7 @@ const short = (a: string) => `${a.slice(0, 6)}…${a.slice(-4)}`;
  * product exists to catch.
  */
 export default async function ActivityPage() {
+  const strangers = await strangerHiresLive().catch(() => []);
   const book = await readBook().catch(() => null);
 
   return (
@@ -148,6 +151,9 @@ export default async function ActivityPage() {
                           {r.deployment.status !== "canonical"
                             ? ` · on ${r.deployment.label}, an earlier contract we replaced`
                             : ""}
+                          {r.agent && OPERATED_WALLETS.has(r.agent.toLowerCase())
+                            ? " · reference against reference: we operate the wallet holding it, so this book is a mechanism, not a market"
+                            : ""}
                         </p>
                       </div>
                       <Link
@@ -167,6 +173,80 @@ export default async function ActivityPage() {
             )}
           </>
         )}
+
+        <section className="m-section" id="strangers">
+          <div className="m-head">
+            <h2 className="m-h2">Jobs paid to agents we do not operate</h2>
+            <p className="m-head__note">
+              ERC-8183 escrow in $U, funded from our Altana account through Altana&rsquo;s hireErc8183Agent. Status is read from
+              the commerce contract as this page renders.
+            </p>
+          </div>
+          {strangers.length === 0 ? (
+            <div className="m-absent">
+              <p className="m-absent__t">No job has been paid to a third-party agent yet.</p>
+            </div>
+          ) : (
+            <div className="m-scroll">
+              <table className="m-table">
+                <thead>
+                  <tr>
+                    <th>Agent</th>
+                    <th>Paid to (registry owner)</th>
+                    <th className="m-num">Job</th>
+                    <th className="m-num">Budget</th>
+                    <th>Status now</th>
+                    <th>Funding</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {strangers.map((h) => (
+                    <tr key={h.jobId}>
+                      <td>
+                        <Link className="m-link" href={`/agents/${h.tokenId}`}>{h.who}</Link>
+                        <div className="m-note">#{h.tokenId}</div>
+                      </td>
+                      <td className="m-mono m-note">
+                        {short(h.provider)}
+                        <div>owner {short(h.ownerOf)}; not one of ours</div>
+                      </td>
+                      <td className="m-num">{h.jobId}</td>
+                      <td className="m-num">{h.budget} {h.token}</td>
+                      <td className="m-note">
+                        {describeStatus(h)}
+                        {h.deliverable?.url ? (
+                          <div>
+                            <a className="m-link" href={h.deliverable.url} target="_blank" rel="noreferrer">
+                              their deliverable
+                            </a>
+                            {h.deliverable.hashMatches === true
+                              ? ", matching the hash they committed on chain"
+                              : h.deliverable.hashMatches === false
+                                ? `; the hash they committed (${h.deliverable.committedHash.slice(0, 10)}…) is not the keccak or sha256 of the bytes served, under every encoding we tried`
+                                : ""}
+                          </div>
+                        ) : null}
+                      </td>
+                      <td>
+                        {h.tx ? (
+                          <a className="m-link m-mono" href={tx(h.tx)} target="_blank" rel="noreferrer">{short(h.tx)}</a>
+                        ) : (
+                          <span className="m-note">no hash reported</span>
+                        )}
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+          )}
+          <p className="m-note" style={{ marginTop: "0.8rem", maxWidth: "70ch" }}>
+            A funded job is escrow. It becomes payment when the provider submits work and the job settles; if the provider never
+            submits, the budget comes back to us after expiry. We say &ldquo;paid into escrow&rdquo; until then, because
+            &ldquo;hired a stranger&rdquo; is only true of the ones that did the work. Check any provider yourself:{" "}
+            <span className="m-mono">cast call 0x8004a169fb4a3325136eb29fa0ceb6d2e539a432 &quot;ownerOf(uint256)(address)&quot; 269706</span>
+          </p>
+        </section>
 
         <section className="m-section">
           <div className="m-head">

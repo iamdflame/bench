@@ -1,16 +1,16 @@
 /**
  * A short-lived, in-process memo for chain reads.
  *
- * Some of these readings are genuinely expensive — the ladder's rung 4 scans
+ * Some of these readings are genuinely expensive, the ladder's rung 4 scans
  * event logs in 4,000-block windows from the deploy block, because free BSC
- * providers refuse anything wider — and the front page was taking eighteen
+ * providers refuse anything wider, and the front page was taking eighteen
  * seconds to paint as a result. That is not a rendering problem to be
  * decorated around; it is the page failing.
  *
  * The honest fix is a memo rather than a fabrication: the first request pays
  * the cost, later requests inside the window get that same reading, and a
  * reading that has gone stale is served *while* a fresh one is fetched behind
- * it. Nothing is invented and nothing is smoothed — every figure on the site
+ * it. Nothing is invented and nothing is smoothed, every figure on the site
  * already carries the block it was read at and how long ago, so a cached
  * answer says so on the page rather than pretending to be live.
  *
@@ -101,7 +101,7 @@ export const forget = (key: string) => store.delete(key);
  * that long to walk and nothing was going to stop it.
  *
  * A capped read that runs out of time resolves to `null`, and the caller says
- * "this could not be read" — which is a different statement from "there is
+ * "this could not be read", which is a different statement from "there is
  * nothing here", and the panels are careful to make that distinction.
  */
 export async function withTimeout<T>(work: Promise<T>, ms: number): Promise<T | null> {

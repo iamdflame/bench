@@ -4,7 +4,7 @@
  *
  * A verifier that imported the application would be checking our arithmetic
  * against our arithmetic. So the rule is enforced here rather than promised in
- * a README — every import in `src/` must be viem, a node builtin, or a sibling
+ * a README, every import in `src/` must be viem, a node builtin, or a sibling
  * file in this package. Anything else fails the build.
  */
 
@@ -23,8 +23,8 @@ const ALLOWED = new Set(["viem", "viem/chains", "viem/utils", "viem/accounts"]);
  * Test files may reach the test runner, and nothing else.
  *
  * Without this the package could not be tested at all, which is worse than the
- * risk it avoids: the verdict logic — the branch that decides whether a
- * mandate FAILED or was simply never awarded — is the part of this package
+ * risk it avoids: the verdict logic, the branch that decides whether a
+ * mandate FAILED or was simply never awarded, is the part of this package
  * most worth testing and the part a reviewer is least able to check by eye.
  * Every other rule still applies to test files: they may not import the
  * application, touch the filesystem, read the operator's environment, or name
@@ -50,7 +50,7 @@ const TEST_HOSTS = new Set(["127.0.0.1", "localhost"]);
  *
  * An explicit list rather than a prefix pattern. The pattern version allowed
  * anything beginning "bsc-" and rejected "bsc.rpc.blxrbdn.com", which is both
- * too loose and too tight — it would have waved through a lookalike domain
+ * too loose and too tight, it would have waved through a lookalike domain
  * while blocking a real node.
  */
 const ALLOWED_HOSTS = new Set([
@@ -86,7 +86,7 @@ const REQUIRE = /\brequire\(\s*["']([^"']+)["']\s*\)/g;
  *
  * The import pattern spans newlines to catch multi-line import statements,
  * which means an `import` anywhere above a quoted phrase in prose matches the
- * two together — a comment containing the words *from "the comparison came out
+ * two together, a comment containing the words *from "the comparison came out
  * wrong"* was read as a dependency by that name. An import cannot occur inside
  * a comment, so removing them costs the check nothing.
  *
@@ -110,7 +110,7 @@ for (const file of files) {
       if (spec.startsWith(".")) {
         // Relative imports may not climb out of this package.
         const target = resolve(dirname(file), spec);
-        if (!target.startsWith(srcDir)) violations.push(`${rel}: reaches outside the package — "${spec}"`);
+        if (!target.startsWith(srcDir)) violations.push(`${rel}: reaches outside the package, "${spec}"`);
         continue;
       }
       if (BUILTINS.has(spec) || ALLOWED.has(spec)) continue;
@@ -133,10 +133,10 @@ for (const file of files) {
         const host = (m[1] ?? "").toLowerCase();
         if (ALLOWED_HOSTS.has(host)) continue;
         if (isTest(file) && TEST_HOSTS.has(host)) continue;
-        violations.push(`${rel}: ${why} — "${host}"`);
+        violations.push(`${rel}: ${why}, "${host}"`);
         continue;
       }
-      violations.push(`${rel}: ${why} — "${m[0]}"`);
+      violations.push(`${rel}: ${why}, "${m[0]}"`);
     }
   }
 }
@@ -145,7 +145,7 @@ const deps = Object.keys(JSON.parse(readFileSync(join(root, "package.json"), "ut
 for (const d of deps) if (d !== "viem") violations.push(`package.json: depends on "${d}"; only viem is permitted`);
 
 if (violations.length) {
-  console.error("\n  isolation broken — this package must read nothing but the chain:\n");
+  console.error("\n  isolation broken, this package must read nothing but the chain:\n");
   for (const v of violations) console.error(`    ✗ ${v}`);
   console.error("");
   process.exit(1);

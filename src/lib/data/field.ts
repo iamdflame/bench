@@ -3,9 +3,9 @@
  *
  * Our own crawl walks the registry in token order and has reached 3,808 of
  * 304,787. That is an honest sample and a useless front door, because the
- * agents a BNB Chain judge will actually look for — the ones being submitted
+ * agents a BNB Chain judge will actually look for, the ones being submitted
  * to this hackathon, minted in the last fortnight, at token ids far past where
- * the crawl has got to — are all in the 300,979 it has not seen.
+ * the crawl has got to, are all in the 300,979 it has not seen.
  *
  * So these are named explicitly and read from the chain rather than waited
  * for. Every one is a public mainnet ERC-8004 identity that somebody else
@@ -42,7 +42,7 @@ export interface FieldAgent {
    * One wallet holding forty-four registrations is not forty-four agents, and
    * a register that counts them as such is manufacturing the diversity it is
    * supposed to be measuring. The number is shown rather than the rows being
-   * hidden — they are real registrations and they belong in the register; they
+   * hidden, they are real registrations and they belong in the register; they
    * just do not each get a vote in an office count.
    */
   siblings: number;

@@ -13,7 +13,7 @@ export interface Artifact {
  *
  * The rule this component exists to enforce: nothing on this site asserts a
  * number without shipping the check beside it. Not a link to documentation
- * explaining how one might verify — the exact line, copyable, that re-derives
+ * explaining how one might verify, the exact line, copyable, that re-derives
  * the figure printed above it.
  *
  * Four parts, and the fourth is the one nobody else has. A claim with a bond

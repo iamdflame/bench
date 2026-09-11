@@ -12,7 +12,7 @@
  *              network: "bsc", asset, payTo }] }`, paid with an `X-PAYMENT`
  *              header.
  *   x402 v2  `{ x402Version: 2, accepts: [{ scheme: "eip3009", amount,
- *              network: "eip155:56", ... }] }`, and the resource may name a
+ *              network: "eip155:56"... }] }`, and the resource may name a
  *              different URL from the one that answered.
  *
  * Both are parsed. Whether we can *pay* one is a separate question from
@@ -137,8 +137,8 @@ export function parseChallenge(
 
     "We do not hold that token" is the lazy answer and it is often false. The
     interesting case is BNB Smart Chain's USDT: it has neither
-    `DOMAIN_SEPARATOR` nor `transferWithAuthorization` — both revert, checked
-    against the token itself — so no amount of holding it makes an EIP-3009
+    `DOMAIN_SEPARATOR` nor `transferWithAuthorization`, both revert, checked
+    against the token itself, so no amount of holding it makes an EIP-3009
     payment possible. An agent pricing in USDT over that scheme has to settle
     some other way, and saying that is more useful to its operator than saying
     we are short of funds.

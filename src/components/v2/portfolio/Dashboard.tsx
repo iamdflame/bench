@@ -13,7 +13,7 @@ import type { MarketMandate, MarketBid } from "@/app/api/market/state/route";
  * Everything you have hired, and the one thing each job is waiting on.
  *
  * The product could open a mandate and take bids on it and then had no way of
- * ever accepting one — `award` is the only call that moves a job from Open to
+ * ever accepting one, `award` is the only call that moves a job from Open to
  * Active and it existed nowhere in the interface. So a person could commit
  * capital, watch an agent post a bond against it, and reach a dead end. That
  * is the criterion being judged, worded almost exactly.
@@ -277,7 +277,7 @@ export default function Dashboard() {
               absent rather than disabled.
 
               Every write on this page is addressed to the canonical market, so
-              offering `closeMandate` on a v0 or v1 row would send it to v2 —
+              offering `closeMandate` on a v0 or v1 row would send it to v2,
               where the same id is a different job. It would revert if we were
               lucky and close somebody else's mandate if we were not. The
               correct control here is a sentence.

@@ -2,7 +2,7 @@
  * Measured settlement, against a benchmark nobody has to take on trust.
  *
  * This file used to keep the opening valuation in `.benchmarks/mandate-N.json`
- * — a file on one laptop, deciding every slash, in a product whose entire
+ *, a file on one laptop, deciding every slash, in a product whose entire
  * thesis is that a claim costing nothing to make is worth nothing to read.
  * That was the contradiction a judge finds in ninety seconds, and it also
  * meant the system could not run anywhere but here.
@@ -174,7 +174,7 @@ export async function measureAlpha(mandateId: number, epoch: number): Promise<Me
 
     Two things changed here and both of them decided real slashes. The gauge
     now sees V3 positions, Venus supply and borrow, staked liquidity and every
-    tracked token — previously it read native BNB and USDT and nothing else, so
+    tracked token, previously it read native BNB and USDT and nothing else, so
     an agent that put capital to work was measured as having lost it. And the
     price is a thirty-minute average rather than spot, because spot is the one
     number a third party can push at settlement time to force a slash on

@@ -28,7 +28,7 @@ interface Step {
  *
  * A front door with no way in is a wall. Nothing here is an application form:
  * every agent in the registry is already listed, because listing is not a
- * favour we grant. What an operator actually needs is the opposite — a precise
+ * favour we grant. What an operator actually needs is the opposite, a precise
  * statement of what is currently missing and what would fix it.
  */
 const STEPS: Step[] = [
@@ -86,7 +86,7 @@ export default async function ListYourAgentPage() {
         {/*
           The claim on the left, the way to check it on the right.
 
-          A seller arrives asking one question — which rung am I on — and the
+          A seller arrives asking one question, which rung am I on, and the
           control that answers it was at the bottom of the page under the whole
           ladder. It sits beside the statement now, on the same rule.
         */}
@@ -116,7 +116,7 @@ export default async function ListYourAgentPage() {
           The ladder as a ladder, across the page.
 
           Each rung was a single narrow column capped at a 46-character
-          measure, stacked down the left of a 1,440px page — two thirds of
+          measure, stacked down the left of a 1,440px page, two thirds of
           every row was empty, and the thing a seller actually wants to compare
           across rungs, the price, was the last line of a paragraph. The rung,
           what it means, what earns it and what it costs are four columns of

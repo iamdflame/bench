@@ -4,7 +4,7 @@
  * The register is a website, and a judge or a buyer reaches it by opening a
  * browser and reading it. An agent cannot. This is the same office served over
  * JSON-RPC so that Claude Code, Cursor, or any other MCP client can ask the
- * questions directly — which is also how BNB Agent Studio expects a skill to
+ * questions directly, which is also how BNB Agent Studio expects a skill to
  * arrive.
  *
  * --- what this server can and cannot do ---------------------------------
@@ -13,17 +13,15 @@
  * no signature. `assay_agent` runs the same six checks the site runs, against
  * the same chain, and returns the same fineness.
  *
- * The writes are the honest part. Opening a mandate escrows capital, hiring
- * over x402 spends money, and revoking a session is an authorised action on
- * chain — none of which a public server can do on a caller's behalf without
- * holding their keys, and this office does not hold anyone's keys. So the
- * write tools return the exact transaction, challenge or command that performs
- * the action, and say plainly that they have not performed it.
- *
- * That is a smaller claim than "hire an agent from your editor" and it is the
- * true one. A tool that reported success for a transaction it never sent would
- * be the same unverifiable claim this register exists to strike out, and it
- * would be discovered the first time someone checked the chain.
+ * The writes act, from the right place. Opening a mandate escrows capital,
+ * hiring spends money and revoking is an authorised action, so they sign only
+ * in the local stdio server, with MCP_SIGNER_KEY, a key the person running it
+ * holds. There, `hire_over_x402` pays and returns the work, `hire_erc8183`
+ * funds a job, `open_mandate` opens one and `revoke_session` ends a key. The
+ * hosted endpoint never signs: it returns the exact transaction or challenge
+ * and `executed: false`. A tool that reported success for a transaction it
+ * never sent would be the unverifiable claim this register exists to strike
+ * out, so every result says which of the two happened.
  */
 
 import { assayAgent } from "@/lib/assay";
@@ -39,7 +37,18 @@ import {
   CHAIN_ID,
   type Category,
 } from "@/lib/config";
-import { MARKET_ADDRESS } from "@/lib/chain/market";
+import { MARKET_ADDRESS, marketClient, readMandate, walletFor } from "@/lib/chain/market";
+import { encodeFunctionData, parseAbi, parseEther, toHex, type Address, type Hex } from "viem";
+import { privateKeyToAccount } from "viem/accounts";
+import { randomBytes } from "node:crypto";
+import { MARKET_V2 } from "@/lib/chain/deployments";
+import { MANDATE_MARKET_V2_ABI } from "@/lib/chain/abiV2";
+import { openMandate as sendOpenMandate, openMandateArgs } from "@/lib/chain/marketV2";
+import { readKey } from "@/lib/chain/keystore";
+import { getProbes } from "@/lib/data/probes";
+import { TRANSFER_TYPES, USD1, USD1_DOMAIN } from "@/lib/x402";
+import { IDENTITY_REGISTRY } from "@/lib/config";
+import { toJson } from "@/lib/chain/session-store";
 
 const HOST = process.env.NEXT_PUBLIC_HOST ?? "https://mandate-coral.vercel.app";
 
@@ -56,7 +65,32 @@ export interface ToolSpec {
 }
 
 type Args = Record<string, unknown>;
-type Handler = (args: Args) => Promise<unknown>;
+
+/**
+ * Who is calling, and whether this process may sign for them.
+ *
+ * The hosted endpoint passes nothing and gets `{ canSign: false }`: it runs on
+ * a deployment whose PRIVATE_KEY belongs to the operator, never to a caller,
+ * so no write tool there ever signs. The local stdio server passes
+ * `{ canSign: true }` and signs with MCP_SIGNER_KEY, a key the person running
+ * it put in their own environment. Nothing here reads PRIVATE_KEY.
+ */
+export interface ToolContext {
+  canSign: boolean;
+}
+const HOSTED: ToolContext = { canSign: false };
+type Handler = (args: Args, ctx: ToolContext) => Promise<unknown>;
+
+function signerFor(ctx: ToolContext): { key: Hex; address: Address } | null {
+  if (!ctx.canSign) return null;
+  const raw = process.env.MCP_SIGNER_KEY;
+  if (!raw) return null;
+  const key = (raw.startsWith("0x") ? raw : `0x${raw}`) as Hex;
+  return { key, address: privateKeyToAccount(key).address };
+}
+
+/** Results cross a JSON boundary; bigints must not reach it raw. */
+const plain = <T>(v: T): unknown => JSON.parse(toJson(v));
 
 const str = (a: Args, k: string): string | undefined =>
   typeof a[k] === "string" ? (a[k] as string) : undefined;
@@ -217,7 +251,7 @@ const checkDuplication: Handler = async (a) => {
     duplicateShare: Number((d.duplicateShare * 100).toFixed(1)),
     collapseRatio: Number(d.collapse.toFixed(3)),
     method:
-      "Collapsed on name and description, normalised for case and whitespace, and blind to the owner. One product minted once per user wallet has a different owner on every copy, so keying on the owner would report an almost clean register — 1.02x against 1.23x. Nothing is stemmed and no near-matches are clustered, so every figure here is a floor.",
+      "Collapsed on name and description, normalised for case and whitespace, and blind to the owner. One product minted once per user wallet has a different owner on every copy, so keying on the owner would report an almost clean register: 1.02x against 1.23x. Nothing is stemmed and no near-matches are clustered, so every figure here is a floor.",
     scope: `Measured over the ${d.counted.toLocaleString()} rows this office has read, not the ${index.registry.registered.toLocaleString()} registered. The ratio is not extrapolated, because a ratio measured on a crawl ordered by token id need not hold across the whole registry.`,
     mostRegistered: d.clusters.slice(0, top).map((c) => ({
       name: c.name,
@@ -237,102 +271,202 @@ const checkDuplication: Handler = async (a) => {
 
 /*
   These do not execute. Each returns what performing the action requires, and
-  says so in the payload rather than only in the tool description — a client
+  says so in the payload rather than only in the tool description, so a client
   that ignores descriptions still cannot mistake the result for a receipt.
 */
 
-const NO_KEYS =
-  "This server holds no keys and has sent nothing. The action below is yours to sign.";
+const DRY =
+  "Nothing was sent. The hosted endpoint never signs; run the stdio server with MCP_SIGNER_KEY set in your own environment and this tool sends it from that key.";
 
-const openMandate: Handler = async (a) => {
+const openMandate: Handler = async (a, ctx) => {
   const categoryArg = str(a, "category");
   if (!categoryArg || !(CATEGORIES as readonly string[]).includes(categoryArg)) {
     throw new Error(`category must be one of: ${CATEGORIES.join(", ")}`);
   }
   const category = categoryArg as Category;
+  const capital = str(a, "capitalBnb") ?? "0.0002";
+  if (!/^\d+(\.\d{1,18})?$/.test(capital)) throw new Error("capitalBnb must be a decimal amount of BNB.");
+  const value = parseEther(capital);
+  if (value < parseEther("0.0002")) throw new Error("capitalBnb must be at least 0.0002, the market's minimum.");
 
+  const callArgs = openMandateArgs({
+    category: CATEGORIES.indexOf(category) as 0 | 1 | 2 | 3,
+    benchmark: 0,
+    toleranceBps: 500,
+    feeBps: 1000,
+    slashBps: 2500,
+    epochLength: 3600,
+    epochsTotal: 24,
+    strikes: 3,
+    catastrophicBps: -1000,
+    bondFloorBps: 2000,
+  });
+  const data = encodeFunctionData({ abi: MANDATE_MARKET_V2_ABI, functionName: "openMandate", args: callArgs } as never);
+  const terms = {
+    category,
+    capitalBnb: capital,
+    benchmark: "Hold, the only benchmark the settlement engine derives today",
+    epoch: "3600 s, 24 epochs, 3 strikes, 25% slash, 10% fee on outperformance",
+  };
+  const s = signerFor(ctx);
+  if (!s) {
+    return {
+      executed: false,
+      reason: DRY,
+      transaction: { chainId: CHAIN_ID, to: MARKET_V2, value: value.toString(), data },
+      terms,
+      web: `${HOST}/agents?category=${category}`,
+    };
+  }
+  const hash = await sendOpenMandate(walletFor(s.key), callArgs, value);
   return {
-    executed: false,
-    reason: NO_KEYS,
-    what: "Opening a mandate escrows the principal's capital in the market contract and invites bonded agents to bid for it. It is a transaction from the principal's own wallet.",
-    contract: { address: MARKET_ADDRESS ?? "not configured in this deployment", chainId: CHAIN_ID },
-    call: {
-      function: "openMandate(uint8 category, uint256 amount, uint64 epochLength)",
-      category,
-      categoryIndex: CATEGORIES.indexOf(category),
-      amount: "the capital to put at risk, in wei",
-      epochLength: "seconds per settled epoch",
-    },
-    command: `npm run market -- open --category ${category}`,
-    thenWhat:
-      "Agents bid by posting their own bond. Award the mandate, and each epoch settles against a benchmark committed to chain before the outcome is known.",
-    web: `${HOST}/floor`,
+    executed: true,
+    from: s.address,
+    transaction: hash,
+    explorer: `https://bscscan.com/tx/${hash}`,
+    terms,
+    thenWhat: "Agents bid by posting a bond. Award one, and each epoch settles against a benchmark committed before the outcome.",
+    web: `${HOST}/activity`,
   };
 };
 
-const hireOverX402: Handler = async (a) => {
+const HOUSE_AGENTS = ["grid-1", "range-1", "yield-1", "guard-1"];
+
+const hireOverX402: Handler = async (a, ctx) => {
+  const tokenId = str(a, "tokenId");
+  const agent = str(a, "agent");
+  const query = str(a, "query");
+  if (tokenId !== undefined && !/^\d{1,20}$/.test(tokenId)) throw new Error("tokenId must be a decimal integer.");
+  if (!tokenId && !agent) throw new Error(`give tokenId (a registry agent) or agent (one of ${HOUSE_AGENTS.join(", ")}).`);
+
+  let url: string;
+  if (agent) {
+    if (!HOUSE_AGENTS.includes(agent)) throw new Error(`agent must be one of ${HOUSE_AGENTS.join(", ")}.`);
+    if (query && !/^[\w=&.:%-]{1,300}$/.test(query)) throw new Error("query must be a plain query string, like wallet=0x... or position=123.");
+    url = `${HOST}/api/x402/house/${agent}${query ? `?${query}` : ""}`;
+  } else {
+    const q = getProbes().quotes?.[tokenId!];
+    if (!q) return { executed: false, reason: "We have no measured x402 price for this agent. Its endpoint either did not answer 402 or has never been called.", tokenId };
+    if (!q.payable) return { executed: false, reason: `Cannot be paid by signature: ${q.unpayable}`, endpoint: q.endpoint };
+    url = q.endpoint;
+  }
+
+  const first = await fetch(url, { signal: AbortSignal.timeout(20_000) }).catch(() => null);
+  if (!first) return { executed: false, reason: "The endpoint did not answer.", url };
+  const challenge = (await first.json().catch(() => null)) as { accepts?: { scheme: string; asset: string; payTo: Address; maxAmountRequired: string; network: string }[] } | null;
+  if (first.status !== 402) return { executed: false, reason: `Expected a 402 with terms, got ${first.status}.`, url, body: challenge };
+
+  const s = signerFor(ctx);
+  if (!s) return { executed: false, reason: DRY, url, challenge };
+  const req = challenge?.accepts?.[0];
+  if (!req || req.scheme !== "exact" || req.asset.toLowerCase() !== USD1.toLowerCase()) {
+    return { executed: false, reason: "This tool pays x402 v1 'exact' in USD1 only, the one stable on BSC that can be paid by signature.", challenge };
+  }
+  const account = privateKeyToAccount(s.key);
+  const authorization = {
+    from: account.address,
+    to: req.payTo,
+    value: BigInt(req.maxAmountRequired),
+    validAfter: 0n,
+    validBefore: BigInt(Math.floor(Date.now() / 1000) + 120),
+    nonce: toHex(randomBytes(32)),
+  };
+  const signature = await account.signTypedData({ domain: USD1_DOMAIN, types: TRANSFER_TYPES, primaryType: "TransferWithAuthorization", message: authorization });
+  const header = Buffer.from(
+    JSON.stringify({
+      x402Version: 1,
+      scheme: "exact",
+      network: req.network,
+      payload: { signature, authorization: { ...authorization, value: authorization.value.toString(), validAfter: "0", validBefore: authorization.validBefore.toString() } },
+    }),
+  ).toString("base64");
+  const second = await fetch(url, { headers: { "X-PAYMENT": header }, signal: AbortSignal.timeout(60_000) });
+  const receipt = second.headers.get("x-payment-response");
+  return {
+    executed: second.status === 200,
+    paidBy: account.address,
+    status: second.status,
+    settlement: receipt ? (JSON.parse(Buffer.from(receipt, "base64").toString()) as { transaction?: string }).transaction ?? null : null,
+    work: await second.json().catch(() => null),
+  };
+};
+
+const REGISTRY = parseAbi(["function ownerOf(uint256) view returns (address)", "function getAgentWallet(uint256) view returns (address)"]);
+
+async function providerOf(tokenId: string): Promise<Address> {
+  const wallet = (await marketClient
+    .readContract({ address: IDENTITY_REGISTRY as Address, abi: REGISTRY, functionName: "getAgentWallet", args: [BigInt(tokenId)] })
+    .catch(() => null)) as Address | null;
+  if (wallet && !/^0x0{40}$/i.test(wallet)) return wallet;
+  return (await marketClient.readContract({ address: IDENTITY_REGISTRY as Address, abi: REGISTRY, functionName: "ownerOf", args: [BigInt(tokenId)] })) as Address;
+}
+
+const hireErc8183: Handler = async (a, ctx) => {
   const tokenId = str(a, "tokenId") ?? "";
   if (!/^\d{1,20}$/.test(tokenId)) throw new Error("tokenId must be a decimal integer.");
-  const categoryArg = str(a, "category");
-  const category =
-    categoryArg && (CATEGORIES as readonly string[]).includes(categoryArg)
-      ? categoryArg
-      : "grid-trading";
-
-  const resource = `${HOST}/api/x402/agent/${tokenId}/simulate`;
-
-  /*
-    Ask the paywalled endpoint for its own terms rather than restating them
-    here. A price copied into a tool description goes stale silently; a 402
-    challenge read from the endpoint is whatever it is charging now.
-  */
-  let challenge: unknown = null;
-  let reachable = true;
-  try {
-    const res = await fetch(resource, {
-      method: "POST",
-      headers: { "content-type": "application/json" },
-      body: JSON.stringify({ category }),
-    });
-    challenge = await res.json();
-  } catch {
-    reachable = false;
-  }
-
-  return {
-    executed: false,
-    reason: NO_KEYS,
-    what: "Hiring runs the agent's strategy against live chain state and returns the calls it would make. It is paid for over x402: the endpoint answers 402 with its terms, the caller pays, and repeats the request with an x-payment header.",
-    resource,
-    method: "POST",
-    paymentChallenge: reachable
-      ? challenge
-      : "The endpoint could not be reached from this server, so its current terms are unknown. Request it directly to read them.",
-    howToPay:
-      "An x402-capable client pays the challenge and retries with the x-payment header. This server cannot pay on your behalf.",
-    note: "The simulation sends nothing on chain either: the strategy is a pure function from chain state to the calls it is permitted to make, so a simulation is the real decision with execution withheld.",
+  const task = str(a, "task") ?? "";
+  if (task.length < 8 || task.length > 2000) throw new Error("task must describe the work in 8 to 2,000 characters.");
+  const budget = str(a, "budget") ?? "0.1";
+  if (!/^\d+(\.\d{1,18})?$/.test(budget) || Number(budget) <= 0 || Number(budget) > 10) throw new Error("budget is in $U, above 0 and at most 10.");
+  const provider = await providerOf(tokenId);
+  const s = signerFor(ctx);
+  const escrow = "Funds an ERC-8183 escrow in $U. The provider is paid when it submits work and the job settles; if it never submits, the budget is refundable after expiry.";
+  if (!s) return { executed: false, reason: DRY, tokenId, provider, budget: `${budget} $U`, escrow, via: "Altana hireErc8183Agent: createJob, registerJob, setBudget, approve exactly the budget, fund, in one batch" };
+  if (provider.toLowerCase() === s.address.toLowerCase()) throw new Error("Refusing: the provider is your own address.");
+  const sdk = (await import("@altananetwork/sdk")) as unknown as {
+    BNB: unknown;
+    signerFromPrivateKey: (k: Hex) => unknown;
+    hireErc8183Agent: (w: { address: Address }, signer: unknown, p: { provider: Address; task: string; budget: bigint }, o: { network: unknown }) => Promise<{ jobId: bigint; transactionHash?: Hex; expiredAt: bigint }>;
   };
+  const r = await sdk.hireErc8183Agent({ address: s.address }, sdk.signerFromPrivateKey(s.key), { provider, task, budget: parseEther(budget) }, { network: sdk.BNB });
+  return plain({ executed: true, from: s.address, tokenId, provider, jobId: r.jobId, transaction: r.transactionHash ?? null, expiresAt: r.expiredAt, escrow });
 };
 
-const revokeSession: Handler = async (a) => {
+const revokeSession: Handler = async (a, ctx) => {
+  const keyId = str(a, "keyId");
   const mandateId = int(a, "mandateId");
-  if (mandateId === undefined || mandateId < 0) {
-    throw new Error("mandateId is required and must be a non-negative integer.");
+  if (keyId === undefined && (mandateId === undefined || mandateId < 0)) {
+    throw new Error("mandateId is required and must be a non-negative integer, or pass keyId, a KeyStore key id on your own account.");
   }
-  return {
-    executed: false,
-    reason: NO_KEYS,
-    what: "Revocation withdraws a session key's authority: the agent's allowlist, spend cap and expiry stop applying because the session is dismissed. The wallet then refuses every call with UnauthorizedCall.",
-    command: `npm run grant -- revoke ${mandateId}`,
-    httpAlternative: {
-      method: "POST",
-      url: `${HOST}/api/sessions/revoke`,
-      body: { mandateId },
-      header: "x-operator-token",
-      note: "In this deployment the principal, the operator and the adjudicator are one party, so the HTTP route is authorised by an operator token. A market with third-party principals would have the principal sign revocation from their own wallet, which is how the contract already treats dismissal.",
-    },
-    web: `${HOST}/authority`,
-  };
+  const s = signerFor(ctx);
+  if (!s || !keyId) {
+    return {
+      executed: false,
+      reason: s ? "Pass keyId to revoke a key on your own account." : DRY,
+      what: "Revocation ends a session key's authority on chain: the account refuses its next call, and the KeyStore reports it not valid.",
+      httpAlternative: { method: "POST", url: `${HOST}/api/desk/revoke`, form: { id: "the session id shown on /desk", token: "the operator token" } },
+      web: `${HOST}/desk`,
+    };
+  }
+  if (!/^0x[0-9a-fA-F]{64}$/.test(keyId)) throw new Error("keyId must be a 32-byte hex string.");
+  const entry = await readKey(s.address, keyId as Hex);
+  if (!entry.publicKey) throw new Error("The KeyStore has no key with that id on your account.");
+  if (!entry.valid) return { executed: false, reason: "That key is already not valid.", keystore: plain(entry) };
+  const { AltanaWalletProvider } = await import("@bnbagent/sdk/wallets");
+  const r = await new AltanaWalletProvider({ privateKey: s.key }).revokeSession(entry.publicKey);
+  const after = await readKey(s.address, keyId as Hex);
+  return { executed: true, account: s.address, transaction: r.transactionHash ?? null, keystoreValidAfter: after.valid };
+};
+
+const readReceipt: Handler = async (a) => {
+  const jobId = str(a, "jobId");
+  const mandateId = int(a, "mandateId");
+  const tx = str(a, "tx");
+  if (jobId !== undefined) {
+    if (!/^\d{1,20}$/.test(jobId)) throw new Error("jobId must be a decimal integer.");
+    const sdk = (await import("@altananetwork/sdk")) as unknown as { BNB: unknown; getErc8183Job: (n: unknown, id: bigint) => Promise<unknown> };
+    return plain({ kind: "erc8183-job", jobId, job: await sdk.getErc8183Job(sdk.BNB, BigInt(jobId)) });
+  }
+  if (mandateId !== undefined) {
+    if (mandateId < 0) throw new Error("mandateId must be non-negative.");
+    return plain({ kind: "mandate", market: MARKET_ADDRESS, mandate: await readMandate(mandateId), web: `${HOST}/receipts/${mandateId}` });
+  }
+  if (tx !== undefined) {
+    if (!/^0x[0-9a-fA-F]{64}$/.test(tx)) throw new Error("tx must be a 32-byte transaction hash.");
+    const r = await marketClient.getTransactionReceipt({ hash: tx as Hex });
+    return plain({ kind: "transaction", status: r.status, block: r.blockNumber, from: r.from, to: r.to, gasUsed: r.gasUsed, logs: r.logs.length, explorer: `https://bscscan.com/tx/${tx}` });
+  }
+  throw new Error("Give jobId, mandateId or tx.");
 };
 
 /* ------------------------------------------------------------------ table */
@@ -341,14 +475,14 @@ export const TOOLS: Array<ToolSpec & { handler: Handler }> = [
   {
     name: "list_offices",
     description:
-      "The four offices this market runs — grid trading, rebalancing, yield optimisation and health factor — with how many registered agents are classified into each and which house agents work there. No key required.",
+      "The four offices this market runs (grid trading, rebalancing, yield optimisation and health factor), with how many registered agents are classified into each and which house agents work there. No key required.",
     inputSchema: { type: "object", properties: {}, additionalProperties: false },
     handler: listOffices,
   },
   {
     name: "assay_agent",
     description:
-      "Run the full assay against any ERC-8004 agent on BNB Smart Chain: six checks — identity, custody, activity, capability, reputation, performance — returning a millesimal fineness. Below 375 no hallmark is struck. Works for any token id, including agents being pitched elsewhere. Free, no key, nothing to sign.",
+      "Run the full assay against any ERC-8004 agent on BNB Smart Chain: six checks (identity, custody, activity, capability, reputation, performance), returning a millesimal fineness. Below 375 no hallmark is struck. Works for any token id, including agents being pitched elsewhere. Free, no key, nothing to sign.",
     inputSchema: {
       type: "object",
       properties: {
@@ -400,11 +534,12 @@ export const TOOLS: Array<ToolSpec & { handler: Handler }> = [
   {
     name: "open_mandate",
     description:
-      "PREPARES a mandate. Returns the contract call and command that open one, and does NOT send a transaction — this server holds no keys. Opening a mandate escrows the principal's own capital.",
+      "Opens a bonded mandate on MandateMarketV2. Over the hosted endpoint it PREPARES the exact transaction and does NOT send it. Over the local stdio server with MCP_SIGNER_KEY set, it sends it from that key and returns the hash. Escrows the signer's own capital.",
     inputSchema: {
       type: "object",
       properties: {
         category: { type: "string", enum: [...CATEGORIES], description: "Which office." },
+        capitalBnb: { type: "string", description: "Capital to escrow, in BNB. Default and minimum 0.0002." },
       },
       required: ["category"],
       additionalProperties: false,
@@ -414,14 +549,14 @@ export const TOOLS: Array<ToolSpec & { handler: Handler }> = [
   {
     name: "hire_over_x402",
     description:
-      "PREPARES a paid hire. Reads the live x402 payment challenge from the agent's endpoint and returns its terms. Does NOT pay — this server holds no keys and cannot spend on your behalf.",
+      "Buys one answer from an agent over x402: a registry agent by token id (using its measured price), or one of our reference agents (grid-1, range-1, yield-1, guard-1). Over the hosted endpoint it reads the live 402 terms and does NOT pay. Over stdio with MCP_SIGNER_KEY set, it signs an EIP-3009 USD1 authorization and returns the work and the settlement hash.",
     inputSchema: {
       type: "object",
       properties: {
-        tokenId: { type: "string", description: "The agent to hire, a decimal token id." },
-        category: { type: "string", enum: [...CATEGORIES], description: "Strategy to run." },
+        tokenId: { type: "string", description: "A registry agent, a decimal token id." },
+        agent: { type: "string", enum: ["grid-1", "range-1", "yield-1", "guard-1"], description: "One of our reference agents instead." },
+        query: { type: "string", description: "Inputs for a reference agent, like wallet=0x... or position=7408923." },
       },
-      required: ["tokenId"],
       additionalProperties: false,
     },
     handler: hireOverX402,
@@ -429,16 +564,47 @@ export const TOOLS: Array<ToolSpec & { handler: Handler }> = [
   {
     name: "revoke_session",
     description:
-      "PREPARES a revocation of an agent's session authority. Returns the command and the authorised HTTP route, and does NOT revoke — that is an authorised action this server cannot take for you.",
+      "Ends a session key's authority. Over the hosted endpoint it does NOT revoke and returns the authorised route. Over stdio with MCP_SIGNER_KEY set and a keyId, it revokes that key on the signer's own Altana account and returns the transaction and the KeyStore's answer afterwards.",
     inputSchema: {
       type: "object",
       properties: {
-        mandateId: { type: "number", description: "The mandate whose session to revoke." },
+        mandateId: { type: "number", description: "The mandate whose session to revoke (hosted: returns the route)." },
+        keyId: { type: "string", description: "A KeyStore key id on the signer's own account (stdio only)." },
       },
-      required: ["mandateId"],
       additionalProperties: false,
     },
     handler: revokeSession,
+  },
+  {
+    name: "hire_erc8183",
+    description:
+      "Hires a registry agent through ERC-8183 with Altana's hireErc8183Agent: funds an escrow in $U that pays the provider when it submits. Over the hosted endpoint it does NOT send anything and returns the provider and terms. Over stdio with MCP_SIGNER_KEY set, it funds the job from that key's Altana account.",
+    inputSchema: {
+      type: "object",
+      properties: {
+        tokenId: { type: "string", description: "The agent to hire, a decimal token id." },
+        task: { type: "string", description: "What you want done, 8 to 2,000 characters." },
+        budget: { type: "string", description: "Budget in $U, default 0.1." },
+      },
+      required: ["tokenId", "task"],
+      additionalProperties: false,
+    },
+    handler: hireErc8183,
+  },
+  {
+    name: "read_receipt",
+    description:
+      "Reads a receipt from the chain: an ERC-8183 job by jobId, a mandate by mandateId, or any transaction by hash. Read only, no key.",
+    inputSchema: {
+      type: "object",
+      properties: {
+        jobId: { type: "string", description: "An ERC-8183 job id." },
+        mandateId: { type: "number", description: "A mandate id on the current market." },
+        tx: { type: "string", description: "A transaction hash." },
+      },
+      additionalProperties: false,
+    },
+    handler: readReceipt,
   },
 ];
 
@@ -448,9 +614,14 @@ export const TOOL_SPECS: ToolSpec[] = TOOLS.map(({ name, description, inputSchem
   inputSchema,
 }));
 
-/** Dispatch one call. Throws for an unknown tool or bad arguments. */
-export async function callTool(name: string, args: Args = {}): Promise<unknown> {
+/**
+ * Dispatch one call. Throws for an unknown tool or bad arguments.
+ *
+ * `ctx` defaults to the hosted context, which never signs. Only the stdio
+ * server passes `{ canSign: true }`.
+ */
+export async function callTool(name: string, args: Args = {}, ctx: ToolContext = HOSTED): Promise<unknown> {
   const tool = TOOLS.find((t) => t.name === name);
   if (!tool) throw new Error(`Unknown tool: ${name}`);
-  return tool.handler(args ?? {});
+  return tool.handler(args ?? {}, ctx);
 }

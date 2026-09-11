@@ -2,7 +2,7 @@
  * BNB Greenfield: where an attestation's full preimage lives.
  *
  * The contract commits `observationHash` and emits the observation struct, so
- * the *arithmetic* of a settlement is already checkable from the chain alone —
+ * the *arithmetic* of a settlement is already checkable from the chain alone,
  * that is deliberate, and it is why `mandate-verify` needs no external service.
  *
  * What the event cannot carry is the working: every token balance, the pool
@@ -12,7 +12,7 @@
  * breakdown lives where neither we nor a single host can quietly remove it.
  *
  * The object's content hashes to the `breakdownRef` recorded in the
- * observation, so a reader fetches it, hashes it, and compares — the same
+ * observation, so a reader fetches it, hashes it, and compares, the same
  * discipline as everything else here.
  */
 
@@ -50,7 +50,7 @@ export const CROSS_CHAIN_ABI = [
 /**
  * The SDK's ESM build imports without file extensions, which Node's resolver
  * rejects outright. The CommonJS build is fine, so it is required rather than
- * imported — a packaging bug in a dependency, worked around explicitly so the
+ * imported, a packaging bug in a dependency, worked around explicitly so the
  * next person does not rediscover it.
  */
 export async function greenfieldClient(): Promise<any> {
@@ -122,7 +122,7 @@ export const objectUrl = (bucket: string, object: string) =>
  *   const sendFile = isNode && contentType === 'application/json'
  *     ? file.toString() : file;
  *
- * A `File`'s `toString()` is `"[object File]"` — thirteen bytes — while the
+ * A `File`'s `toString()` is `"[object File]"`, thirteen bytes, while the
  * request already declared `payload_size` from `file.size`. The storage
  * provider therefore rejects every JSON upload with "file payload size is
  * inconsistent with the parameter payload size".

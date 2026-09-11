@@ -6,7 +6,7 @@ import type { FloorMandate, FloorSnapshot } from "@/app/api/floor/route";
  *
  * Four columns, one per assay office, mandates stacked within them. Radius is
  * capital under management, ring is the bond still at risk, tint is realised
- * alpha, tremor is strikes. Nothing here is chosen for effect — every visual
+ * alpha, tremor is strikes. Nothing here is chosen for effect, every visual
  * property is a field of the mandate, which is what makes the legend possible
  * and the picture worth looking at.
  *

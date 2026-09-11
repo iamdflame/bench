@@ -3,7 +3,7 @@ import { alphaFrom } from "@/lib/settlement";
 
 /**
  * Alpha is the number every slash and every fee turns on, and the TypeScript
- * that computes it must agree with the Solidity that re-checks it — bit for
+ * that computes it must agree with the Solidity that re-checks it, bit for
  * bit, in integer arithmetic. A floating-point drift here does not produce a
  * wrong answer; it produces a settlement that reverts for reasons that look
  * like a bug.

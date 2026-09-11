@@ -9,7 +9,7 @@
  *
  * The instinct is to pick the newest and delete the others. That would be
  * wrong here, because all three hold real mandates with real settled epochs,
- * including the grid mandate that lost 21% — and a market that quietly stops
+ * including the grid mandate that lost 21%, and a market that quietly stops
  * displaying its worst result when it redeploys is doing the precise thing this
  * product exists to catch.
  *

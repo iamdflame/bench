@@ -1,7 +1,7 @@
 /**
  * The materialised index.
  *
- * The web app never calls 8004scan on the request path — the upstream limit is
+ * The web app never calls 8004scan on the request path, the upstream limit is
  * 30 req/min anonymous, 500/min with a key, against 301,160 BSC agents. The
  * indexer writes here; the app only reads.
  *

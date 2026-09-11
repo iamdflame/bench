@@ -3,3 +3,10 @@ drizzle/
 *.md
 !README.md
 .env*
+# Never upload secrets. These are gitignored, but the Vercel CLI does not
+# read .gitignore: anything not listed here is uploaded with the source.
+.sessions/
+.agent-state/
+*.session
+*.key
+scripts/vercel-env.sh

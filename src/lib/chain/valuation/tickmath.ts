@@ -1,7 +1,7 @@
 /**
  * Uniswap V3 tick and liquidity maths, in integer space.
  *
- * A concentrated liquidity position is not a balance — it is an amount of
+ * A concentrated liquidity position is not a balance, it is an amount of
  * liquidity spread between two ticks, and what that is *worth* depends on
  * where the pool currently sits. Below the range it is entirely token0, above
  * it entirely token1, inside it a mixture. Getting this wrong values a

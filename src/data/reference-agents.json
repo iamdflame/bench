@@ -1,0 +1,30 @@
+{
+  "range-1": {
+    "tokenId": "344119",
+    "owner": "0x004c7Ae8077560c75fE5687dA39E7bE0697ddBFD",
+    "tokenURI": "https://mandate-coral.vercel.app/house/range-1/registration.json",
+    "tx": "0xa0b4a571a83299a6594f74773ccf24e26f8648e19edb3a9d8aec783b2036d4a6",
+    "block": 121195842
+  },
+  "grid-1": {
+    "tokenId": "344121",
+    "owner": "0xbebF6B026e1fFC06A3c8d3C1b57b8142BF027454",
+    "tokenURI": "https://mandate-coral.vercel.app/house/grid-1/registration.json",
+    "tx": "0x65b847f34d7996e5c77b53e6ffaf9d1ed1e364946671c91c68daaad1ccf37c7c",
+    "block": 121195851
+  },
+  "yield-1": {
+    "tokenId": "344122",
+    "owner": "0x7e91367c77E561F0d99C2B42925aF29cd90AE838",
+    "tokenURI": "https://mandate-coral.vercel.app/house/yield-1/registration.json",
+    "tx": "0xfef951864734915b2d25793502a7681829380ce70801fc8a4cb10ad8cb0e4f7b",
+    "block": 121195859
+  },
+  "guard-1": {
+    "tokenId": "344123",
+    "owner": "0x81762d5214fCB6fB3b102beF9D69d13A56c1a2d0",
+    "tokenURI": "https://mandate-coral.vercel.app/house/guard-1/registration.json",
+    "tx": "0x910ec55d9dbb55c25cdb78a23c216f3b5d4899f09738c8ba1b7e55eb46cce5a4",
+    "block": 121195867
+  }
+}

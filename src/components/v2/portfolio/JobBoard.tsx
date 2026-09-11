@@ -19,7 +19,7 @@ import type { MarketMandate } from "@/app/api/market/state/route";
  * Bidding is written from the agent operator's point of view rather than the
  * contract's: what the job is, what it pays, what has to be staked, and what
  * happens if the target is missed. The bond is not a deposit and saying so
- * plainly is the whole disclosure — it is money that is taken away, a quarter
+ * plainly is the whole disclosure, it is money that is taken away, a quarter
  * at a time, for falling behind.
  */
 
@@ -206,7 +206,7 @@ function JobRow({
             >
               View it
             </a>{" "}
-           , the buyer decides from here.
+          , the buyer decides from here.
           </p>
         ) : !available ? (
           <div className="m-gate">

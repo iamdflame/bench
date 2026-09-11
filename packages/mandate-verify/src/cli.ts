@@ -1,6 +1,6 @@
 #!/usr/bin/env node
 /**
- * mandate-verify — check a MANDATE settlement without trusting MANDATE.
+ * mandate-verify, check a MANDATE settlement without trusting MANDATE.
  *
  *   npx mandate-verify --mandate 0 --chain 56
  *
@@ -8,7 +8,7 @@
  * every slash and fee was decided by, and compares it against what was
  * settled. Exits 0 only if the numbers agree; any mismatch exits 1.
  *
- * It has no route to the operator's database, API or filesystem — a verifier
+ * It has no route to the operator's database, API or filesystem, a verifier
  * that asked us for the answer would be worth exactly as much as our word.
  */
 
@@ -61,7 +61,7 @@ interface Args {
    *
    * A flag rather than an environment variable. The isolation check rejected
    * the first attempt at this, which read the deploy block from the operator's
-   * environment — and it was right to. A verifier that reads a setting the
+   * environment, and it was right to. A verifier that reads a setting the
    * operator controls is taking one of the operator's numbers on trust, which
    * is the whole thing this package exists not to do. A caller passing the
    * block on the command line is supplying their own.
@@ -116,13 +116,13 @@ function fail(message: string): never {
 }
 
 const USAGE = `
-${bold("mandate-verify")} — re-derive a MANDATE settlement from the chain alone
+${bold("mandate-verify")}, re-derive a MANDATE settlement from the chain alone
 
   npx mandate-verify --mandate 0 --chain 56
 
   --mandate, -m <n>   mandate id to verify            (required)
   --chain, -c <id>    56 mainnet (default), 97 testnet
-  --deployment, -d    v2 (default, canonical), v1, v0 — this office has run
+  --deployment, -d    v2 (default, canonical), v1, v0, this office has run
                       three markets and all three still hold settled mandates
   --market <address>  market contract; defaults to the known deployment
   --rpc <url>         node to read from
@@ -171,7 +171,7 @@ function render(r: VerifyResult): void {
   } else if (r.awarded) {
     console.log(`\n  ${red("no opening mark")}`);
   } else {
-    console.log(`\n  ${dim("not awarded — no agent, no opening mark")}`);
+    console.log(`\n  ${dim("not awarded, no agent, no opening mark")}`);
   }
 
   for (const e of r.epochs) {
@@ -224,7 +224,7 @@ function explainTier(tier: number): string {
   if (tier === 2)
     return "every valuation was recomputed from chain state at its pinned block and agreed with what was committed.";
   if (tier === 1)
-    return "the measurements were committed before the outcomes were known and still hash to their commitments; the settled alpha is exactly what they imply. Re-deriving the valuations needs a node that still serves those blocks — pass --archive for tier 3.";
+    return "the measurements were committed before the outcomes were known and still hash to their commitments; the settled alpha is exactly what they imply. Re-deriving the valuations needs a node that still serves those blocks, pass --archive for tier 3.";
   return "nothing could be checked.";
 }
 
@@ -306,7 +306,7 @@ async function main() {
   /*
     Replay is its own mode: it re-derives the whole ladder rather than checking
     one settlement, and it needs no mandate. Implemented in this package rather
-    than shared with the application — a verifier that reused the application's
+    than shared with the application, a verifier that reused the application's
     derivation would be checking our arithmetic against our arithmetic.
   */
   if (a.replayFrom !== undefined) {
@@ -320,11 +320,11 @@ async function main() {
     );
     if (!result.derived) {
       for (const n of result.notes) console.log(`    · ${n}`);
-      console.log("\n  INCONCLUSIVE — the history could not be read\n");
+      console.log("\n  INCONCLUSIVE, the history could not be read\n");
       process.exit(3);
     }
     for (const r of result.rungs) {
-      const pop = r.population === null ? "—" : r.population.toLocaleString();
+      const pop = r.population === null ? "-" : r.population.toLocaleString();
       console.log(`    ${r.n}  ${r.name.padEnd(11)} ${pop.padStart(9)}   ${r.method}`);
     }
     console.log("");

@@ -2,14 +2,14 @@
  * What a ticket shows about the session key it is about to authorise.
  *
  * The granted half comes from `CATEGORY_CALLS`, which is the same table
- * `grantMandateSession` builds a real allowlist from — so the ticket cannot
+ * `grantMandateSession` builds a real allowlist from, so the ticket cannot
  * drift from what is actually signed.
  *
  * The withheld half is the part that makes the granted half mean anything. A
  * permission list showing only what was allowed reads as generous; beside what
  * was refused, with the reason, it reads as a boundary. Each of these is a call
  * that lives on a contract the session *can* reach, is not in the allowlist,
- * and is refused with a named `UnauthorizedCall` — which `npm run prove-session`
+ * and is refused with a named `UnauthorizedCall`, which `npm run prove-session`
  * demonstrates against the live relay rather than asserting here.
  */
 

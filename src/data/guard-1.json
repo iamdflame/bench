@@ -1,0 +1,8 @@
+{
+  "tx": "0x773e5e39b8be3785da278f22dbaf8a0959002bce5b2b69f3b3eed481ace37764",
+  "summary": "Health factor was 2.999992, just under its 3.00 trigger (Yield-1's supply a minute earlier had lifted it from 2.50); repaid 0.02 USDT of the account's own debt through a session that cannot borrow or repay for anyone else; now 4.00.",
+  "before": 2.9999924970926237,
+  "after": 4.000040016006403,
+  "trigger": 3,
+  "at": "2026-09-11T03:46:58.178Z"
+}

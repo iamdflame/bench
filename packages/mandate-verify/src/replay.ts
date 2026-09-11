@@ -3,12 +3,12 @@
  *
  * Deliberately a second implementation. The application derives this too, and
  * a verifier that shared its code would be checking our arithmetic against our
- * arithmetic. Nothing here imports anything but viem — enforced, not promised.
+ * arithmetic. Nothing here imports anything but viem, enforced, not promised.
  *
  * What can be replayed and what cannot is a property of where the data lives,
  * not of effort. Registrations and market awards are events, and events are
  * kept. "Its endpoint answered" was a probe made off chain at a moment in
- * time, and no historical record of that probe exists — so it is reported as
+ * time, and no historical record of that probe exists, so it is reported as
  * unavailable rather than back-filled from today's answer.
  */
 

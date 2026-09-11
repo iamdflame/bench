@@ -2,15 +2,15 @@
  * Re-runs every settled epoch in mainnet history through the corrected gauge.
  *
  * The old valuation read native BNB and USDT and nothing else, so an agent
- * that put capital to work — into a V3 position, a Venus supply, even a WBNB
- * wrap — was measured as having lost it. Slashes were taken on those
+ * that put capital to work, into a V3 position, a Venus supply, even a WBNB
+ * wrap, was measured as having lost it. Slashes were taken on those
  * measurements. This finds out which ones were wrong, and by how much.
  *
  * It re-derives from public chain state alone. That is the whole point, and it
  * is also the constraint: re-deriving a valuation at a past block needs archive
  * state, and no free BSC endpoint serves it. Without one this reports what it
  * can establish and states plainly what it cannot, rather than guessing at the
- * half it cannot see — which is the same failure it exists to correct.
+ * half it cannot see, which is the same failure it exists to correct.
  *
  *   npx tsx src/scripts/restate.ts [--archive URL] [--out docs/RESTATEMENT.md]
  */
@@ -135,7 +135,7 @@ const BPS = 10_000n;
 const alphaFrom = (prev: bigint, now: bigint) => (now * BPS) / prev - BPS;
 const bnb = (wei: bigint) => (Number(wei) / 1e18).toFixed(8);
 const pct = (bps: bigint | null) =>
-  bps === null ? "—" : `${bps >= 0n ? "+" : ""}${(Number(bps) / 100).toFixed(2)}%`;
+  bps === null ? "-" : `${bps >= 0n ? "+" : ""}${(Number(bps) / 100).toFixed(2)}%`;
 
 async function main() {
   const reader = createPublicClient({
@@ -228,7 +228,7 @@ async function main() {
             ? "no attestation stored for this epoch"
             : "this market predates attestations; nothing was committed to re-derive against";
         } else if (!archiveClient) {
-          blockedBy = "no archive endpoint — pass --archive URL or set ARCHIVE_RPC_URL";
+          blockedBy = "no archive endpoint, pass --archive URL or set ARCHIVE_RPC_URL";
         } else {
           const r = await settlementValuation(archiveClient, m.agent, attestedBlock).catch(
             (err) => ({ valuation: null, refusedBy: String(err).slice(0, 80) }) as const,
@@ -285,8 +285,8 @@ async function main() {
   lines.push("");
   lines.push(
     "`valueWallet()` read native BNB and USDT. That was the entire valuation. Every",
-    "strategy this market runs moves capital into something else — a PancakeSwap V3",
-    "position, a Venus supply, a debt repayment, a WBNB wrap — and all of it was",
+    "strategy this market runs moves capital into something else, a PancakeSwap V3",
+    "position, a Venus supply, a debt repayment, a WBNB wrap, and all of it was",
     "counted as zero. An agent that did exactly what it was hired to do was measured",
     "as having destroyed the capital it deployed.",
     "",
@@ -307,7 +307,7 @@ async function main() {
     lines.push("|---|---:|---:|---:|---:|---|");
     for (const r of slashed) {
       lines.push(
-        `| ${r.marketName} | ${r.mandateId} | ${r.epoch} | ${pct(r.reportedAlphaBps)} | ${bnb(r.slashWei)} | ${r.slashResolved ? "yes" : "**no — still pending**"} |`,
+        `| ${r.marketName} | ${r.mandateId} | ${r.epoch} | ${pct(r.reportedAlphaBps)} | ${bnb(r.slashWei)} | ${r.slashResolved ? "yes" : "**no, still pending**"} |`,
       );
     }
     lines.push("");
@@ -328,7 +328,7 @@ async function main() {
   lines.push("|---|---:|---:|---:|---:|---:|---|");
   for (const r of rows) {
     lines.push(
-      `| ${r.marketName} | ${r.mandateId} | ${r.epoch} | ${r.attestedBlock ?? "—"} | ${pct(r.reportedAlphaBps)} | ${pct(r.correctedAlphaBps)} | ${r.blockedBy ?? "re-derived"} |`,
+      `| ${r.marketName} | ${r.mandateId} | ${r.epoch} | ${r.attestedBlock ?? "-"} | ${pct(r.reportedAlphaBps)} | ${pct(r.correctedAlphaBps)} | ${r.blockedBy ?? "re-derived"} |`,
     );
   }
   lines.push("");

@@ -1,0 +1,85 @@
+{
+  "source": "chain",
+  "contract": "0x1cf9C5E9339E99e3Bfd45f117ca17E6e1A4E59D1",
+  "fromBlock": 121188454,
+  "toBlock": 121199176,
+  "readAt": "2026-09-11T04:36:45.023Z",
+  "fills": [
+    {
+      "tx": "0x0e2af2aeb5c5387bc67971a07c333b4fd83632fe6b877cf3cbb879f40cc1b11b",
+      "block": 121191827,
+      "at": "2026-09-11T03:41:35.000Z",
+      "side": "sell",
+      "usdt": 0.1423441842228874,
+      "wbnb": 0.0002,
+      "price": 711.7209211144369,
+      "gasBnb": 0.00001622835
+    },
+    {
+      "tx": "0xcbbd9767d86b1158060bc0d760f2a448aed633bea884edf5963a315b3be67d9b",
+      "block": 121192795,
+      "at": "2026-09-11T03:48:50.000Z",
+      "side": "buy",
+      "usdt": 0.14237395700803293,
+      "wbnb": 0.00019989999965821,
+      "price": 712.2258992069266,
+      "gasBnb": 0.00001649635
+    },
+    {
+      "tx": "0xc3a17bf776ad0b3f544fe2dd119b12b37e5ba3fd187ff5da5ee611441a1e5d57",
+      "block": 121194194,
+      "at": "2026-09-11T03:59:20.000Z",
+      "side": "sell",
+      "usdt": 0.14233270721560512,
+      "wbnb": 0.0002,
+      "price": 711.6635360780256,
+      "gasBnb": 0.00001543095
+    },
+    {
+      "tx": "0x2da9ccadac5d90678b4a723a7ef95487c563e43e6ef4032e5d32a5d0a288340d",
+      "block": 121197382,
+      "at": "2026-09-11T04:23:14.000Z",
+      "side": "sell",
+      "usdt": 0.1427592870287542,
+      "wbnb": 0.0002,
+      "price": 713.796435143771,
+      "gasBnb": 0.0000142711
+    },
+    {
+      "tx": "0x01856d5492d12a63fb256c95aa9b71397dbbf3db711a787855335fdb2297f493",
+      "block": 121199168,
+      "at": "2026-09-11T04:36:39.000Z",
+      "side": "sell",
+      "usdt": 0.143138343712958,
+      "wbnb": 0.0002,
+      "price": 715.69171856479,
+      "gasBnb": 0.00001543175
+    }
+  ],
+  "roundTrips": [
+    {
+      "openTx": "0x0e2af2aeb5c5387bc67971a07c333b4fd83632fe6b877cf3cbb879f40cc1b11b",
+      "closeTx": "0xcbbd9767d86b1158060bc0d760f2a448aed633bea884edf5963a315b3be67d9b",
+      "qtyWbnb": 0.00019989999965821,
+      "grossUsd": -0.00010094512051608193,
+      "gasUsd": 0.0232934088747061,
+      "netUsd": -0.023394353995222182,
+      "win": false
+    }
+  ],
+  "wins": 0,
+  "winRate": 0,
+  "realisedUsd": -0.00010094512051608193,
+  "unrealisedUsd": -0.0013999402523176302,
+  "gasUsd": 0.055511864348135334,
+  "pnlUsd": -0.05701274972096905,
+  "maxDrawdownUsd": 0.05701274972096905,
+  "openWbnb": -0.0006001000003417901,
+  "markPrice": 716.0497422100764,
+  "window": {
+    "start": "2026-09-11T03:41:35.000Z",
+    "end": "2026-09-11T04:36:39.000Z",
+    "hours": 0.9177777777777778
+  },
+  "verify": "cast logs --address 0x1cf9C5E9339E99e3Bfd45f117ca17E6e1A4E59D1 \"Swapped(address indexed,address indexed,uint256,uint256)\" --from-block 121188454 --rpc-url https://bsc.rpc.blxrbdn.com"
+}

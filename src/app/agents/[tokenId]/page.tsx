@@ -10,8 +10,12 @@ import { findAgent } from "@/lib/data/agents";
 import { toListing, REVIEW_CAVEAT } from "@/lib/market/listing";
 import { assayFor, assaySnapshot } from "@/lib/market/assays";
 import { previewFor } from "@/lib/market/quotes";
+import { live } from "@/lib/data/live";
+import { describeStatus, strangerHiresLive } from "@/lib/market/stranger-hires";
 
 export const revalidate = 300;
+// Room for the census slice that runs after the response (see lib/census/refresh).
+export const maxDuration = 60;
 
 export async function generateMetadata({
   params,
@@ -38,6 +42,9 @@ export async function generateMetadata({
  * away from.
  */
 export default async function AgentPage({ params }: { params: Promise<{ tokenId: string }> }) {
+  const pageTokenId = (await params).tokenId;
+  const paidJobs = (await strangerHiresLive().catch(() => [])).filter((h) => h.tokenId === pageTokenId);
+  await live();
   const { tokenId } = await params;
   const agent = findAgent(tokenId);
   if (!agent) notFound();
@@ -214,12 +221,33 @@ export default async function AgentPage({ params }: { params: Promise<{ tokenId:
                   </p>
                   <p className="m-note" style={{ marginTop: "0.4rem", maxWidth: "62ch" }}>
                     {REVIEW_CAVEAT}{" "}
-                    <Link className="m-link" href="/authority">
+                    <Link className="m-link" href="/evidence">
                       How we counted that →
                     </Link>
                   </p>
                 </div>
               ) : null}
+            </section>
+
+            <section>
+              <div className="m-head">
+                <h2 className="m-h2">Jobs Mandate paid it</h2>
+                <p className="m-head__note">ERC-8183 escrow funded from our account; status read from the commerce contract now.</p>
+              </div>
+              {paidJobs.length === 0 ? (
+                <p className="m-small">None yet.</p>
+              ) : (
+                <ul className="m-small">
+                  {paidJobs.map((j) => (
+                    <li key={j.jobId}>
+                      Job {j.jobId}, {j.budget} {j.token} to <span className="m-mono">{j.provider.slice(0, 6)}…{j.provider.slice(-4)}</span>: {describeStatus(j)}.{" "}
+                      {j.tx ? (
+                        <a className="m-link m-mono" href={`https://bscscan.com/tx/${j.tx}`} target="_blank" rel="noreferrer">funding tx</a>
+                      ) : null}
+                    </li>
+                  ))}
+                </ul>
+              )}
             </section>
 
             <section>

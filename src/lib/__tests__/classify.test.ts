@@ -6,7 +6,7 @@ import { CATEGORIES } from "@/lib/config";
  * Classification decides which of the four offices an agent is filed under,
  * and every office page, category count and capability check downstream reads
  * that decision. It is derived from the agent's own words, which means it is a
- * claim rather than a finding — but a wrong claim here sends an agent to the
+ * claim rather than a finding, but a wrong claim here sends an agent to the
  * wrong office, and the capability assay then checks it against protocols it
  * was never going to touch.
  */

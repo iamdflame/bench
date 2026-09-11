@@ -21,7 +21,9 @@ import {
   currentBlock,
   positionIdsOf,
   readPositions,
+  readIdle,
   readVenus,
+  type IdleReading,
   type PositionReading,
   type VenusReading,
 } from "./positions";
@@ -74,6 +76,15 @@ export type Finding =
       category: Category;
     }
   | {
+      kind: "idle-cash";
+      severity: "watch";
+      tokenId: null;
+      pair: string;
+      title: string;
+      detail: string;
+      category: Category;
+    }
+  | {
       kind: "liquidatable" | "thin-headroom" | "healthy";
       severity: "act" | "watch" | "fine";
       tokenId: null;
@@ -89,6 +100,7 @@ export interface Diagnosis {
   blockNumber: string;
   positions: PositionReading[];
   venus: VenusReading | null;
+  idle: IdleReading | null;
   findings: Finding[];
   /** Categories worth hiring for, most urgent first. */
   needed: Category[];
@@ -165,6 +177,13 @@ function positionFinding(p: PositionReading): Finding {
   };
 }
 
+/** "Health factor 2.40 ($0.25 collateral, $0.08 debt)", or nothing when unread. */
+function hfLine(v: VenusReading): string {
+  if (v.healthFactor === undefined) return "";
+  if (v.healthFactor === null) return " It has no debt, so there is no health factor to watch.";
+  return ` Health factor ${v.healthFactor.toFixed(2)}: $${(v.collateralUsd ?? 0).toFixed(2)} of collateral against $${(v.borrowUsd ?? 0).toFixed(2)} of debt, priced by Venus's own oracle. Below 1.00 it can be liquidated.`;
+}
+
 function venusFinding(v: VenusReading): Finding | null {
   if (!v.active) return null;
   if (v.shortfallUsd > 0) {
@@ -174,7 +193,7 @@ function venusFinding(v: VenusReading): Finding | null {
       tokenId: null,
       pair: "Venus",
       title: "This Venus position is already liquidatable",
-      detail: `It is $${v.shortfallUsd.toFixed(2)} underwater. Anybody can liquidate it right now, and the penalty comes out of your collateral.`,
+      detail: `It is $${v.shortfallUsd.toFixed(2)} underwater. Anybody can liquidate it right now, and the penalty comes out of your collateral.${hfLine(v)}`,
       category: "health-factor",
     };
   }
@@ -186,7 +205,7 @@ function venusFinding(v: VenusReading): Finding | null {
       tokenId: null,
       pair: "Venus",
       title: "This Venus position has very little headroom",
-      detail: `Spare borrowing capacity is $${v.liquidityUsd.toFixed(2)}. A move against you closes that quickly, and liquidation is automatic.`,
+      detail: `Spare borrowing capacity is $${v.liquidityUsd.toFixed(2)}. A move against you closes that quickly, and liquidation is automatic.${hfLine(v)}`,
       category: "health-factor",
     };
   }
@@ -196,8 +215,28 @@ function venusFinding(v: VenusReading): Finding | null {
     tokenId: null,
     pair: "Venus",
     title: "This Venus position has headroom",
-    detail: `Spare borrowing capacity is $${v.liquidityUsd.toFixed(2)} with no shortfall. A monitor would watch it rather than act.`,
+    detail: `Spare borrowing capacity is $${v.liquidityUsd.toFixed(2)} with no shortfall. A monitor would watch it rather than act.${hfLine(v)}`,
     category: "health-factor",
+  };
+}
+
+/** A dollar of idle cash is noise; five is a finding. */
+const IDLE_THRESHOLD_USD = 1;
+
+function idleFinding(i: IdleReading): Finding | null {
+  if (i.totalUsd < IDLE_THRESHOLD_USD) return null;
+  const list = i.holdings
+    .sort((a, b) => b.usd - a.usd)
+    .map((h) => `${h.symbol} ${h.amount < 0.01 ? h.amount.toFixed(6) : h.amount.toFixed(2)} ($${h.usd.toFixed(2)})`)
+    .join(", ");
+  return {
+    kind: "idle-cash",
+    severity: "watch",
+    tokenId: null,
+    pair: "Wallet",
+    title: `$${i.totalUsd.toFixed(2)} is sitting in the wallet doing nothing`,
+    detail: `${list}. Held, not supplied or pooled anywhere, so it earns nothing. Keep some BNB for gas; the rest is what a yield agent would place. BNB priced at $${i.bnbUsd.toFixed(2)} from the WBNB/USDT pool.`,
+    category: "yield-optimisation",
   };
 }
 
@@ -211,11 +250,15 @@ export async function diagnose(input: string, hires?: Map<string, number>): Prom
 
   let positions: PositionReading[] = [];
   let venus: VenusReading | null = null;
+  let idle: IdleReading | null = null;
 
   if (isWallet) {
     const ids = await positionIdsOf(trimmed as Address).catch(() => []);
-    positions = await readPositions(ids).catch(() => []);
-    venus = await readVenus(trimmed as Address);
+    [positions, venus, idle] = await Promise.all([
+      readPositions(ids).catch(() => []),
+      readVenus(trimmed as Address),
+      readIdle(trimmed as Address),
+    ]);
   } else {
     positions = await readPositions([BigInt(trimmed)]).catch(() => []);
   }
@@ -244,6 +287,8 @@ export async function diagnose(input: string, hires?: Map<string, number>): Prom
   }
   const v = venus ? venusFinding(venus) : null;
   if (v) findings.push(v);
+  const i = idle ? idleFinding(idle) : null;
+  if (i) findings.push(i);
 
   const rank = { act: 0, watch: 1, fine: 2 } as const;
   findings.sort((a, b) => rank[a.severity] - rank[b.severity]);
@@ -258,6 +303,7 @@ export async function diagnose(input: string, hires?: Map<string, number>): Prom
     blockNumber,
     positions,
     venus,
+    idle,
     findings,
     needed,
     population: population(),

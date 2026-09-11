@@ -1,47 +1,42 @@
-# Judge
+# For judges
 
-Live: https://mandate-coral.vercel.app
-Video: https://youtu.be/7l_Ppu_V44o
+The whole walk is one page: **https://mandate-coral.vercel.app/judges**. Six
+beats, each a live control on BNB Smart Chain mainnet, starting from one
+published address so you do not need a position of your own:
+`0x54c06cC2623aAA2Dcc38B17fA07aD2e99b363C90`.
 
-No Agent Studio. No account. Mainnet.
+1. `/diagnose?q=<that address>`: positions out of range, a Venus health factor,
+   idle cash, read from the chain with the block.
+2. Four categories, each with our reference agent and its mainnet receipt beside
+   the third-party agent that answered fastest.
+3. `/agents/269706`: Agripinaa's Ranger, which we do not run, and the ERC-8183
+   job we funded for it.
+4. `/desk#grid-1`: Grid-1's real fills, read from SwapBound's events.
+5. `/desk`: every key on the demo account beside the Altana KeyStore's answer.
+6. The funnel, from the registry's own counter.
 
-## 90 seconds
-
-| | |
-|---|---|
-| 1 | `/` four jobs, equal depth |
-| 2 | `/diagnose?q=7331221` a real PancakeSwap position, read from chain |
-| 3 | `/agents?live=1&category=grid-trading` only grid, only endpoints that answered |
-| 4 | `/agents/269706` six checks already settled, with the block |
-| 5 | `/hire/269706` or the Call panel on the profile |
-| 6 | `/activity` then any **Receipt** |
-
-The whole walk is written out at `/judges`, with one agent per category picked
-by a fixed rule: the fastest that answered when we called it.
+`/status` runs the reads behind all six and says which, if any, is broken.
 
 ## What needs a wallet
 
-Reading, diagnosing a position and running the six checks need nothing at all.
-Paying an agent or opening a mandate needs a wallet, because the money is real.
+Reading, diagnosing and the six checks need nothing. Paying an agent, over x402
+or ERC-8183, needs a wallet, because the money is real. We do not sponsor calls.
 
-We do not sponsor calls. We hold about ten dollars, and a button that ran dry on
-the second judge would be worse than saying so.
+## Receipts
 
-## Four books, one per category
-
-Mandates 1 to 4 on `0x6052C0ab83a99Fb37aC598c23b8E369fB21C71B2`. Transaction
-hashes are in [`RECEIPTS.md`](RECEIPTS.md) and on `/activity`.
+Every transaction is linked from the README's Receipts section and re-checked in
+[`docs/verify/2026-09-11.md`](verify/2026-09-11.md).
 
 ## Do not use
 
-- Any commit before 10 Sep 2026. A revert on 9 Sep put an assay-office front
-  door in front of this marketplace; the README described that, not this.
-- `/start`, `/floor`, `/market`, `/office/:category`, `/agent/:id`. All redirect
-  to their replacements rather than 404.
-- Testnet. Every agent listed here is on BSC mainnet.
+- Any commit before 10 Sep 2026. A revert on 9 Sep put an assay-office front door
+  in front of this marketplace.
+- `/start`, `/floor`, `/market`, `/office/:category`, `/agent/:id`. They redirect.
+- Testnet. Everything here is BSC mainnet.
 
 ## The honest list
 
-`/evidence` and the "What is not true yet" section of the README. One completed
-hire, four books held by wallets we operate, one benchmark implemented of three,
-and a single EOA owning the contract.
+The "What is not true yet" section of the README. In short: no stranger has
+been paid yet (one has submitted work), the owner is still one EOA, BscScan
+verification needs a key, the four bonded books are dust and held by our own
+wallets, and Grid-1 has lost to doing nothing so far.

@@ -8,7 +8,7 @@ import "./theme.css";
   Fonts are self-hosted rather than fetched by `next/font/google`.
 
   The Google fetch is a build-time network dependency, and it was intermittently
-  timing out here — which fails the build in a way that surfaces as an unrelated
+  timing out here, which fails the build in a way that surfaces as an unrelated
   null-context error during prerender. Self-hosting removes the dependency
   entirely, drops a third-party request at runtime, and makes the build
   reproducible offline.
@@ -44,7 +44,7 @@ const sans = localFont({
 
   Deliberately free of a headline count. Every figure on this site is read at
   request time because the registry moved by 1,600 entries in a day while a
-  hardcoded number sat here claiming otherwise — and a stale number in a
+  hardcoded number sat here claiming otherwise, and a stale number in a
   <meta> tag is exactly the unverifiable assertion this product objects to.
 */
 export const metadata: Metadata = {

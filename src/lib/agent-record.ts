@@ -2,7 +2,7 @@
  * One agent, assembled from every source that will answer for it.
  *
  * The register used to be able to describe only the agents in our own index,
- * which is 3,808 of 304,787 — so a judge searching for the best-known live
+ * which is 3,808 of 304,787, so a judge searching for the best-known live
  * agent in the field got a page that knew its token id and nothing else, or no
  * page at all. That is not a front door for every agent on BSC; it is a front
  * door for the ones we happened to crawl.
@@ -13,7 +13,7 @@
  *      card those resolve to. This is the registration itself, it needs no
  *      key, and it is what anyone checking us would read.
  *   2. Our index. Crawled classification and the endpoint verification the
- *      registry has recorded — things the chain does not carry.
+ *      registry has recorded, things the chain does not carry.
  *   3. 8004scan's record. Feedback counts and its own scores.
  *
  * The chain wins every field it can answer, because it is the registration and
@@ -50,7 +50,7 @@ export interface AgentRecord extends IndexedAgent {
 /**
  * Everything known about one token id.
  *
- * Returns null only when the registry itself says the token was never minted —
+ * Returns null only when the registry itself says the token was never minted,
  * `ownerOf` reverting is the existence test, and it is the registry's answer
  * rather than a statement about our coverage. An agent we have never crawled
  * still gets a full page.
@@ -73,7 +73,7 @@ export async function resolveAgent(tokenId: string): Promise<AgentRecord | null>
 
     Agripinaa's manifests carry `"category": "grid"`, which is their word for
     it. Taking that at face value would make this register a place where an
-    agent's office is whatever it says — the exact thing the assay exists to
+    agent's office is whatever it says, the exact thing the assay exists to
     refuse. The card's own label is fed in as one more phrase alongside the
     name and the description and weighed with everything else.
   */

@@ -11,8 +11,8 @@
  *      than starting the 301,000-agent crawl again.
  *   2. Polite. The 8004scan limit is 30 req/min anonymous, 500/min with a key;
  *      the client paces itself and this loop does not try to outrun it.
- *   3. Honest under failure. When the upstream returns DATABASE_ERROR — which
- *      it does under load — the cycle logs and retreats rather than writing
+ *   3. Honest under failure. When the upstream returns DATABASE_ERROR, which
+ *      it does under load, the cycle logs and retreats rather than writing
  *      partial state as though it were complete.
  */
 
@@ -48,7 +48,7 @@ const database = db;
 let stopping = false;
 for (const sig of ["SIGINT", "SIGTERM"] as const) {
   process.on(sig, () => {
-    log(`${sig} — finishing the current cycle`);
+    log(`${sig}, finishing the current cycle`);
     stopping = true;
   });
 }

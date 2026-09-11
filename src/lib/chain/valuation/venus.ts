@@ -39,7 +39,7 @@ const VTOKEN_ABI = [
  * Venus supply and borrow positions.
  *
  * This adapter is the one that fixes the sharpest inversion in the old gauge.
- * A health-factor agent earns its keep by calling `repayBorrow` — spending
+ * A health-factor agent earns its keep by calling `repayBorrow`, spending
  * assets to retire debt. To a gauge that counts assets and ignores liabilities
  * that is pure destruction of capital, so the agent that rescued a position
  * from liquidation was measured as the one that lost the most. It was being
@@ -119,7 +119,7 @@ export function venusAdapter(client: PublicClient): Adapter {
 
         if (vBalance === 0n && borrowed === 0n) continue;
 
-        // vBNB has no `underlying()` — its underlying is the native coin, and
+        // vBNB has no `underlying()`, its underlying is the native coin, and
         // the call reverts rather than returning the zero address.
         let underlying: Address = WBNB;
         let symbol = "BNB";

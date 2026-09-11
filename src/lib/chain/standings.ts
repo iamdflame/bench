@@ -3,8 +3,8 @@
  *
  * The point of making an agent post a bond is that its record stops being a
  * story it tells. So the record here is not stored, reported or self-declared:
- * it is reconstructed from the contract's own logs — every award, every
- * settlement, every slash, every dismissal — and it cannot be edited by the
+ * it is reconstructed from the contract's own logs, every award, every
+ * settlement, every slash, every dismissal, and it cannot be edited by the
  * agent it describes.
  *
  * This is the half of the brief a directory cannot answer honestly. "See how
@@ -59,14 +59,14 @@ type AnyLog = Log & {
  *
  * Providers cap `eth_getLogs` spans and the cap varies, so the range is walked
  * rather than requested whole. A chunk the provider refuses is skipped and
- * counted, and the result says whether coverage was complete — a partial read
+ * counted, and the result says whether coverage was complete, a partial read
  * must never be presented as a full record.
  */
 /**
  * Reads the full log history across every deployment.
  *
  * The walk itself lives in `chain/logs`, because the replay page needed the
- * same thing and had its own copy — one that ran against a single client which
+ * same thing and had its own copy, one that ran against a single client which
  * refuses `eth_getLogs` outright, so it printed the provider's refusal at the
  * reader instead of a ladder.
  */

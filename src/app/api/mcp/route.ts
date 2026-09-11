@@ -6,7 +6,7 @@
  *
  *   claude mcp add --transport http mandate https://<host>/api/mcp
  *
- * Streamable HTTP in its stateless JSON form — one POST carrying one JSON-RPC
+ * Streamable HTTP in its stateless JSON form, one POST carrying one JSON-RPC
  * message, one JSON response, no session to keep and no stream to hold open.
  * That is the shape this deployment can actually honour: it runs on serverless
  * functions with no shared memory between invocations, so a server that handed
@@ -78,7 +78,7 @@ export async function POST(request: Request) {
   const { id, method, params } = message;
 
   /*
-    A notification has no id and expects no body — `notifications/initialized`
+    A notification has no id and expects no body, `notifications/initialized`
     is the one that matters here. Answering it with a JSON-RPC result is a
     protocol violation that some clients tolerate and others disconnect over.
   */

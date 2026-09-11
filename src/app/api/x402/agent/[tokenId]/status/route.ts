@@ -2,7 +2,7 @@
  * An agent's assay, sold for USD1 over x402.
  *
  * The first request gets a 402 carrying what it would cost and how to pay.
- * The second, carrying a signed authorization, gets the answer — and the seller
+ * The second, carrying a signed authorization, gets the answer, and the seller
  * submits the transfer, so the buyer needs no BNB.
  */
 

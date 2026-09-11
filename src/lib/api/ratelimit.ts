@@ -4,7 +4,7 @@
  * The public API is free and unauthenticated, which means the only thing
  * standing between it and a single client consuming the whole assay budget is
  * this. Deliberately simple: no store, no dependency, no shared state to get
- * wrong. A restart forgets everyone, which is the right failure — it opens the
+ * wrong. A restart forgets everyone, which is the right failure, it opens the
  * door rather than closing it on people who did nothing wrong.
  *
  * Every response carries its own limits, so a caller never has to guess and
@@ -61,7 +61,7 @@ export function take(key: string, limit: Limit, cost = 1): Decision {
  * Who is calling.
  *
  * Behind a proxy the socket address is the proxy's, so the forwarded header is
- * used where present. It is trivially spoofable — which is fine here, because
+ * used where present. It is trivially spoofable, which is fine here, because
  * the limit protects a free read, not a secret.
  */
 export function callerOf(request: Request): string {

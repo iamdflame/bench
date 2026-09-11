@@ -6,7 +6,7 @@
  * same number the router will trade against, it costs one call, and it cannot
  * disagree with the chain the trade lands on.
  *
- * Verified against the live WBNB/USDT 0.05% pool, which returned $724.64 —
+ * Verified against the live WBNB/USDT 0.05% pool, which returned $724.64,
  * a real BNB price, which is how we know the fixed-point maths is right.
  */
 
@@ -145,7 +145,7 @@ export interface Valuation {
    * The same, in wei.
    *
    * An attestation is committed on chain, so the value it carries has to be
-   * exact. A float is fine for a label and wrong for a commitment — the whole
+   * exact. A float is fine for a label and wrong for a commitment, the whole
    * point of the observation is that two parties derive the identical digest.
    */
   weiTotal: bigint;

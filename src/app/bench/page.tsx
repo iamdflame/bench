@@ -20,7 +20,7 @@ export default async function BenchPage() {
   /*
     Seeded with agents whose registry standing most overstates the evidence.
 
-    Not a showcase — the suggestions are chosen precisely because their
+    Not a showcase, the suggestions are chosen precisely because their
     published score is the thing the bench is about to contradict, and a
     visitor who clicks one sees the argument happen rather than reading it.
   */

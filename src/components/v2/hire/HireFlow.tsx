@@ -13,8 +13,8 @@ import { useWallet, sendMarketTx, type TxState } from "@/lib/chain/wallet";
  *
  * The old route asked for one number and a category on a single screen, then
  * put a signature in front of a stranger who had not been told what the
- * signature did. Everything else — the tolerance, the term, the strike count,
- * the slash — was hardcoded out of sight and never named.
+ * signature did. Everything else, the tolerance, the term, the strike count,
+ * the slash, was hardcoded out of sight and never named.
  *
  * Here every one of those is a choice, phrased as a question about the job
  * rather than as a contract parameter, and step three restates the whole

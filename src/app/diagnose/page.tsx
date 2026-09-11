@@ -6,6 +6,7 @@ import AgentCard from "@/components/v2/agent/AgentCard";
 import { CATEGORY_LABEL } from "@/lib/config";
 import { diagnose, respondersFor, population } from "@/lib/diagnose";
 import { hireCounts } from "@/lib/market/hires";
+import { live } from "@/lib/data/live";
 
 export const metadata: Metadata = {
   title: "Check a position | Mandate",
@@ -14,6 +15,8 @@ export const metadata: Metadata = {
 };
 
 export const dynamic = "force-dynamic";
+// Room for the census slice that runs after the response (see lib/census/refresh).
+export const maxDuration = 60;
 
 /**
  * The shortest path from a problem to an agent.
@@ -28,6 +31,7 @@ export default async function DiagnosePage({
 }: {
   searchParams: Promise<Record<string, string | string[] | undefined>>;
 }) {
+  await live();
   const sp = await searchParams;
   const q = ((Array.isArray(sp.q) ? sp.q[0] : sp.q) ?? "").trim().slice(0, 64);
 

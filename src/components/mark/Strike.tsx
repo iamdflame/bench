@@ -3,11 +3,11 @@
 import { useEffect, useRef, useState } from "react";
 
 /**
- * The strike — the signature interaction of the product.
+ * The strike, the signature interaction of the product.
  *
  * A mark does not fade in. It is struck: the punch descends under its own
  * mass, lands, the row takes the impact, and the heat bleeds out of the metal.
- * The timing is in `globals.css` and is not negotiable — 260ms total, with the
+ * The timing is in `globals.css` and is not negotiable, 260ms total, with the
  * impact at 90ms.
  *
  * Two rules keep this from becoming decoration:

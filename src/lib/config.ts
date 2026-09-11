@@ -32,7 +32,7 @@ export const SCAN_API_KEY = process.env.SCAN_API_KEY ?? "";
  * they point at actually exists and answers. Standing outside that instrument
  * was the one position it could not defend, so it is registered too, at
  * whatever rung it earns. If the endpoint stops answering the fineness drops
- * and the register shows it — there is no exemption to apply.
+ * and the register shows it, there is no exemption to apply.
  *
  * Minted at block 120,148,918 in
  * 0x02e254124a6df77468ee703148ad2caaa38c0396301a1e0d8044b63c147b6ebf.
@@ -40,13 +40,13 @@ export const SCAN_API_KEY = process.env.SCAN_API_KEY ?? "";
 export const MANDATE_TOKEN_ID =
   process.env.NEXT_PUBLIC_MANDATE_TOKEN_ID ?? "336161";
 
-/** ERC-8004 Identity Registry — the same singleton address across chains. */
+/** ERC-8004 Identity Registry, the same singleton address across chains. */
 export const IDENTITY_REGISTRY =
   "0x8004a169fb4a3325136eb29fa0ceb6d2e539a432" as const;
 
 /**
  * The four categories the hackathon requires, surfaced at equal depth.
- * Each carries its own on-chain evidence profile — a grid trading agent that
+ * Each carries its own on-chain evidence profile, a grid trading agent that
  * never touches a router is not a grid trading agent, whatever its card says.
  */
 export const CATEGORIES = [
@@ -81,7 +81,7 @@ export const CATEGORY_BLURB: Record<Category, string> = {
  * The ladder's rung names.
  *
  * Here rather than in `lib/rung.ts` because client components render them, and
- * that module reaches the chain and the filesystem — importing it from the
+ * that module reaches the chain and the filesystem, importing it from the
  * browser bundle pulled `node:fs` in and broke the build.
  */
 export const RUNG_NAMES = [
@@ -102,7 +102,11 @@ export const PROTOCOLS = {
   pancakeSmartRouter: "0x13f4ea83d0bd40e75c8222255bc855a974568dd4",
   venusComptroller: "0xfd36e2c2a6789db23113685031d7f16329158384",
   venusVBNB: "0xa07c5b74c9b40447a954e1466938b865b6bbea36",
+  venusVUSDT: "0xfd5840cd36d94d7229439859c0112a4185bc0255",
   aaveV3Pool: "0x6807dc923806fe8fd134338eabca509979a7e0cb",
+  /** The leashes: sessions are granted on these, never on the protocol behind them. */
+  recipientBound: "0x5863edaede7394470db19395ca05b1439662952e",
+  swapBound: "0x1cf9c5e9339e99e3bfd45f117ca17e6e1a4e59d1",
 } as const;
 
 /** Which contracts count as evidence for which category claim. */
@@ -123,13 +127,15 @@ export const CATEGORY_EVIDENCE: Record<Category, readonly string[]> = {
     // could never be earned: `granted ⊆ proven` intersects the category's
     // calls with the protocols its evidence list looks for, and a target
     // absent from the evidence is permanently unprovable. Enforced now by
-    // contracts/../config.test — every granted target must be searchable.
+    // contracts/../config.test, every granted target must be searchable.
     PROTOCOLS.venusVBNB,
+    PROTOCOLS.venusVUSDT,
     PROTOCOLS.aaveV3Pool,
   ],
   "health-factor": [
     PROTOCOLS.venusComptroller,
     PROTOCOLS.venusVBNB,
+    PROTOCOLS.venusVUSDT,
     PROTOCOLS.aaveV3Pool,
   ],
 };
@@ -138,7 +144,7 @@ export const CATEGORY_EVIDENCE: Record<Category, readonly string[]> = {
  * Capabilities that leave no trace at the contract you called.
  *
  * Measured on live BSC: over 3,000 blocks the PancakeSwap V3 SwapRouter and
- * the V2 Router emit **zero** logs. They are pass-through contracts — the
+ * the V2 Router emit **zero** logs. They are pass-through contracts, the
  * `Swap` event comes from the pool, not the router. So scanning for logs
  * emitted *by* a router finds nothing however much an agent trades, and every
  * grid-trading agent was being recorded as having touched nothing.
@@ -189,7 +195,10 @@ export const PROTOCOL_LABEL: Record<string, string> = {
   [PROTOCOLS.pancakeMasterChefV3]: "PancakeSwap MasterChef V3",
   [PROTOCOLS.venusComptroller]: "Venus Comptroller",
   [PROTOCOLS.venusVBNB]: "Venus vBNB",
+  [PROTOCOLS.venusVUSDT]: "Venus vUSDT",
   [PROTOCOLS.aaveV3Pool]: "Aave V3 Pool",
+  [PROTOCOLS.recipientBound]: "RecipientBound (positions, paid only to the principal)",
+  [PROTOCOLS.swapBound]: "SwapBound (swaps, paid only to the principal)",
 };
 
 export const txUrl = (hash: string) => `${EXPLORER}/tx/${hash}`;

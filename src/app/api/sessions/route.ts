@@ -1,8 +1,8 @@
 /**
  * Every session's public half.
  *
- * All of this is already on chain — the key, the allowlist, the cap, the
- * expiry — so it is served openly. The signer never leaves the machine that
+ * All of this is already on chain, the key, the allowlist, the cap, the
+ * expiry, so it is served openly. The signer never leaves the machine that
  * granted it and is not in this response.
  */
 

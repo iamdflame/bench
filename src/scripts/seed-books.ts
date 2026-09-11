@@ -21,13 +21,14 @@
  * beats correct and unsettleable, and every receipt carries the caveat.
  */
 
-import { formatEther, parseEther, parseGwei, type Address, type Hex } from "viem";
+import { formatEther, parseEther, type Address, type Hex } from "viem";
 import { marketClient, walletFor, marketChain } from "@/lib/chain/market";
 import { CATEGORIES, CATEGORY_LABEL, type Category } from "@/lib/config";
 import { valueWallet } from "@/lib/chain/prices";
 import {
   award,
   bid,
+  gasPrice,
   marketParameters,
   openMandate,
   openMandateArgs,
@@ -131,9 +132,9 @@ async function main() {
         chain: marketChain,
         to: a,
         value: top,
-        // See the note in marketV2.ts: the quoted price is the floor and the
-        // floor does not propagate.
-        gasPrice: parseGwei("3"),
+        // See the note in marketV2.ts: the quoted price is below the
+        // validators' minimum and does not propagate.
+        gasPrice: await gasPrice(),
       });
       await marketClient.waitForTransactionReceipt({ hash: h });
     }

@@ -9,7 +9,7 @@
  * The better response is to repair it. Every assay this market runs produces a
  * measurement that is reproducible from public chain state by anyone, and
  * writing those back makes the registry more honest whether or not anybody
- * adopts our front door — including for competitors reading the same data.
+ * adopts our front door, including for competitors reading the same data.
  *
  * The registry address and calldata shape are not documented anywhere we could
  * find. Both were recovered from the chain: a real feedback record's
@@ -19,6 +19,7 @@
 
 import { keccak256, parseAbi, toHex, type Address, type Hex } from "viem";
 import { marketChain, marketClient, walletFor } from "./market";
+import { gasPrice } from "./marketV2";
 
 /** Recovered from a real feedback transaction, not from documentation. */
 export const REPUTATION_REGISTRY = "0x8004baa17c55a88189ae136b182e5fda19de9b63" as const;
@@ -36,7 +37,7 @@ export const MANDATE_TAG = "mandate-assay";
  * The registry's existing records are unattributable: a score from a wallet
  * with no standing and no way to check it. Ours name the agent that wrote
  * them, so anyone reading a MANDATE record can turn the same instrument back
- * on us — which is the only thing that makes writing to this registry
+ * on us, which is the only thing that makes writing to this registry
  * different from adding to the noise.
  */
 export const MANDATE_AGENT_ID = process.env.NEXT_PUBLIC_MANDATE_TOKEN_ID ?? "336161";
@@ -68,8 +69,8 @@ export interface WriteBack {
 export function buildWriteBack(opts: {
   agentId: string;
   fineness: number;
-  /** The grade's name — "9 carat", "Base metal" — not its mark. A reader of
-   *  the registry has no way to interpret "—". */
+  /** The grade's name, "9 carat", "Base metal", not its mark. A reader of
+   *  the registry has no way to interpret "-". */
   hallmark: string;
   findings: string[];
   /** The block the assay read at, carried into the record. */
@@ -85,7 +86,7 @@ export function buildWriteBack(opts: {
 
     Every other record in this registry is an unattributable number. One that
     names the state it was read from, and the agent that wrote it, can be
-    checked and can be held to account — including by pointing the same
+    checked and can be held to account, including by pointing the same
     instrument back at us, which is why our own id is in there.
   */
   const provenance = [
@@ -133,6 +134,7 @@ export async function publishFeedback(record: WriteBack, privateKey?: string): P
     ],
     chain: marketChain,
     account: wallet.account!,
+    gasPrice: await gasPrice(),
   });
 }
 

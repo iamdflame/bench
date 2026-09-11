@@ -13,8 +13,8 @@ import { priceSource, WBNB } from "../prices";
  * Forked-mainnet tests for the valuation engine.
  *
  * These are the acceptance criteria for the bug that was slashing agents for
- * working. They need a fork because the interesting cases are transitions —
- * supplying, repaying, wrapping — and a transition cannot be observed by
+ * working. They need a fork because the interesting cases are transitions,
+ * supplying, repaying, wrapping, and a transition cannot be observed by
  * reading mainnet once.
  *
  *   anvil --fork-url https://bsc-dataseed.bnbchain.org --port 8547
@@ -26,7 +26,7 @@ import { priceSource, WBNB } from "../prices";
  * fifty seconds of state, and anvil fetches fork state lazily. A fork left
  * running longer than that starts failing upstream reads for contracts it has
  * not yet touched, which surfaces here as a refusal. That is the engine
- * behaving correctly — it will not value what it cannot see — but it makes
+ * behaving correctly, it will not value what it cannot see, but it makes
  * these tests want a warm fork or an archive endpoint. `FORK_RPC_URL` takes
  * either.
  */
@@ -96,7 +96,7 @@ const forked = (name: string, fn: () => Promise<void>, timeout = 120_000) =>
  *
  * Drawn from anvil's own prefunded accounts rather than invented. BSC's public
  * nodes serve roughly fifty seconds of state, so an address the fork has never
- * heard of sends anvil upstream for an account that has already been pruned —
+ * heard of sends anvil upstream for an account that has already been pruned,
  * "missing trie node", and a test failure that is about the node rather than
  * about the code. Anvil's own accounts exist locally and never make that trip.
  */
@@ -132,7 +132,7 @@ describe("valuation engine, forked mainnet", () => {
     const w = await freshWallet("10");
     // Native and tokens only. Anvil's dev accounts are well-known addresses,
     // and at least one of them holds a real V3 position on BSC in a pair this
-    // engine cannot price — so the full adapter set correctly refuses, which
+    // engine cannot price, so the full adapter set correctly refuses, which
     // would be testing the wrong thing here.
     const only = (c: PublicClient) => [nativeAdapter(c), erc20Adapter(c)];
 
@@ -278,7 +278,7 @@ describe("valuation engine, forked mainnet", () => {
    * One of anvil's standard dev accounts turns out to hold a real PancakeSwap
    * V3 position on BSC. The engine must either value it at something positive
    * or refuse the wallet by name. What it must never do is return a total with
-   * that position silently counted as nothing — which is precisely what the
+   * that position silently counted as nothing, which is precisely what the
    * old gauge did, and precisely why an agent got slashed for working.
    */
   forked("never values a real V3 position at nothing", async () => {

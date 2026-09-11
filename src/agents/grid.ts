@@ -5,45 +5,26 @@
  * around a reference, buy the asset as price crosses down through a level and
  * sell as it crosses up through one. It makes money from oscillation and loses
  * to trend, which is exactly the honest behaviour to put in front of a
- * benchmark — a grid that beats hold in a chop and trails it in a rally is a
+ * benchmark, a grid that beats hold in a chop and trails it in a rally is a
  * real result, and inventing something that always wins was the thing this
  * whole rebuild exists to stop doing.
  *
- * Every swap is `exactInputSingle` on the V3 router, which is the one selector
- * this category's session key is allowed to call.
+ * Every swap is `SwapBound.swap`, the one selector this category's session key
+ * is allowed to call. It used to be the router's `exactInputSingle`, whose
+ * params carry a `recipient`: a grid key could have swapped the principal's
+ * tokens to itself. SwapBound fixes the pair, the fee tier and the recipient
+ * (the principal) on chain, and caps what can be sold for its whole life.
  */
 
-import type { Abi, Address } from "viem";
-import { USDT, V3_ROUTER, WBNB } from "@/lib/chain/prices";
+import type { Abi } from "viem";
+import { SWAP_BOUND, SWAP_BOUND_ABI } from "@/lib/chain/leash";
 import { idle, type AgentContext, type Decision, type Strategy } from "./types";
 
-const ROUTER_ABI = [
-  {
-    type: "function",
-    name: "exactInputSingle",
-    stateMutability: "payable",
-    inputs: [
-      {
-        name: "params",
-        type: "tuple",
-        components: [
-          { name: "tokenIn", type: "address" },
-          { name: "tokenOut", type: "address" },
-          { name: "fee", type: "uint24" },
-          { name: "recipient", type: "address" },
-          { name: "amountIn", type: "uint256" },
-          { name: "amountOutMinimum", type: "uint256" },
-          { name: "sqrtPriceLimitX96", type: "uint160" },
-        ],
-      },
-    ],
-    outputs: [{ name: "amountOut", type: "uint256" }],
-  },
-] as const;
-
-const FEE = 500; // the 0.05% WBNB/USDT pool, the deepest one
-/** Levels are this far apart, in basis points of the anchor. */
-const STEP_BPS = 50;
+/**
+ * Levels are this far apart, in basis points of the anchor. Grid-1 is the
+ * aggressive twin: tight levels, more fills, more exposure to trend.
+ */
+const STEP_BPS = Number(process.env.GRID_STEP_BPS ?? 25);
 /** How many levels each side of the anchor. */
 const LEVELS = 4;
 /** Tolerated slippage on a fill. */
@@ -93,8 +74,10 @@ export const gridStrategy: Strategy = {
 
     // Crossing down means the asset got cheaper: buy. Crossing up: sell.
     const crossedDown = level < last;
-    const bnbHeld = ctx.valuation.parts.find((p) => p.asset === "BNB")?.amount ?? 0;
-    const usdtHeld = ctx.valuation.parts.find((p) => p.asset === "USDT")?.amount ?? 0;
+    // What SwapBound can actually sell: WBNB and USDT held as tokens. Native
+    // BNB is not tradeable through the leash and is not counted.
+    const bnbHeld = ctx.balances?.wbnb ?? 0;
+    const usdtHeld = ctx.balances?.usdt ?? 0;
 
     // One level's worth of the working budget per fill, so a run of crossings
     // scales in rather than betting the cap on the first one.
@@ -114,12 +97,11 @@ export const gridStrategy: Strategy = {
         state: { ...state, lastLevel: level, fills: (state.fills ?? 0) + 1 },
         actions: [
           swap({
-            tokenIn: USDT,
-            tokenOut: WBNB,
+            sellUsdt: true,
             amountIn: BigInt(Math.floor(spendUsdt * 1e18)),
             minOut: BigInt(Math.floor((clip * (1 - SLIPPAGE_BPS / 10_000)) * 1e18)),
-            recipient: ctx.wallet,
-            reason: `buy ${clip.toFixed(6)} BNB at $${price.toFixed(2)}, a level below the anchor`,
+            deadline: BigInt(Math.floor(ctx.now / 1000) + 300),
+            reason: `buy ${clip.toFixed(6)} BNB at $${price.toFixed(2)} on a crossing down to level ${level}`,
             expect: `BNB balance rises by about ${clip.toFixed(6)}`,
           }),
         ],
@@ -137,12 +119,11 @@ export const gridStrategy: Strategy = {
       state: { ...state, lastLevel: level, fills: (state.fills ?? 0) + 1 },
       actions: [
         swap({
-          tokenIn: WBNB,
-          tokenOut: USDT,
+          sellUsdt: false,
           amountIn: BigInt(Math.floor(clip * 1e18)),
           minOut: BigInt(Math.floor(clip * price * (1 - SLIPPAGE_BPS / 10_000) * 1e18)),
-          recipient: ctx.wallet,
-          reason: `sell ${clip.toFixed(6)} BNB at $${price.toFixed(2)}, a level above the anchor`,
+          deadline: BigInt(Math.floor(ctx.now / 1000) + 300),
+          reason: `sell ${clip.toFixed(6)} BNB at $${price.toFixed(2)} on a crossing up to level ${level}`,
           expect: `USDT balance rises by about ${(clip * price).toFixed(4)}`,
         }),
       ],
@@ -150,34 +131,17 @@ export const gridStrategy: Strategy = {
   },
 };
 
-function swap(o: {
-  tokenIn: Address;
-  tokenOut: Address;
-  amountIn: bigint;
-  minOut: bigint;
-  recipient: Address;
-  reason: string;
-  expect: string;
-}) {
+/** SwapBound's tokenA is USDT and tokenB is WBNB, so selling USDT is `sellA`. */
+function swap(o: { sellUsdt: boolean; amountIn: bigint; minOut: bigint; deadline: bigint; reason: string; expect: string }) {
   return {
     kind: "swap" as const,
     reason: o.reason,
     expect: o.expect,
     call: {
-      address: V3_ROUTER as Address,
-      abi: ROUTER_ABI as unknown as Abi,
-      functionName: "exactInputSingle",
-      args: [
-        {
-          tokenIn: o.tokenIn,
-          tokenOut: o.tokenOut,
-          fee: FEE,
-          recipient: o.recipient,
-          amountIn: o.amountIn,
-          amountOutMinimum: o.minOut,
-          sqrtPriceLimitX96: 0n,
-        },
-      ],
+      address: SWAP_BOUND,
+      abi: SWAP_BOUND_ABI as unknown as Abi,
+      functionName: "swap",
+      args: [o.sellUsdt, o.amountIn, o.minOut, 0n, o.deadline],
     },
   };
 }

@@ -6,8 +6,8 @@ import { useEffect, useRef, useState } from "react";
  * The fineness reveal.
  *
  * When an assay lands the numeral counts up from zero over 400ms. It runs on
- * the result arriving, never on a route render — nothing moves unless the
- * chain moved — and it is rendered tabular so the figure occupies its final
+ * the result arriving, never on a route render, nothing moves unless the
+ * chain moved, and it is rendered tabular so the figure occupies its final
  * width from the first frame and nothing beside it reflows.
  *
  * Under `prefers-reduced-motion` the token collapses to 0ms and the final

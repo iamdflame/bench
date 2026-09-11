@@ -44,8 +44,8 @@ const EXPLORER = marketChain.blockExplorers?.default?.url;
 /**
  * A control that never simply refuses.
  *
- * Both panels here gated their submit on `ready` — connected, and on the right
- * chain — and then rendered a grey button with no explanation and no way to
+ * Both panels here gated their submit on `ready`, connected, and on the right
+ * chain, and then rendered a grey button with no explanation and no way to
  * become ready. A visitor with no wallet, or the wrong network, saw a dead
  * rectangle and the product's answer was silence.
  *
@@ -303,7 +303,7 @@ export function BidPanel({
         address,
         "bid",
         // `amount` is ignored for a native-asset mandate and `ttl` of 0 means
-        // the bid does not expire — the two arguments V2 added over V1.
+        // the bid does not expire, the two arguments V2 added over V1.
         [BigInt(mandate.id), Math.round(targetNum), 0n, 0n],
         parseEther(bond as `${number}`),
         setTx,
@@ -371,7 +371,7 @@ export function OpenMandatePanel({ onDone }: { onDone?: () => void }) {
     The floor on the live market is a bond of 0.00004 BNB and the agent must
     post at least a fifth of the capital, so capital under 0.0002 leaves an
     agent risking less than the market's own minimum and the contract refuses
-    the bid later — after the principal has already paid gas to open it.
+    the bid later, after the principal has already paid gas to open it.
   */
   const openRefusal =
     !Number.isFinite(capitalNum) || capitalNum <= 0
@@ -474,8 +474,8 @@ export function WithdrawButton() {
   /*
     This used to return null when nobody was connected.
 
-    Withdraw is the only way capital leaves this contract — released bonds,
-    earned fees, resolved slashes all land there — and it was invisible to
+    Withdraw is the only way capital leaves this contract, released bonds,
+    earned fees, resolved slashes all land there, and it was invisible to
     anyone who had not already connected on the right chain. Somebody owed
     money by the market had no way to discover that from the market. It now
     renders whatever the state is, and says what the state is.

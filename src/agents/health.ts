@@ -52,7 +52,7 @@ export const healthStrategy: Strategy = {
   name: "Health Factor",
 
   describe() {
-    return `Reads Venus account liquidity each epoch and repays ${Math.round(REPAY_SHARE * 100)}% of the borrow when headroom falls below ${Math.round(HEADROOM_FLOOR * 100)}% of it — before shortfall appears, because shortfall means liquidation is already available.`;
+    return `Reads Venus account liquidity each epoch and repays ${Math.round(REPAY_SHARE * 100)}% of the borrow when headroom falls below ${Math.round(HEADROOM_FLOOR * 100)}% of it, before shortfall appears, because shortfall means liquidation is already available.`;
   },
 
   async evaluate(ctx: AgentContext): Promise<Decision> {
@@ -90,7 +90,7 @@ export const healthStrategy: Strategy = {
       // Already liquidatable. Repay as much as the cap allows, immediately.
       const repayBnb = Math.min(borrowBnb * REPAY_SHARE, Number(ctx.capWei) / 1e18);
       return {
-        observed: `SHORTFALL $${shortfallUsd.toFixed(2)} — the position is already liquidatable`,
+        observed: `SHORTFALL $${shortfallUsd.toFixed(2)}, the position is already liquidatable`,
         state: ctx.state,
         actions: [repay(repayBnb, `repay ${repayBnb.toFixed(6)} BNB to clear a $${shortfallUsd.toFixed(2)} shortfall`)],
       };
@@ -111,7 +111,7 @@ export const healthStrategy: Strategy = {
     }
 
     return idle(
-      `headroom $${liquidityUsd.toFixed(2)} is ${(headroomRatio * 100).toFixed(1)}% of a $${borrowUsd.toFixed(2)} borrow — comfortable, no action`,
+      `headroom $${liquidityUsd.toFixed(2)} is ${(headroomRatio * 100).toFixed(1)}% of a $${borrowUsd.toFixed(2)} borrow, comfortable, no action`,
       ctx.state,
     );
   },

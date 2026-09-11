@@ -12,6 +12,7 @@ import { join } from "node:path";
 import { CATEGORIES, CHAIN_ID, type Category } from "@/lib/config";
 import { db, hasDb, schema } from "@/lib/db/client";
 import { readRegistryTotals } from "@/lib/sources/totals";
+import { registeredCount } from "@/lib/registry/count";
 import { memo, withTimeout } from "@/lib/cache";
 
 export interface IndexedAgent {
@@ -52,7 +53,11 @@ export interface AgentIndex {
    * where the upstream answers, and named either way so a reader is never left
    * guessing whether the number in front of them is current.
    */
-  registrySource?: "live" | "indexer" | "snapshot";
+  registrySource?: "chain" | "live" | "indexer" | "snapshot";
+  /** The block the registry count was read at, when it came from the chain. */
+  registryBlock?: number;
+  /** A command that re-derives the registry count. */
+  registryVerify?: string;
   /** When the registry totals were read. Distinct from when the rows were. */
   registryAt?: string;
   counts: {
@@ -95,7 +100,7 @@ export function getAgentIndex(): AgentIndex {
  * The index, preferring Postgres and falling back to the committed snapshot.
  *
  * The worker has always written to Postgres and nothing ever read from it, so
- * the database was a write-only store and the site ran on a file — which is
+ * the database was a write-only store and the site ran on a file, which is
  * what C2 is actually about. This is the read path.
  *
  * The fallback is deliberate rather than defensive. It keeps the site
@@ -108,7 +113,7 @@ export async function readAgentIndex(): Promise<AgentIndex & { source: "postgres
     Memoised, which it never was.
 
     Every page that shows a registry figure calls this, and each call was a
-    full scan of 3,808 rows over the connection pooler — so /agents paid it,
+    full scan of 3,808 rows over the connection pooler, so /agents paid it,
     /offices paid it again for the same render, and the funnel paid it a third
     time. Ten seconds of a page's time to fetch the same table three times.
 
@@ -131,37 +136,46 @@ async function readAgentIndexUncached(): Promise<AgentIndex & { source: "postgre
     Bounded, because a cold memo is the common case here.
 
     The memo serves a stale reading while it refreshes behind it, but every new
-    serverless instance starts cold and pays the full read — two calls against
+    serverless instance starts cold and pays the full read, two calls against
     an upstream that is rate-limited and intermittently down, with retries. A
     page must not wait on that. Two and a half seconds is long enough for a
     healthy answer and short enough that a sick upstream costs a fresh figure
     rather than the page, and the fallback is already labelled as carried.
   */
-  const totals = await withTimeout(
-    readRegistryTotals(CHAIN_ID).catch(() => null),
-    2_500,
-  );
-  const registry = totals
-    ? {
-        registered: totals.registered,
-        withEndpoint: totals.withEndpoint,
-        withFeedback: snapshot.registry.withFeedback,
-      }
-    : snapshot.registry;
-  const registrySource: "live" | "indexer" | "snapshot" = totals
-    ? totals.tier === "upstream"
-      ? "live"
-      : "indexer"
-    : "snapshot";
-  const registryAt = totals?.at ?? snapshot.capturedAt;
+  /*
+    The registered count is the registry's own counter, read from its storage
+    slot on chain. 8004scan's figure is their indexer's progress, not the
+    registry (311,300 against 343,356 on chain when this was written), so it is
+    only consulted for the fields the chain does not hold, and only as a
+    fallback for the count itself.
+  */
+  const [chainCount, totals] = await Promise.all([
+    withTimeout(registeredCount().catch(() => null), 4_000),
+    withTimeout(readRegistryTotals(CHAIN_ID).catch(() => null), 2_500),
+  ]);
+  const registry = {
+    registered: chainCount?.count ?? totals?.registered ?? snapshot.registry.registered,
+    withEndpoint: totals?.withEndpoint ?? snapshot.registry.withEndpoint,
+    withFeedback: snapshot.registry.withFeedback,
+  };
+  const registrySource: "chain" | "live" | "indexer" | "snapshot" = chainCount
+    ? "chain"
+    : totals
+      ? totals.tier === "upstream"
+        ? "live"
+        : "indexer"
+      : "snapshot";
+  const registryAt = chainCount?.at ?? totals?.at ?? snapshot.capturedAt;
+  const registryBlock = chainCount?.block;
+  const registryVerify = chainCount?.verify;
 
   if (!hasDb || !db)
-    return { ...snapshot, registry, registrySource, registryAt, source: "snapshot" };
+    return { ...snapshot, registry, registrySource, registryAt, registryBlock, registryVerify, source: "snapshot" };
 
   try {
     const rows = await db.select().from(schema.agents).limit(20_000);
     if (rows.length === 0)
-      return { ...snapshot, registry, registrySource, registryAt, source: "snapshot" };
+      return { ...snapshot, registry, registrySource, registryAt, registryBlock, registryVerify, source: "snapshot" };
 
     const agents: IndexedAgent[] = rows.map((r) => ({
       tokenId: String(r.tokenId),
@@ -193,8 +207,8 @@ async function readAgentIndexUncached(): Promise<AgentIndex & { source: "postgre
 
       This used to be spread in from the committed file along with everything
       else that was not overridden, so a page reading Postgres stamped itself
-      with the snapshot's age. The two happened to agree — the database was
-      seeded once and nothing has re-crawled since — which is exactly why it
+      with the snapshot's age. The two happened to agree, the database was
+      seeded once and nothing has re-crawled since, which is exactly why it
       went unnoticed. The stamp now moves when the crawl does.
     */
     const freshest = agents.reduce<string | null>(
@@ -207,6 +221,8 @@ async function readAgentIndexUncached(): Promise<AgentIndex & { source: "postgre
       registry,
       registrySource,
       registryAt,
+      registryBlock,
+      registryVerify,
       capturedAt: freshest ?? snapshot.capturedAt,
       agents,
       counts: {

@@ -24,7 +24,7 @@ export interface HallmarkRecord {
 }
 
 /**
- * The struck row — the system's core primitive.
+ * The struck row, the system's core primitive.
  *
  *   ┌──────┐ ┌──────┐ ┌──────┐ ┌──────┐
  *   │  ⚖   │ │ 405  │ │  ◈   │ │  R   │
@@ -32,13 +32,13 @@ export interface HallmarkRecord {
  *    office   fineness  category  epoch
  *
  * Four separate punches, exactly as on British silver, because a hallmark is
- * not one stamp — it is a row of independent assertions, each struck by
+ * not one stamp, it is a row of independent assertions, each struck by
  * someone answerable for it.
  *
  * **Below 375 nothing is struck at all.** The row renders as reserved blank
  * space of the same width, so a column of them lines up. That is not an
  * omission: an agent with nothing to show is shown with nothing, which is
- * honest, unforgeable, and — across 301,000 rows — the strongest argument in
+ * honest, unforgeable, and, across 301,000 rows, the strongest argument in
  * the product.
  */
 export default function Hallmark({
@@ -54,7 +54,7 @@ export default function Hallmark({
   size?: 16 | 24 | 40 | 96 | number;
   /** Punch names beneath the row. Certificate sizes only. */
   labels?: boolean;
-  /** Lead with the sponsor's mark — who submitted the item. */
+  /** Lead with the sponsor's mark, who submitted the item. */
   sponsor?: boolean;
   /** Draw the defacing cut rather than showing it already made. */
   cutting?: boolean;
@@ -72,8 +72,8 @@ export default function Hallmark({
 
       In a register that means reserved blank space and nothing else, because
       the blanks lining up in a column is the argument. On a certificate, where
-      `sponsor` is set, the sponsor's mark still appears — it records who
-      submitted the item and exists whether or not the item passed — followed
+      `sponsor` is set, the sponsor's mark still appears, it records who
+      submitted the item and exists whether or not the item passed, followed
       by four empty positions where the office, the fineness, the category and
       the date letter would have been struck. The absence is not hidden; it is
       given its exact shape.

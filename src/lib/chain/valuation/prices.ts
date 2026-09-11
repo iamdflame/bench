@@ -13,8 +13,8 @@ export const V3_FACTORY = "0x0BFbCF9fa4f9C56B0F40a671Ad40E0805A091865" as const;
  * The window a settlement price is averaged over.
  *
  * Thirty minutes is long enough that moving it requires holding a pool away
- * from its true price for the whole window — which costs far more than any
- * bond on this market is worth — and short enough that a settlement still
+ * from its true price for the whole window, which costs far more than any
+ * bond on this market is worth, and short enough that a settlement still
  * reflects the epoch it is settling.
  */
 export const TWAP_WINDOW_SECONDS = 1800;

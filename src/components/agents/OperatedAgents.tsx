@@ -11,7 +11,7 @@
  *
  * Below each one is the authority it holds: the exact calls its session key
  * may make, the spend cap, the expiry, and a control to revoke it. Revoking is
- * the same act as dismissal — it ends the agent's ability to do anything at
+ * the same act as dismissal, it ends the agent's ability to do anything at
  * all, not merely its claim on the mandate.
  */
 

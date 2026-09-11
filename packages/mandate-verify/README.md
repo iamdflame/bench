@@ -10,8 +10,8 @@ npx mandate-verify --mandate 0 --chain 56
 | Exit | Meaning |
 |---:|---|
 | `0` | every check passed |
-| `1` | a real mismatch — the settled numbers disagree with the committed ones |
-| `3` | **inconclusive** — no node would serve the evidence |
+| `1` | a real mismatch, the settled numbers disagree with the committed ones |
+| `3` | **inconclusive**, no node would serve the evidence |
 
 The third one matters. Most public BSC endpoints refuse `eth_getLogs` over any
 real range, and which ones refuse *changes*: `publicnode` served these queries
@@ -29,14 +29,14 @@ mandate.
 ## Why this package exists separately
 
 MANDATE slashes agents for underperformance. The number that decides each slash
-used to live in a JSON file on the operator's laptop — an unverifiable
+used to live in a JSON file on the operator's laptop, an unverifiable
 assertion, inside a product built to punish unverifiable assertions.
 
 It now lives on chain: every measurement is committed with `award()` and
 `settleEpoch()` before the outcome is known, and emitted whole in an `Observed`
 log so the preimage is public.
 
-This package is the other half of that fix. **It reads nothing but the chain** —
+This package is the other half of that fix. **It reads nothing but the chain**,
 no database, no API, no environment variable, no file the operator controls. A
 verifier that asked us for the answer would be checking our arithmetic against
 our arithmetic, so the constraint is enforced rather than promised:
@@ -60,7 +60,7 @@ For the opening mark and for every settled epoch:
 
 - the preimage is present in an `Observed` log
 - it hashes to the commitment in contract storage, using the struct definition
-  rather than the contract's own `hashObservation` — a contract that hashed
+  rather than the contract's own `hashObservation`, a contract that hashed
   inconsistently would be caught, not mirrored
 - the committed value and block match what storage holds
 - **the settled alpha is exactly what the two consecutive marks imply**,
@@ -75,9 +75,9 @@ did not reach.
 
 | Tier | What was checked | Needs |
 |---|---|---|
-| **1 — Integrity** | The measurements hash to commitments made before the outcome was known, and the settled alpha is the one they imply. | nothing |
-| **2 — Re-derivation** | The valuation was independently recomputed from chain state at the pinned block. | a node still serving that block |
-| **3 — Historical** | The same, at any depth. | `--archive <url>` |
+| **1, Integrity** | The measurements hash to commitments made before the outcome was known, and the settled alpha is the one they imply. | nothing |
+| **2, Re-derivation** | The valuation was independently recomputed from chain state at the pinned block. | a node still serving that block |
+| **3, Historical** | The same, at any depth. | `--archive <url>` |
 
 The reported tier is the weakest any settled epoch reached.
 
@@ -85,7 +85,7 @@ The reported tier is the weakest any settled epoch reached.
 
 Measured on 2026-09-04 by bisecting `eth_getBalance` depth on each endpoint,
 with the elapsed time taken from the two block headers rather than converted
-from an assumed block time — BSC blocks are **0.45 s**, and assuming 0.75 s
+from an assumed block time, BSC blocks are **0.45 s**, and assuming 0.75 s
 overstates the window by two thirds:
 
 | Endpoint | State depth | Elapsed |
@@ -94,11 +94,11 @@ overstates the window by two thirds:
 | `bsc-dataseed1.binance.org` | 122 blocks | 55 s |
 | `1rpc.io/bnb` | 109 blocks | 49 s |
 | `bsc-rpc.publicnode.com` | 95 blocks | 43 s |
-| `bsc.meowrpc.com`, `bsc.drpc.org` | — | rate limited before answering |
+| `bsc.meowrpc.com`, `bsc.drpc.org` | - | rate limited before answering |
 
 So tier 2 is reachable for **roughly 45 seconds** after an epoch settles, and
-tier 3 needs an archive node. Depth drifts between probes — `1rpc.io` returned
-15 blocks on an earlier run — so treat the window as tens of seconds, not a
+tier 3 needs an archive node. Depth drifts between probes, `1rpc.io` returned
+15 blocks on an earlier run, so treat the window as tens of seconds, not a
 guarantee. This is a property of free BSC infrastructure rather than of the
 design: the commitments are permanent either way, which is why tier 1 is the
 floor and not the ceiling.

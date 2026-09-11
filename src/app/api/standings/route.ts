@@ -2,7 +2,7 @@
  * Agent standings, reconstructed from contract logs.
  *
  * The record is derived rather than reported, and that derivation is a walk of
- * `eth_getLogs` from the deploy block in 4,000-block spans — thirty-odd
+ * `eth_getLogs` from the deploy block in 4,000-block spans, thirty-odd
  * sequential calls, because free BSC providers refuse anything wider. This
  * endpoint was uncached on the reasoning that serving a stale copy would
  * undercut the claim that the record is current.
@@ -14,7 +14,7 @@
  *
  * So the walk is memoised and bounded. The answer carries the block range it
  * covers and whether it is complete, which is what actually protects the
- * claim — a reader can see how current it is rather than being asked to trust
+ * claim, a reader can see how current it is rather than being asked to trust
  * that it is.
  */
 

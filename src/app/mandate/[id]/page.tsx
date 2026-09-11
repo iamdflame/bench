@@ -62,7 +62,7 @@ function PendingPanel({ title }: { title: string }) {
  * The life of the mandate, in the order it happened.
  *
  * Each row is an event the chain recorded, with the transaction that did it. A
- * mandate is a sequence of occurrences, not a performance figure — and the
+ * mandate is a sequence of occurrences, not a performance figure, and the
  * figure would rest on these rows anyway, so the rows are what is published.
  */
 async function Life({
@@ -272,7 +272,7 @@ export default async function MandatePage({ params }: { params: Promise<{ id: st
     The life of the mandate, in the order it happened.
 
     Each row is an event the chain recorded, with the transaction that did it.
-    A mandate is a sequence of occurrences, not a performance figure — and the
+    A mandate is a sequence of occurrences, not a performance figure, and the
     figure would rest on these rows anyway, so the rows are what is published.
   */
   const attestations: AttestationView[] = [
@@ -353,7 +353,7 @@ export default async function MandatePage({ params }: { params: Promise<{ id: st
 
         {/*
           The ledger and the settled-alpha column both come from an event log
-          scan, which against a free provider is the whole cost of this page —
+          scan, which against a free provider is the whole cost of this page,
           eighteen seconds for a mandate with a few epochs behind it. The
           attestations are contract reads and arrive at once, so they are not
           made to wait behind the logs.

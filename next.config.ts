@@ -5,6 +5,12 @@ const config: NextConfig = {
   // The home directory above this project is itself a git repo with its own
   // lockfile; without this, Next infers the wrong workspace root.
   outputFileTracingRoot: __dirname,
+  // Pages read committed evidence from src/data at request time (demo.json,
+  // recenter.json, roles.json, passkey.json, grid-window.json, probe.json).
+  // Some are read through a template path, which the tracer cannot follow.
+  outputFileTracingIncludes: {
+    "/**/*": ["./src/data/**/*.json", "./docs/advantage/results/*.json"],
+  },
   images: {
     remotePatterns: [{ protocol: "https", hostname: "api.8004scan.io" }],
   },
@@ -49,6 +55,8 @@ const config: NextConfig = {
       */
       { source: "/office/:category", destination: "/agents?category=:category", permanent: false },
       { source: "/offices", destination: "/agents", permanent: false },
+      // The V1 session page; /desk reads the KeyStore and replaces it.
+      { source: "/authority", destination: "/desk", permanent: false },
     ];
   },
   serverExternalPackages: [

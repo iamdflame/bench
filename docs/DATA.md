@@ -116,8 +116,9 @@ subgraph or a persistent indexer, and the schema for one already exists in
   The connection had to go through the IPv4 pooler: the direct Supabase host
   resolves to IPv6 only, and neither this machine nor the deployment target has
   a route to it.
-- **The registry sweep is partial.** 3,808 of 303,391 agents have been fetched
-  and parsed. That is a floor, not a total, and the ladder says so with a `≥`.
+- **The registry sweep is partial.** 4,436 agents have been fetched and parsed,
+  of the 344,000-odd the registry's own counter reports (read live from its
+  storage slot; see `src/lib/registry/count.ts`). That is a floor, not a total, and the ladder says so with a `≥`.
   Reaching the whole registry needs the Pro tier.
 - **There is no subgraph.** See above.
 

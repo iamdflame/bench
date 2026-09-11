@@ -1,21 +1,22 @@
 /**
- * x402 / b402 — selling access for money, over HTTP.
+ * x402 / b402, selling access for money, over HTTP.
  *
  * A mandate is a heavy way to buy something. It needs a bond, a term, an
  * adjudicator and a principal willing to escrow capital. Most of what this
  * marketplace knows is worth far less than that ceremony: what an agent's
- * assay says, what a strategy would do right now. x402 is the light path —
+ * assay says, what a strategy would do right now. x402 is the light path,
  * a request, a 402, a signed payment, an answer.
  *
  * **The asset is not USDT.** x402's `exact` scheme settles with EIP-3009
  * `transferWithAuthorization`, and neither BSC USDT nor BSC USDC implements
- * it — checked directly: both are missing `authorizationState` and
+ * it, checked directly: both are missing `authorizationState` and
  * `DOMAIN_SEPARATOR`. USD1 does, and its EIP-712 domain was confirmed by
  * recomputing the separator and matching it against the one the contract
  * returns. Pricing this rail in USDT would have produced a challenge no
  * client could ever satisfy.
  */
 
+import { gasPrice } from "@/lib/chain/marketV2";
 import {
   encodeFunctionData,
   keccak256,
@@ -27,13 +28,14 @@ import {
 } from "viem";
 import { marketChain, marketClient, walletFor } from "@/lib/chain/market";
 
-/** World Liberty Financial USD — the EIP-3009 stablecoin on BSC. */
+/** World Liberty Financial USD, the EIP-3009 stablecoin on BSC. */
 export const USD1 = "0x8d0D000Ee44948FC98c9B98A4FA4921476f08B0d" as const;
 export const USD1_DECIMALS = 18;
 
 export const EIP3009_ABI = parseAbi([
   "function transferWithAuthorization(address from, address to, uint256 value, uint256 validAfter, uint256 validBefore, bytes32 nonce, uint8 v, bytes32 r, bytes32 s)",
   "function authorizationState(address authorizer, bytes32 nonce) view returns (bool)",
+  "function balanceOf(address account) view returns (uint256)",
 ]);
 
 /** Confirmed against the contract's own DOMAIN_SEPARATOR, not assumed. */
@@ -187,6 +189,20 @@ export async function verifyPayment(
     return { ok: false, reason: `signed by ${payer}, claims to be ${a.from}` };
   }
 
+  // An authorization from an account that cannot cover it would pass every
+  // check above and fail at settlement, after we had paid to try. Refused here.
+  try {
+    const balance = (await marketClient.readContract({
+      address: USD1,
+      abi: EIP3009_ABI,
+      functionName: "balanceOf",
+      args: [a.from],
+    })) as bigint;
+    if (balance < BigInt(a.value)) return { ok: false, reason: `${a.from} holds ${balance}, less than the ${a.value} it authorised` };
+  } catch {
+    return { ok: false, reason: "could not read the payer's balance" };
+  }
+
   // A nonce already used on chain is a replay, not a payment.
   try {
     const used = (await marketClient.readContract({
@@ -206,7 +222,7 @@ export async function verifyPayment(
 /**
  * Settles a verified payment on chain.
  *
- * The seller submits, so the buyer needs no BNB at all — which is the point of
+ * The seller submits, so the buyer needs no BNB at all, which is the point of
  * the scheme, and the reason this is a genuinely low-friction path next to a
  * bonded mandate.
  */
@@ -237,6 +253,8 @@ export async function settle(a: Authorization, signature: Hex): Promise<Hex> {
     ],
     chain: marketChain,
     account: wallet.account!,
+    // The quoted price is below what validators accept; see marketV2.gasPrice.
+    gasPrice: await gasPrice(),
   });
 }
 

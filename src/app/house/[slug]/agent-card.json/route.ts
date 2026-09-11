@@ -13,7 +13,8 @@
  */
 
 import { NextResponse } from "next/server";
-import { houseBySlug } from "@/lib/house";
+import { houseBySlug, referenceBySlug, referenceRegistrations } from "@/lib/house";
+import { HOUSE_SERVICES } from "@/lib/house/services";
 import { CATEGORY_LABEL } from "@/lib/config";
 
 export const runtime = "nodejs";
@@ -26,6 +27,38 @@ export async function GET(
   { params }: { params: Promise<{ slug: string }> },
 ) {
   const { slug } = await params;
+  const ref = referenceBySlug(slug);
+  if (ref) {
+    const service = HOUSE_SERVICES[slug];
+    const reg = referenceRegistrations()[slug];
+    return NextResponse.json(
+      {
+        protocolVersion: "0.3.0",
+        name: ref.name,
+        description: ref.description,
+        url: `${HOST}/api/x402/house/${slug}`,
+        version: "1.0.0",
+        documentationUrl: `${HOST}/desk#${slug}`,
+        provider: { organization: "MANDATE", url: HOST },
+        capabilities: { streaming: false, pushNotifications: false, stateTransitionHistory: false },
+        defaultInputModes: ["application/json"],
+        defaultOutputModes: ["application/json"],
+        skills: [
+          {
+            id: slug,
+            name: service?.name ?? ref.name,
+            description: `${service?.description ?? ref.description} Paid over x402: 0.05 USD1, EIP-3009, answered with 402 then the work.`,
+            tags: ["erc-8004", "bsc", "x402", ref.category],
+            examples: [`GET ${HOST}/api/x402/house/${slug}${service?.inputs[0] ? `?${service.inputs[0].name}=...` : ""}`],
+            inputModes: ["application/json"],
+            outputModes: ["application/json"],
+          },
+        ],
+        registrations: reg ? [{ agentId: reg.tokenId, agentAddress: reg.owner, chainId: 56 }] : [],
+      },
+      { headers: { "cache-control": "public, max-age=60", "access-control-allow-origin": "*" } },
+    );
+  }
   const agent = houseBySlug(slug);
   if (!agent) {
     return NextResponse.json({ error: "No house agent by that name." }, { status: 404 });
@@ -52,7 +85,7 @@ export async function GET(
           id: "standing",
           name: "Report its own standing",
           description:
-            "Returns every mandate this agent holds, the bond at risk against each, epochs settled, running alpha and strikes — read from the market contract at the block named in the response, not reported by the agent.",
+            "Returns every mandate this agent holds, the bond at risk against each, epochs settled, running alpha and strikes, read from the market contract at the block named in the response, not reported by the agent.",
           tags: ["erc-8004", "bsc", "mandate", ...agent.offices],
           examples: [`GET ${HOST}/api/house/${agent.slug}/status`],
           inputModes: ["application/json"],

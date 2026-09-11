@@ -24,7 +24,7 @@ const agent = (over: Partial<IndexedAgent> & { tokenId: string }): IndexedAgent 
   ...over,
 });
 
-/** Four registrations of one product, four owners — the q402 pattern. */
+/** Four registrations of one product, four owners, the q402 pattern. */
 const minted = (ids: string[], name: string, description: string): IndexedAgent[] =>
   ids.map((tokenId, i) =>
     agent({ tokenId, name, description, owner: `0x${(i + 1).toString().repeat(4)}` }),

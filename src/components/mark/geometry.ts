@@ -2,7 +2,7 @@
  * Punch geometry.
  *
  * Everything here is cut on a 24-unit grid with flat terminals and no curves
- * except where a curve carries meaning. A punch is cut, not drawn — so there
+ * except where a curve carries meaning. A punch is cut, not drawn, so there
  * are no rounded joins, no soft corners, and no gradients anywhere in this
  * system.
  *
@@ -19,7 +19,7 @@ export const SURROUND = "M4 2 H20 V15 L15 20 H9 L4 15 Z";
  * Fineness shields.
  *
  * Real hallmarking uses a different frame for each metal, so the shape carries
- * the grade before the numeral is read. Below 375 there is no shield at all —
+ * the grade before the numeral is read. Below 375 there is no shield at all,
  * base metal receives no mark, and absence is the strongest signal here.
  */
 export const SHIELDS = {
@@ -29,7 +29,7 @@ export const SHIELDS = {
   hexagon: "M12 1.5 L21 6.75 V17.25 L12 22.5 L3 17.25 V6.75 Z",
   /** 749–500. Sterling. */
   rect: "M3 3 H21 V21 H3 Z",
-  /** 499–375. Clipped corners — the lowest hallmarkable frame. */
+  /** 499–375. Clipped corners, the lowest hallmarkable frame. */
   clipped: "M7 3 H17 L21 7 V17 L17 21 H7 L3 17 V7 Z",
 } as const;
 
@@ -66,9 +66,9 @@ export function gradeOf(fineness: number): Grade {
  * fall over.
  */
 export const CATEGORY_DEVICE: Record<string, string> = {
-  // A band with a centre notch — a concentrated range and its midpoint.
+  // A band with a centre notch, a concentrated range and its midpoint.
   rebalancing: "M5 9 H19 V15 H5 Z M11 7 H13 V17 H11 Z",
-  // Four stacked rungs — the ladder.
+  // Four stacked rungs, the ladder.
   "grid-trading": "M5 6 H19 V8 H5 Z M5 10 H19 V12 H5 Z M5 14 H19 V16 H5 Z M5 18 H19 V20 H5 Z",
   // Three turns, compounding. The one curve in the system, and it earns it.
   "yield-optimisation":
@@ -103,7 +103,7 @@ export const SPONSOR_SHIELDS: string[] = [
  * FNV-1a rather than keccak: the sponsor's mark must be derivable in a browser
  * with no dependencies and no async, and the property that matters is
  * determinism, not collision resistance. Two agents sharing a surround is not
- * a security failure — the token id is printed beside the mark.
+ * a security failure, the token id is printed beside the mark.
  */
 export function seedOf(input: string): number {
   let h = 0x811c9dc5;
@@ -147,7 +147,7 @@ export function dateLetter(epoch: number): { letter: string; shield: string } {
  * The assay cycle a timestamp falls in.
  *
  * Real date letters change annually. A market settling epochs in minutes needs
- * a shorter cycle to be informative, so this is weekly — long enough that the
+ * a shorter cycle to be informative, so this is weekly, long enough that the
  * letter means something, short enough that staleness is visible.
  */
 export const CYCLE_MS = 7 * 24 * 60 * 60 * 1000;

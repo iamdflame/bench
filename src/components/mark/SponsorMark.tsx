@@ -1,7 +1,7 @@
 import { sponsorLetters, sponsorShield } from "./geometry";
 
 /**
- * The sponsor's mark — who submitted the item.
+ * The sponsor's mark, who submitted the item.
  *
  * Derived deterministically from the agent's ERC-8004 identity, so the same
  * agent carries the same mark forever and anyone can regenerate it. The

@@ -1,5 +1,5 @@
 /**
- * granted ⊆ proven — authority derived from evidence, not from a claim.
+ * granted ⊆ proven, authority derived from evidence, not from a claim.
  *
  * The assay already decided whether an agent may *bid*. It said nothing about
  * what the agent may *do*, because the session allowlist was a hardcoded
@@ -19,7 +19,7 @@
  * It is enforced by the type system, not by a runtime assertion that someone
  * can forget to call. `ProvenScope` carries a symbol this module does not
  * export, so no code outside this file can construct one. `grantMandateSession`
- * takes a `ProvenScope` and nothing else — a grant that has not been through
+ * takes a `ProvenScope` and nothing else, a grant that has not been through
  * an assay does not compile.
  */
 
@@ -93,7 +93,7 @@ export function scopeFromAssay(
  *
  * A mandate's holder is an address, not a token id, so the full registry assay
  * has nothing to read. What the invariant actually needs is narrower than an
- * assay — which protocols has this wallet been shown using — so that is asked
+ * assay, which protocols has this wallet been shown using, so that is asked
  * of the chain directly. The rule and the refusals are identical; only the
  * source of the evidence differs.
  */
@@ -119,6 +119,9 @@ export async function scopeFromChain(
   });
 }
 
+/** The protocol whose use proves an agent can make this call; a leash defers to what it wraps. */
+const evidenceOf = (c: { to: string; protocol?: string }) => (c.protocol ?? c.to).toLowerCase();
+
 function deriveScope(
   agent: Address,
   category: Category,
@@ -139,13 +142,13 @@ function deriveScope(
   const proven = new Set(capability.proven.protocols.map((p) => p.toLowerCase()));
   const canonical = CATEGORY_CALLS[category];
 
-  const calls = canonical.filter((c) => proven.has(c.to.toLowerCase()));
+  const calls = canonical.filter((c) => proven.has(evidenceOf(c)));
   const withheld = canonical
-    .filter((c) => !proven.has(c.to.toLowerCase()))
+    .filter((c) => !proven.has(evidenceOf(c)))
     .map((c) => ({
       to: c.to,
       signature: c.signature,
-      because: `no interaction with ${PROTOCOL_LABEL[c.to.toLowerCase()] ?? c.to} in ${Number(
+      because: `no interaction with ${PROTOCOL_LABEL[evidenceOf(c)] ?? c.to} in ${Number(
         capability.proven!.scannedBlocks,
       ).toLocaleString()} blocks`,
     }));
@@ -155,13 +158,13 @@ function deriveScope(
       refused: true,
       reason: `this agent has not been shown using any ${CATEGORY_LABEL[category]} contract, so there is no authority to derive`,
       remedy: `it must transact with one of: ${canonical
-        .map((c) => PROTOCOL_LABEL[c.to.toLowerCase()] ?? c.to)
+        .map((c) => PROTOCOL_LABEL[evidenceOf(c)] ?? c.to)
         .filter((v, i, a) => a.indexOf(v) === i)
         .join(", ")}`,
     };
   }
 
-  const usable = [...new Set(calls.map((c) => PROTOCOL_LABEL[c.to.toLowerCase()] ?? c.to))];
+  const usable = [...new Set(calls.map((c) => PROTOCOL_LABEL[evidenceOf(c)] ?? c.to))];
   return {
     agent,
     category,

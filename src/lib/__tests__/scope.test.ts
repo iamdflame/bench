@@ -5,7 +5,7 @@ import { CATEGORY_CALLS } from "@/lib/chain/session";
 /**
  * `granted ⊆ proven` is only satisfiable if every call a category grants sits
  * on a contract that category's evidence list actually searches. A target
- * absent from the evidence is unprovable *forever* — the agent can perform the
+ * absent from the evidence is unprovable *forever*, the agent can perform the
  * action all day and the scan will never look at the contract it used.
  *
  * That was true of Venus vBNB under yield-optimisation and nothing caught it,
@@ -15,7 +15,9 @@ describe("granted ⊆ proven is satisfiable", () => {
   for (const category of CATEGORIES) {
     it(`${category}: every granted call is reachable by its own evidence`, () => {
       const evidence = new Set(CATEGORY_EVIDENCE[category].map((a) => a.toLowerCase()));
-      const targets = [...new Set(CATEGORY_CALLS[category].map((c) => c.to.toLowerCase()))];
+      // A leash (RecipientBound, SwapBound) is earned by using the protocol
+      // behind it, so its evidence is `protocol`, not its own address.
+      const targets = [...new Set(CATEGORY_CALLS[category].map((c) => (c.protocol ?? c.to).toLowerCase()))];
       expect(targets.length).toBeGreaterThan(0);
       for (const t of targets) expect(evidence.has(t)).toBe(true);
     });

@@ -53,7 +53,7 @@ export function placesFor(n: number): number {
  *
  * Per-figure precision is right for a figure standing alone and wrong the
  * moment figures are stacked: the floor's capital column ran 0.0000600,
- * 0.0000500, 0.0000486, 0.00015, 0.00150, 0.00250 — four different decimal
+ * 0.0000500, 0.0000486, 0.00015, 0.00150, 0.00250, four different decimal
  * counts down one column, so the digits did not line up and two values an
  * order of magnitude apart looked the same length. A column takes the
  * precision its smallest non-zero member needs, and every row uses it.
@@ -82,7 +82,7 @@ export interface MarketState {
  * @param initial A snapshot read on the server, so the first render has rows.
  *
  * Without it the floor's state began as `null` and only filled inside an
- * effect, which does not run during server rendering — so the HTML said
+ * effect, which does not run during server rendering, so the HTML said
  * "0 mandates active" and "Reading the chain…" while three ledgers said Active.
  * The stream still takes over as soon as it connects; this is what the page
  * says before it does.

@@ -1,0 +1,15 @@
+{
+  "tx": "0xe8bc921e7b7a444ca5e32840a2ec119df2d51958ba7ab5f28fda1d446c8df88b",
+  "summary": "Supplied 0.05 USDT to Venus at 2.69% a year (Aave paid 2.95%; Aave's supply takes the address to credit, so no session here may call it), through a session that can only mint and redeem vUSDT.",
+  "rates": {
+    "venusApr": 0.02690510000273656,
+    "venusAprDeclared": null,
+    "blocksPerYearMeasured": 70048867.1701466,
+    "blocksPerYearDeclared": null,
+    "aaveApr": 0.02952255806714194,
+    "block": 121192408
+  },
+  "vTokensBefore": "943908789",
+  "vTokensAfter": "1132690129",
+  "at": "2026-09-11T03:46:29.318Z"
+}

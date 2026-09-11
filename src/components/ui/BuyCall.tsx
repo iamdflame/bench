@@ -19,7 +19,7 @@ import { marketChain, marketClient } from "@/lib/chain/market";
  *
  *   1. ask for the resource, unpaid, and read the 402 it answers with
  *   2. build the authorisation the challenge asks for
- *   3. sign it as EIP-712 typed data — a signature, not a transaction
+ *   3. sign it as EIP-712 typed data, a signature, not a transaction
  *   4. ask again, carrying the signature
  *   5. the seller submits the transfer and returns the goods
  *
@@ -87,7 +87,7 @@ function nonce(): Hex {
  * The seller returns the settlement failure verbatim, which for the commonest
  * case is a hundred and eighty characters of ContractFunctionExecutionError
  * wrapping the four words that matter. Showing that to somebody who just tried
- * to spend a cent is not honesty, it is laziness dressed as it — the raw text
+ * to spend a cent is not honesty, it is laziness dressed as it, the raw text
  * is still one line down in the detail, and this is the sentence.
  */
 function sellerError(body: unknown, status: number): string {
@@ -133,7 +133,7 @@ export default function BuyCall({
     try {
       const res = await fetch(path, { headers: { accept: "application/json" } });
       if (res.status !== 402) {
-        // Not a refusal — the resource was free, or something else answered.
+        // Not a refusal, the resource was free, or something else answered.
         setPhase({ at: "done", body: await res.json().catch(() => null), tx: null });
         return;
       }

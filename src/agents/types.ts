@@ -26,6 +26,8 @@ export interface AgentContext {
   capWei: bigint;
   price: PoolPrice;
   valuation: Valuation;
+  /** Token balances a leash can move, read directly. Optional for strategies that do not trade. */
+  balances?: { usdt: number; wbnb: number };
   /** Strategy state carried between runs. */
   state: Record<string, unknown>;
   now: number;

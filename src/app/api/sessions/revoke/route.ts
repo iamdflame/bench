@@ -2,8 +2,8 @@
  * Revocation, as an action a principal can actually take.
  *
  * Altana's requirement is that a user can see what their agent may do and
- * revoke it *inside the product*. The authority was already rendered — the
- * allowlist, the cap, the expiry — with a paragraph explaining what revoking
+ * revoke it *inside the product*. The authority was already rendered, the
+ * allowlist, the cap, the expiry, with a paragraph explaining what revoking
  * would do and no way to do it. A description of a control is not a control.
  *
  * Who is allowed to press it is the awkward part, and it is stated rather than

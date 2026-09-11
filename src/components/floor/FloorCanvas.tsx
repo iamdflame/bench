@@ -6,7 +6,7 @@
  * WebGL2, two draw calls, no scene library. Every attribute fed to the GPU is
  * live contract state: radius is capital under mandate, the ring is the bond
  * still at risk, tint is realized alpha, tremor is accumulated strikes. When
- * nothing is happening on chain the floor is almost still, which is the point —
+ * nothing is happening on chain the floor is almost still, which is the point,
  * the motion is not decoration, it is the market.
  */
 

@@ -7,7 +7,7 @@ import { MAX_DEVIATION_BPS, bpsBetween, priceSource, readPoolBoth } from "../pri
  * The settlement price, read against mainnet.
  *
  * Deliberately not forked. What is under test is that a thirty-minute average
- * genuinely exists on the pools this market settles against — and a fork
+ * genuinely exists on the pools this market settles against, and a fork
  * cannot prove that, because anvil serves the observation array from an
  * upstream node whose pruning window is about fifty seconds. Reading mainnet
  * directly is both simpler and a stronger claim.

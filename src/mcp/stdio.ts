@@ -6,9 +6,9 @@
  *   claude mcp add mandate -- npx -y tsx /path/to/src/mcp/stdio.ts
  *
  * or, from a checkout, `npm run mcp`. Cursor and any other MCP client take the
- * same command. Nothing here needs a key, an account or a signature — the
- * reads are the product, and the writes return what they would take rather
- * than pretending to have done it. See `tools.ts` for why.
+ * same command. The reads need nothing. The writes sign only if you set
+ * MCP_SIGNER_KEY in the environment you start this with; without it they
+ * return what they would send. See `tools.ts`.
  *
  * stdout belongs to the protocol. Anything this process wants to say to a
  * human goes to stderr, because a stray log line on stdout is a parse error at
@@ -31,7 +31,8 @@ server.setRequestHandler(ListToolsRequestSchema, async () => ({ tools: TOOL_SPEC
 server.setRequestHandler(CallToolRequestSchema, async (request) => {
   const { name, arguments: args } = request.params;
   try {
-    const result = await callTool(name, (args ?? {}) as Record<string, unknown>);
+    // The local process may sign, with MCP_SIGNER_KEY from its own environment.
+    const result = await callTool(name, (args ?? {}) as Record<string, unknown>, { canSign: true });
     return { content: [{ type: "text", text: JSON.stringify(result, null, 2) }] };
   } catch (error) {
     /*
@@ -49,7 +50,7 @@ server.setRequestHandler(CallToolRequestSchema, async (request) => {
 
 async function main() {
   await server.connect(new StdioServerTransport());
-  console.error(`MANDATE MCP server ready — ${TOOL_SPECS.length} tools over stdio.`);
+  console.error(`MANDATE MCP server ready: ${TOOL_SPECS.length} tools over stdio; writes ${process.env.MCP_SIGNER_KEY ? "sign with MCP_SIGNER_KEY" : "are dry (no MCP_SIGNER_KEY)"}.`);
 }
 
 main().catch((error) => {

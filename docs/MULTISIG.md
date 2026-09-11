@@ -1,8 +1,13 @@
 # The owner key, and how to stop it being one key
 
-**Status: not done.** The owner of the live market is a single externally owned
-account, and it is also the adjudicator. This document is what to do about it
-and what it costs. It is written as instructions rather than intentions because
+**Status: half done.** The adjudicator is no longer the owner: on 11 September
+2026 the role moved to `0x6F29B50ebaF733D980EadfeB3253347d8a12A69C` through the
+contract's own two-step handover
+([nominate](https://bscscan.com/tx/0x3a6d2620d19edce49aada58509555c31c0e8241a2824845e49daa12cc5e7d302),
+[accept](https://bscscan.com/tx/0xf681bf3894dc2af65f34b82c78420445bc610e3838fb33721a85ca138c38eb82)).
+The owner is still a single externally owned account. Moving it to a Safe needs a
+second signer, which only a person can provide. This document is what to do
+about it and what it costs. It is written as instructions rather than intentions because
 the gap is real and naming it is not the same as closing it.
 
 ## What the owner can and cannot do

@@ -2,7 +2,7 @@
  * The Trust Ladder.
  *
  * BNB Chain asked for a front door to every agent on BSC. The honest objection
- * — that a directory lets anyone claim anything at the price of gas — was
+ *, that a directory lets anyone claim anything at the price of gas, was
  * previously answered by refusing to build a directory. That was intellectually
  * right and strategically wrong: it left every registered agent with nowhere
  * to appear.
@@ -40,7 +40,7 @@ import { HOUSE } from "@/lib/house";
 import { collapse, type Duplication } from "@/lib/dedup";
 
 /**
- * The lowest hallmarkable grade — a hallmarking convention, not this market's gate.
+ * The lowest hallmarkable grade, a hallmarking convention, not this market's gate.
  *
  * These are two different claims and the site was conflating them. 375 is the
  * assay standard used to grade an agent; the *market's* admission bar is
@@ -62,7 +62,7 @@ export interface Rung {
   /**
    * How many agents clear it.
    *
-   * `null` means not yet measurable across the whole registry — stated rather
+   * `null` means not yet measurable across the whole registry, stated rather
    * than guessed at, because a plausible number here would be a lie.
    */
   population: number | null;
@@ -78,7 +78,7 @@ export interface Rung {
    * A registration is not a product. One agent minted once per user wallet
    * arrives in the registry as hundreds of rows, so a rung that counts rows
    * counts that product hundreds of times. Where this is set, it is the same
-   * population collapsed onto distinct name-and-description — owner-blind,
+   * population collapsed onto distinct name-and-description, owner-blind,
    * because the copies are precisely what differs by owner. See `lib/dedup`.
    */
   distinct?: number;
@@ -110,7 +110,9 @@ export interface LadderReading {
   source: "postgres" | "snapshot";
   capturedAt: string;
   /** Whether rungs 0 and 2 were counted live or carried from the snapshot. */
-  registrySource: "live" | "indexer" | "snapshot";
+  registrySource: "chain" | "live" | "indexer" | "snapshot";
+  registryBlock?: number;
+  registryVerify?: string;
   /** When rungs 0 and 2 were counted. A different clock from `capturedAt`. */
   registryAt: string;
 }
@@ -160,7 +162,7 @@ async function readAssayed(): Promise<{ count: number; agents: Address[] } | nul
  * The ladder, memoised.
  *
  * Rung 4 scans event logs from the deploy block in 4,000-block windows, which
- * takes seventeen seconds against a free provider — long enough that the front
+ * takes seventeen seconds against a free provider, long enough that the front
  * page simply did not paint. The reading itself is unchanged; it is just not
  * recomputed for every visitor inside the same minute, and the page stamps the
  * block and the age of what it is showing.
@@ -227,8 +229,8 @@ async function readLadderUncached(): Promise<LadderReading> {
       stops being true, so it is counted rather than asserted: a holder counts
       if some ERC-8004 registration we can see is owned by that wallet.
 
-      The check runs over every population the register knows — the crawl, the
-      field read from the chain, and this office's own registered agents — so a
+      The check runs over every population the register knows, the crawl, the
+      field read from the chain, and this office's own registered agents, so a
       third party bonding here moves the number without anyone editing copy.
     */
     const registryOwners = new Set<string>();
@@ -247,7 +249,7 @@ async function readLadderUncached(): Promise<LadderReading> {
     Rung 4 is a log scan from the deploy block, and it is the only slow part of
     this reading. On a warm memo it costs nothing; cold, against a serverless
     function with a hard limit, it was taking long enough to time out the whole
-    funnel — which turned one unmeasurable rung into no ladder at all.
+    funnel, which turned one unmeasurable rung into no ladder at all.
 
     Bounded, it degrades the way every other unmeasurable rung already does:
     the population is null and the source says why.
@@ -275,12 +277,14 @@ async function readLadderUncached(): Promise<LadderReading> {
       test: "Exists in the ERC-8004 Identity Registry on BSC.",
       population: registry.registered,
       source:
-        index.registrySource === "live"
+        index.registrySource === "chain"
+          ? `The registry's own counter, read from its storage slot at block ${index.registryBlock?.toLocaleString() ?? "?"}, ${ago(index.registryAt)}. Nobody's indexer in between. Costs one transaction and proves nothing.`
+          : index.registrySource === "live"
           ? `Counted by 8004scan on chain 56, read ${ago(index.registryAt)}. Costs one transaction and proves nothing.`
           : index.registrySource === "indexer"
             ? `8004scan would not answer for this reading, so this is the count our own crawler recorded ${ago(index.registryAt)}. Costs one transaction and proves nothing.`
             : "Carried from the last committed snapshot: neither 8004scan nor our crawler could be reached, so this count is as old as the file rather than as old as the page.",
-      verify: "curl 'https://api.8004scan.io/api/v1/agents?chain_id=56&limit=1'",
+      verify: index.registryVerify ?? "curl 'https://api.8004scan.io/api/v1/agents?chain_id=56&limit=1'",
     },
     {
       n: 1,
@@ -296,7 +300,7 @@ async function readLadderUncached(): Promise<LadderReading> {
       source: `A floor, not a total: ${index.agents.length.toLocaleString()} cards have been fetched and parsed so far, read from ${index.source === "postgres" ? "the index" : "a committed snapshot"} that \`npm run index\` builds. The rest are unindexed, not disproven.`,
       // Re-derives both figures this rung publishes: the rows read and the
       // products they collapse onto. `npm run index` rebuilds the index, which
-      // is provenance rather than verification — a fresh crawl reads a
+      // is provenance rather than verification, a fresh crawl reads a
       // different population and so cannot check this one.
       verify: "npm run dedup",
     },
@@ -375,5 +379,7 @@ async function readLadderUncached(): Promise<LadderReading> {
     capturedAt: index.capturedAt,
     registrySource: index.registrySource ?? "snapshot",
     registryAt: index.registryAt ?? index.capturedAt,
+    registryBlock: index.registryBlock,
+    registryVerify: index.registryVerify,
   };
 }

@@ -2,7 +2,7 @@
  * An agent's career in this market.
  *
  * The brief asks how an agent has performed. The contract has held that all
- * along — `cumulativeAlphaBps`, `strikes`, `epochsSettled` per mandate — and
+ * along, `cumulativeAlphaBps`, `strikes`, `epochsSettled` per mandate, and
  * nothing rendered it, so the answer existed and was invisible.
  *
  * Every row here is a chain read. Nothing is aggregated into a single score:

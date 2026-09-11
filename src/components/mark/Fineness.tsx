@@ -3,7 +3,7 @@ import { gradeOf, SHIELDS } from "./geometry";
 /**
  * A fineness figure in a shield whose shape encodes the grade.
  *
- * Below 375 this renders **nothing**. That is not an omission — it is the
+ * Below 375 this renders **nothing**. That is not an omission, it is the
  * philosophy of the whole system in one decision. Base metal receives no mark,
  * so a bad agent is never shown with a bad score; it is shown as an unmarked
  * object, which is honest, unforgeable, and devastating at scale.

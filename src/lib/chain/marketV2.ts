@@ -11,7 +11,7 @@
  *
  * Two shapes changed between the versions and both are load-bearing:
  *
- *   `Observation` gained `benchmarkWei` — what the same capital would have been
+ *   `Observation` gained `benchmarkWei`, what the same capital would have been
  *   worth under the mandate's benchmark. Without it `award` reverts
  *   `StaleObservation` and alpha cannot be re-derived.
  *
@@ -63,21 +63,53 @@ const read = (fn: string, args: unknown[] = []) =>
 /**
  * A gas price the network will actually gossip.
  *
- * viem quotes BSC from `eth_gasPrice`, which returns the floor, and a
- * transaction sent at exactly the floor is accepted by the dataseed node you
- * sent it to and then propagated nowhere. Measured: a transfer at 0.05 gwei sat
- * in one node's pool indefinitely and was unknown to every other node; the same
- * transfer at 3 gwei mined in seconds.
+ * viem quotes BSC from `eth_gasPrice`, which returns 0.05 gwei, and a
+ * transaction sent at exactly that is accepted by the dataseed node you sent
+ * it to and then propagated nowhere: validators run a 0.1 gwei minimum.
+ * Measured on block 121,176,407: every included transaction paid between
+ * 0.105 and 0.246 gwei. So the floor is 0.15 gwei, one and a half times the
+ * validators' minimum, and each rebroadcast doubles it up to 1 gwei.
  *
- * Twenty-one thousand gas at this price is about four cents, so the insurance
- * is free and a stuck nonce blocks every transaction behind it.
+ * The earlier floor here was 3 gwei. It mined, and it paid fifteen to thirty
+ * times what the block was clearing at, which on a budget of a few dollars
+ * was the difference between running the plan and not.
  */
-const GAS_FLOOR = parseGwei("3");
+export const GAS_FLOOR = parseGwei("0.15");
+export const GAS_CEILING = parseGwei("1");
 
-async function gasPrice(): Promise<bigint> {
+export async function gasPrice(attempt = 0): Promise<bigint> {
   const quoted = await marketClient.getGasPrice().catch(() => 0n);
-  const doubled = quoted * 2n;
-  return doubled > GAS_FLOOR ? doubled : GAS_FLOOR;
+  const padded = (quoted * 12n) / 10n;
+  const base = padded > GAS_FLOOR ? padded : GAS_FLOOR;
+  const escalated = base * 2n ** BigInt(attempt);
+  return escalated > GAS_CEILING ? GAS_CEILING : escalated;
+}
+
+/**
+ * Waits for a receipt, and if none arrives inside the window, resends the
+ * same nonce at the next escalation step. A replacement with a higher price
+ * supersedes the stuck one; whichever mines first wins and the other is
+ * dropped by the pool.
+ */
+export async function waitOrEscalate(
+  hash: Hex,
+  resend: (gasPrice: bigint) => Promise<Hex>,
+  opts: { windowMs?: number; maxAttempts?: number } = {},
+): Promise<{ hash: Hex; receipt: Awaited<ReturnType<typeof marketClient.waitForTransactionReceipt>> }> {
+  const windowMs = opts.windowMs ?? 90_000;
+  const maxAttempts = opts.maxAttempts ?? 3;
+  let current = hash;
+  for (let attempt = 1; ; attempt++) {
+    try {
+      const receipt = await marketClient.waitForTransactionReceipt({ hash: current, timeout: windowMs });
+      return { hash: current, receipt };
+    } catch (e) {
+      if (attempt >= maxAttempts) throw e;
+      const price = await gasPrice(attempt);
+      if (price >= GAS_CEILING && attempt > 1) throw e;
+      current = await resend(price);
+    }
+  }
 }
 
 /**
@@ -117,6 +149,51 @@ async function send(
   const receipt = await marketClient.waitForTransactionReceipt({ hash });
   if (receipt.status === "reverted") throw new Error(`${functionName} reverted on chain`);
   return hash;
+}
+
+/**
+ * The adjudicator's wallet, and nothing else's.
+ *
+ * Owner and adjudicator were one key. That is the "admin can invent the
+ * number and also keep the fees" objection, and it was true. The role now
+ * signs with `ADJUDICATOR_KEY`, which must differ from the owner's key, and
+ * the well-known anvil key is refused outright on a mainnet chain id.
+ */
+const ANVIL_KEY = "0xac0974bec39a17e36ba4a6b4d238ff944bacb478cbed5efcae784d7bf4f2ff80";
+
+export function adjudicatorWallet(): ReturnType<typeof walletFor> {
+  const raw = process.env.ADJUDICATOR_KEY;
+  if (!raw) throw new Error("ADJUDICATOR_KEY is not set; epochs are proposed by the adjudicator and there is no default.");
+  const key = (raw.startsWith("0x") ? raw : `0x${raw}`) as Hex;
+  if (key.toLowerCase() === ANVIL_KEY && marketChain.id !== 31337) throw new Error("refusing anvil's test key on a public chain");
+  const wallet = walletFor(key);
+  const ownerRaw = process.env.PRIVATE_KEY;
+  if (ownerRaw) {
+    const owner = walletFor((ownerRaw.startsWith("0x") ? ownerRaw : `0x${ownerRaw}`) as Hex);
+    if (owner.account!.address.toLowerCase() === wallet.account!.address.toLowerCase()) {
+      throw new Error("ADJUDICATOR_KEY is the owner's key; the roles must be held by different keys");
+    }
+  }
+  return wallet;
+}
+
+/** Who the contract says holds each role, read live. */
+export async function roles(): Promise<{ owner: Address; adjudicator: Address; pendingAdjudicator: Address; block: number }> {
+  const [owner, adjudicator, pendingAdjudicator, block] = await Promise.all([
+    read("owner") as Promise<Address>,
+    read("adjudicator") as Promise<Address>,
+    read("pendingAdjudicator") as Promise<Address>,
+    marketClient.getBlockNumber().then(Number),
+  ]);
+  return { owner, adjudicator, pendingAdjudicator, block };
+}
+
+export async function nominateAdjudicator(owner: ReturnType<typeof walletFor>, next: Address): Promise<Hex> {
+  return send(owner, "nominateAdjudicator", [next]);
+}
+
+export async function acceptAdjudicator(nominee: ReturnType<typeof walletFor>): Promise<Hex> {
+  return send(nominee, "acceptAdjudicator", []);
 }
 
 /* ------------------------------------------------------------------ reads */

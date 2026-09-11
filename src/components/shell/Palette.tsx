@@ -15,7 +15,7 @@ const ROUTES: Row[] = [
   { kind: "route", label: "The register", hint: "every agent we have read", href: "/agents" },
   { kind: "route", label: "Start here", hint: "the ninety-second judge path", href: "/start" },
   { kind: "route", label: "The floor", hint: "the market, live", href: "/floor" },
-  { kind: "route", label: "Authority", hint: "session scope and revocation", href: "/authority" },
+  { kind: "route", label: "Desk", hint: "every key on the demo account, beside the KeyStore", href: "/desk" },
   { kind: "route", label: "Evidence", hint: "including what went against us", href: "/evidence" },
   { kind: "route", label: "The method", hint: "the six tests and their weights", href: "/assay" },
   { kind: "route", label: "Public API", hint: "free, unauthenticated, open to competitors", href: "/api" },

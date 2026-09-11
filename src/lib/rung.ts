@@ -2,7 +2,7 @@
  * Where a single agent sits on the ladder.
  *
  * The rung is derived, never claimed, and it is derived from whatever evidence
- * actually exists — which for most of the registry is very little. An agent
+ * actually exists, which for most of the registry is very little. An agent
  * that cannot be placed above rung 1 is not being accused of anything; it is
  * being described.
  *
@@ -35,7 +35,7 @@ export interface MarketSets {
    * What the market actually holds against each wallet.
    *
    * The register renders a fineness, a bond and a running alpha per row, and
-   * every one of those is a chain read rather than an index field — so they
+   * every one of those is a chain read rather than an index field, so they
    * travel with the sets rather than being fetched again per row.
    */
   standing: Map<string, WalletStanding>;
@@ -56,7 +56,7 @@ export interface WalletStanding {
    * The office this wallet works under, from the mandate it holds.
    *
    * The market's own holders are not ERC-8004 entries, so their category
-   * cannot come from a registry card — it comes from what they were hired to
+   * cannot come from a registry card, it comes from what they were hired to
    * do, which is the stronger source anyway.
    */
   category: Category | null;
@@ -75,7 +75,7 @@ export const EMPTY_SETS: MarketSets = {
 /**
  * The market's whole upper-rung population, read once.
  *
- * Small by construction — that is the finding, not an optimisation — so this
+ * Small by construction, that is the finding, not an optimisation, so this
  * is a handful of reads rather than a scan per agent.
  */
 export async function readMarketSets(): Promise<MarketSets> {

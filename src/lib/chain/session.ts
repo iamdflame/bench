@@ -26,17 +26,29 @@ import {
   deserializeSession,
   type StrictAgentCallPermission,
 } from "@bnbagent/sdk/wallets";
+import { keccak256, type Hex } from "viem";
 import { CATEGORY_LABEL, type Category } from "@/lib/config";
 // Type-only, so the mutual reference with scope.ts is erased at runtime.
 import type { ProvenScope } from "./scope";
 import { logClients, marketClient, MARKET_ADDRESS } from "./market";
+import { GRID_CALLS, RANGE_CALLS } from "./leash";
+import {
+  getSession,
+  listSessions,
+  loadSerialized,
+  mandateSessionId,
+  markRevoked,
+  saveSession,
+  type SessionKind,
+  type SessionRecord,
+} from "./session-store";
 
 /**
  * Two homes, because a session has a secret half and a public half.
  *
  * The serialized session contains the signer and never leaves the machine that
- * granted it. Its metadata — the public key, the allowlist, the cap, the
- * expiry — is all readable on chain by anyone, so it belongs in the repository
+ * granted it. Its metadata, the public key, the allowlist, the cap, the
+ * expiry, is all readable on chain by anyone, so it belongs in the repository
  * where the deployed site can show what authority exists. Keeping both in the
  * ignored directory meant production could only ever report "observing only".
  */
@@ -46,7 +58,7 @@ const PUBLIC_INDEX_REL = "src/data/sessions.json";
  * Resolved from the working directory, matching the other data readers.
  *
  * A bare relative path resolves against wherever the process happens to be,
- * which on a serverless function is not the project root — the file was
+ * which on a serverless function is not the project root, the file was
  * deployed and simply never found, so every agent reported "observing only".
  */
 const PUBLIC_INDEX = join(process.cwd(), PUBLIC_INDEX_REL);
@@ -60,70 +72,50 @@ const norm = (k?: string) => (k?.startsWith("0x") ? k : `0x${k}`) as `0x${string
 /**
  * Exactly the calls each category needs, and nothing else.
  *
- * `defaultAgentPermissions` already grants the ERC-8004 identity and ERC-8183
- * commerce surfaces. These are the protocol calls a strategy makes on top, and
- * they are deliberately enumerated per selector rather than per contract: a
- * grid agent may swap, but it may not, for instance, call a router's
- * `sweepToken`.
+ * Every call here has one property in common: none of them lets the caller
+ * name where value goes. That is the whole security argument, so it is a test
+ * (`src/lib/__tests__/allowlist.test.ts`) rather than a comment:
+ *
+ *   - Rebalancing is granted on RecipientBound, never on the position manager,
+ *     whose `mint` and `collect` take a `recipient`.
+ *   - Grid is granted on SwapBound, never on the router, whose
+ *     `exactInputSingle` takes a `recipient`.
+ *   - Yield and health-factor call Venus markets directly, because `mint`,
+ *     `redeemUnderlying` and `repayBorrow` act for the caller and have no
+ *     recipient. `repayBorrowBehalf`, `borrow` and anything `approve`-shaped
+ *     are absent on purpose.
+ *   - MasterChef `harvest(uint256,address)` was here and is gone: its second
+ *     argument is the recipient of the rewards.
+ *
+ * vUSDT sits beside vBNB because a principal whose account is EIP-7702
+ * delegated cannot receive native BNB from vBNB's 2,300-gas `transfer`
+ * (measured: the demo address costs 26,277 gas to receive), so a vBNB redeem
+ * reverts for it. ERC-20 markets have no such limit.
+ *
+ * `protocol` names the contract whose use by the agent is the evidence for
+ * granting the call; for a leash it is the protocol behind the leash.
  */
-export const CATEGORY_CALLS: Record<Category, StrictAgentCallPermission[]> = {
-  "grid-trading": [
-    {
-      to: "0x13f4ea83d0bd40e75c8222255bc855a974568dd4", // PancakeSwap V3 SwapRouter
-      signature:
-        "exactInputSingle((address,address,uint24,address,uint256,uint256,uint160))",
-    },
-    {
-      to: "0x13f4ea83d0bd40e75c8222255bc855a974568dd4",
-      signature: "exactInput((bytes,address,uint256,uint256))",
-    },
-  ],
-  rebalancing: [
-    {
-      to: "0x46a15b0b27311cedf172ab29e4f4766fbe7f4364", // V3 NonfungiblePositionManager
-      signature:
-        "mint((address,address,uint24,int24,int24,uint256,uint256,uint256,uint256,address,uint256))",
-    },
-    {
-      to: "0x46a15b0b27311cedf172ab29e4f4766fbe7f4364",
-      signature: "increaseLiquidity((uint256,uint256,uint256,uint256,uint256,uint256))",
-    },
-    {
-      to: "0x46a15b0b27311cedf172ab29e4f4766fbe7f4364",
-      signature: "decreaseLiquidity((uint256,uint128,uint256,uint256,uint256))",
-    },
-    {
-      to: "0x46a15b0b27311cedf172ab29e4f4766fbe7f4364",
-      signature: "collect((uint256,address,uint128,uint128))",
-    },
-  ],
+export type CategoryCall = StrictAgentCallPermission & { protocol?: string };
+
+const VENUS_VUSDT = "0xfd5840cd36d94d7229439859c0112a4185bc0255" as const;
+const VENUS_VBNB = "0xa07c5b74c9b40447a954e1466938b865b6bbea36" as const;
+const VENUS_COMPTROLLER = "0xfd36e2c2a6789db23113685031d7f16329158384" as const;
+
+export const CATEGORY_CALLS: Record<Category, CategoryCall[]> = {
+  "grid-trading": GRID_CALLS,
+  rebalancing: RANGE_CALLS,
   "yield-optimisation": [
-    {
-      to: "0x556b9306565093c855aea9ae92a594704c2cd59e", // MasterChef V3
-      signature: "harvest(uint256,address)",
-    },
-    {
-      to: "0xa07c5b74c9b40447a954e1466938b865b6bbea36", // Venus vBNB
-      signature: "mint()",
-    },
-    {
-      to: "0xa07c5b74c9b40447a954e1466938b865b6bbea36",
-      signature: "redeemUnderlying(uint256)",
-    },
+    { to: VENUS_VUSDT, signature: "mint(uint256)" },
+    { to: VENUS_VUSDT, signature: "redeemUnderlying(uint256)" },
+    { to: VENUS_VBNB, signature: "mint()" },
+    { to: VENUS_VBNB, signature: "redeemUnderlying(uint256)" },
   ],
   "health-factor": [
-    {
-      to: "0xa07c5b74c9b40447a954e1466938b865b6bbea36", // Venus vBNB
-      signature: "mint()",
-    },
-    {
-      to: "0xa07c5b74c9b40447a954e1466938b865b6bbea36",
-      signature: "repayBorrow()",
-    },
-    {
-      to: "0xfd36e2c2a6789db23113685031d7f16329158384", // Venus Comptroller
-      signature: "enterMarkets(address[])",
-    },
+    { to: VENUS_VUSDT, signature: "repayBorrow(uint256)" },
+    { to: VENUS_VUSDT, signature: "mint(uint256)" },
+    { to: VENUS_VBNB, signature: "repayBorrow()" },
+    { to: VENUS_VBNB, signature: "mint()" },
+    { to: VENUS_COMPTROLLER, signature: "enterMarkets(address[])" },
   ],
 };
 
@@ -137,7 +129,7 @@ export interface GrantOptions {
    * What the agent has been *shown* able to do.
    *
    * Not a category. A `ProvenScope` can only be produced by `scopeFromAssay`,
-   * so there is no way to reach this function without an assay having run —
+   * so there is no way to reach this function without an assay having run,
    * `granted ⊆ proven` is a property of the type, not a check that has to be
    * remembered.
    */
@@ -149,8 +141,8 @@ export interface GrantOptions {
   /**
    * Register the public key in the Altana KeyStore.
    *
-   * Registration is what makes the session's authority publicly verifiable —
-   * a counterparty can confirm it on chain — and it costs roughly $0.50 in
+   * Registration is what makes the session's authority publicly verifiable,
+   * a counterparty can confirm it on chain, and it costs roughly $0.50 in
    * BNB. Ephemeral sessions enforce identically but are invisible to KeyStore
    * readers, which is the right trade for development and the wrong one for
    * anything a third party is asked to trust.
@@ -171,7 +163,7 @@ export interface GrantedSession {
   market: string;
   mandateId: number;
   category: Category;
-  /** The session key's public address — this is what signs the agent's trades. */
+  /** The session key's public address, this is what signs the agent's trades. */
   sessionKey: string;
   /** The wallet the session acts for. */
   walletAddress: string;
@@ -181,7 +173,7 @@ export interface GrantedSession {
   /**
    * The transaction that authorised this key on chain.
    *
-   * `registered: true` on its own is a boolean in a JSON file on one machine —
+   * `registered: true` on its own is a boolean in a JSON file on one machine,
    * the same unverifiable assertion this whole product exists to object to. So
    * registration is not reported without the transaction that proves it, found
    * by reading the chain rather than taken from the SDK's word.
@@ -221,7 +213,7 @@ export interface GrantedSession {
  * Found by inspecting a known registration rather than from an ABI: the
  * delegated account emits exactly one of these per grant, carrying the key's
  * hash in its indexed argument. Altana derives that hash in a way this code
- * does not reproduce, so the hash is recorded rather than recomputed — which
+ * does not reproduce, so the hash is recorded rather than recomputed, which
  * is the honest form of "here is the evidence, check it yourself".
  */
 export const AUTHORIZE_TOPIC =
@@ -231,12 +223,12 @@ export const AUTHORIZE_TOPIC =
  * Finds the transaction that authorised a key on the account.
  *
  * The principal's wallet carries an EIP-7702 delegation, so the grant is not
- * sent *from* it — the relay submits and the delegated account pays. Searching
+ * sent *from* it, the relay submits and the delegated account pays. Searching
  * for a transaction from the principal finds nothing; the account appears as a
  * log emitter instead, which is what this looks for.
  *
  * Retried, because a log index that has not caught up yet returns an empty
- * result that is indistinguishable from "no registration happened" — and
+ * result that is indistinguishable from "no registration happened", and
  * recording no evidence when evidence exists is the failure mode that matters
  * here.
  */
@@ -286,21 +278,17 @@ export async function grantMandateSession(opts: GrantOptions): Promise<GrantedSe
   const admin = adminProvider();
   const expiry = Math.floor(Date.now() / 1000) + opts.ttlSeconds;
 
-  const permissions = defaultAgentPermissions({
-    chainId: 56,
-    // The working budget. Capping at the mandate's capital is the invariant
-    // that makes delegation safe: an agent can lose what it was given and
-    // nothing beyond it.
-    tokenSpend: { limit: opts.capWei },
-    // Derived from the assay, never from the category the agent claims.
-    extraCalls: opts.scope.calls,
-  });
+  // Derived from the assay, never from the category the agent claims, and
+  // nothing else: no default ERC-8004/8183 roles (see `exactPermissions`).
+  // The native allowance is the working budget, capped at the mandate's
+  // capital: an agent can lose what it was given and nothing beyond it.
+  const permissions = exactPermissions({ calls: opts.scope.calls, capWei: 0n, nativeSpendWei: opts.capWei });
 
   // Pinned before the grant so the search window is exact.
   const before = await marketClient.getBlockNumber().catch(() => 0n);
 
   const session = await admin.grantSession({
-    permissions,
+    permissions: permissions as never,
     expiry,
     register: opts.register ?? false,
   });
@@ -336,8 +324,204 @@ export async function grantMandateSession(opts: GrantOptions): Promise<GrantedSe
   };
 
   persist(opts.mandateId, session, granted);
+  await saveSession(toRecord(granted, session), serializeSession(session as never));
   return granted;
 }
+
+/** The store's shape for a mandate session. */
+function toRecord(g: GrantedSession, session: { permissions?: unknown }): SessionRecord {
+  return {
+    id: mandateSessionId(g.market, g.mandateId),
+    kind: "mandate",
+    label: `Mandate ${g.mandateId} (${CATEGORY_LABEL[g.category]})`,
+    market: g.market,
+    mandateId: g.mandateId,
+    category: g.category,
+    walletAddress: g.walletAddress,
+    publicKey: g.sessionKey,
+    keyId: keccak256(g.sessionKey as Hex),
+    permissions: session.permissions ?? null,
+    allowlist: g.allowlist,
+    withheld: g.withheld,
+    capWei: g.capWei,
+    expiry: g.expiry,
+    registered: g.registered,
+    registrationTx: g.registrationTx,
+    registrationBlock: g.registrationBlock,
+    adminSigner: "private-key",
+    grantedAt: g.grantedAt,
+    revokedBecause: g.revokedBecause,
+  };
+}
+
+// ---------------------------------------------------------------------------
+// Sessions that are not tied to a mandate: reference agents, the demo, passkeys
+// ---------------------------------------------------------------------------
+
+export interface ScopedGrant {
+  id: string;
+  kind: SessionKind;
+  label: string;
+  category?: Category;
+  /** Exactly the calls this session may make. Nothing is implied. */
+  calls: StrictAgentCallPermission[];
+  /**
+   * ERC-20 outflows the session may cause, per day. The account's guard
+   * counts token transfers out of the account against these; a token with
+   * no entry cannot leave through the session at all.
+   */
+  tokenSpend?: { token: `0x${string}`; limit: bigint }[];
+  /**
+   * Native allowance per day. Covers value sent by a call and the relay's
+   * gas fee, which the account pays; without a native entry every execute
+   * reverts `NoSpendPermissions`.
+   */
+  nativeSpendWei?: bigint;
+  /**
+   * ERC-8183 roles, only for a session that hires or sells through commerce.
+   * Omitted, the session gets no ERC-8004 or ERC-8183 surface at all.
+   */
+  roles?: ("identity" | "buyer" | "seller" | "evaluator" | "voter")[];
+  /** Payment-token ($U) cap for a buyer session. Zero otherwise. */
+  capWei: bigint;
+  ttlSeconds: number;
+  register?: boolean;
+  /** Which admin grants it. Defaults to the principal's private key. */
+  admin?: AltanaWalletProvider;
+  adminSigner?: SessionRecord["adminSigner"];
+  meta?: Record<string, unknown>;
+}
+
+/** The SDK default native allowance is 0.02 BNB a day; ours is a tenth of that. */
+export const DEFAULT_NATIVE_SPEND_WEI = 2_000_000_000_000_000n;
+
+/**
+ * Permissions compiled from exactly what was asked for.
+ *
+ * `defaultAgentPermissions` grants all five ERC-8183 roles unless told
+ * otherwise, which includes `setAgentURI` and `register` on the identity
+ * registry and `createJob`/`fund` on commerce. A range keeper that can rewrite
+ * its principal's agent card is not a range keeper. So a session is built
+ * from its call list alone, and the commerce surface is added only for a
+ * session whose job is to hire, and then only the roles it names.
+ */
+export function exactPermissions(opts: Pick<ScopedGrant, "calls" | "tokenSpend" | "nativeSpendWei" | "roles" | "capWei">) {
+  const native = { limit: opts.nativeSpendWei ?? DEFAULT_NATIVE_SPEND_WEI, period: "day" as const };
+  const tokens = (opts.tokenSpend ?? []).map((t) => ({ limit: t.limit, period: "day" as const, token: t.token }));
+  if (opts.roles?.length) {
+    const base = defaultAgentPermissions({
+      chainId: 56,
+      roles: opts.roles,
+      tokenSpend: { limit: opts.capWei },
+      nativeSpend: { limit: native.limit },
+      extraCalls: opts.calls,
+    } as never) as { calls: { to: string; signature: string }[]; spend: unknown[] };
+    return { calls: base.calls, spend: [...base.spend, ...tokens] };
+  }
+  return {
+    calls: opts.calls.map((c) => ({ to: c.to, signature: c.signature })),
+    spend: [native, ...tokens],
+  };
+}
+
+/**
+ * Grants a session with an explicit allowlist and stores it where the
+ * deployed site can execute through it and revoke it.
+ *
+ * `defaultAgentPermissions` adds the ERC-8004 and ERC-8183 surfaces the SDK
+ * considers baseline; `extraCalls` is the whole of what the strategy may
+ * touch. There is no path here that grants `approve` on any token.
+ */
+export async function grantScopedSession(opts: ScopedGrant): Promise<SessionRecord> {
+  for (const c of opts.calls) {
+    if (/^approve\(/.test(c.signature) || /^setApprovalForAll\(/.test(c.signature)) {
+      throw new Error(`refused: a session may not be granted ${c.signature}`);
+    }
+  }
+  const admin = opts.admin ?? adminProvider();
+  const expiry = Math.floor(Date.now() / 1000) + opts.ttlSeconds;
+  const permissions = exactPermissions(opts);
+  const before = await marketClient.getBlockNumber().catch(() => 0n);
+  const session = await admin.grantSession({ permissions: permissions as never, expiry, register: opts.register ?? true });
+  // The signer exists only in this process until it is written down. Nothing
+  // that can fail runs between the grant and this line.
+  const serialized = serializeSession(session as never);
+  await saveSession(
+    {
+      id: opts.id,
+      kind: opts.kind,
+      label: opts.label,
+      category: opts.category,
+      walletAddress: session.walletAddress,
+      publicKey: session.publicKey,
+      keyId: keccak256(session.publicKey),
+      permissions,
+      allowlist: opts.calls.map((c) => ({ to: c.to, signature: c.signature })),
+      capWei: opts.capWei.toString(),
+      expiry,
+      registered: opts.register ?? true,
+      adminSigner: opts.adminSigner ?? "private-key",
+      grantedAt: new Date().toISOString(),
+      meta: opts.meta,
+    },
+    serialized,
+  );
+  const proof =
+    (opts.register ?? true) && before > 0n
+      ? await findRegistrationTx(session.walletAddress, before).catch(() => null)
+      : null;
+  const rec: SessionRecord = {
+    id: opts.id,
+    kind: opts.kind,
+    label: opts.label,
+    category: opts.category,
+    walletAddress: session.walletAddress,
+    publicKey: session.publicKey,
+    keyId: keccak256(session.publicKey),
+    permissions,
+    allowlist: opts.calls.map((c) => ({ to: c.to, signature: c.signature })),
+    capWei: opts.capWei.toString(),
+    expiry,
+    registered: opts.register ?? true,
+    registrationTx: proof?.tx,
+    registrationBlock: proof?.block,
+    adminSigner: opts.adminSigner ?? "private-key",
+    grantedAt: new Date().toISOString(),
+    grantTx: proof?.tx,
+    meta: opts.meta,
+  };
+  await saveSession(rec, serialized);
+  return rec;
+}
+
+/** Revokes a stored session by id and records the transaction. */
+export async function revokeStoredSession(
+  id: string,
+  because?: string,
+  admin?: AltanaWalletProvider,
+): Promise<{ tx?: string }> {
+  const rec = await getSession(id);
+  if (!rec) throw new Error(`no session ${id}`);
+  // Revocation needs only the public key and the admin. A deployment without
+  // SESSION_SECRET cannot open the signer, and must still be able to revoke.
+  const raw = await loadSerialized(id).catch(() => null);
+  const who = admin ?? adminProvider();
+  const result = raw
+    ? await who.revokeSession(await deserializeSession(raw))
+    : await who.revokeSession(rec.publicKey as Hex);
+  await markRevoked(id, result.transactionHash, because);
+  return { tx: result.transactionHash };
+}
+
+/** Session-mode provider for a stored session. Execute only, never grant. */
+export async function providerFor(id: string): Promise<AltanaWalletProvider> {
+  const raw = await loadSerialized(id);
+  if (!raw) throw new Error(`this deployment does not hold the signer for session ${id}`);
+  const session = await deserializeSession(raw);
+  return new AltanaWalletProvider({ session });
+}
+
+export { listSessions, getSession };
 
 /**
  * Ends an agent's authority.
@@ -351,10 +535,12 @@ export async function revokeMandateSession(
   cause?: { because: string; dismissalTx?: string },
 ): Promise<void> {
   const admin = adminProvider();
-  const stored = loadRaw(mandateId);
+  const id = mandateSessionId(MARKET_ADDRESS, mandateId);
+  const stored = (await loadSerialized(id)) ?? loadRaw(mandateId);
   if (!stored) throw new Error(`no session on file for mandate ${mandateId}`);
   const session = await deserializeSession(stored);
-  await admin.revokeSession(session);
+  const result = await admin.revokeSession(session);
+  await markRevoked(id, result.transactionHash, cause?.because).catch(() => undefined);
 
   const meta = loadMeta(mandateId);
   if (meta) {
@@ -376,11 +562,15 @@ const rawPath = (id: number) => `${SESSION_DIR}/mandate-${id}.session`;
 const metaPath = (id: number) => `${SESSION_DIR}/mandate-${id}.json`;
 
 function persist(id: number, session: unknown, meta: GrantedSession) {
-  mkdirSync(dirname(rawPath(id)), { recursive: true });
-  // The signer. Never committed, never deployed.
-  writeFileSync(rawPath(id), serializeSession(session as never), { mode: 0o600 });
-  writeFileSync(metaPath(id), JSON.stringify(meta, null, 2));
-  writePublic(id, meta);
+  try {
+    mkdirSync(dirname(rawPath(id)), { recursive: true });
+    // The signer. Never committed, never deployed.
+    writeFileSync(rawPath(id), serializeSession(session as never), { mode: 0o600 });
+    writeFileSync(metaPath(id), JSON.stringify(meta, null, 2));
+    writePublic(id, meta);
+  } catch {
+    // A serverless filesystem is read-only; the store above is the record.
+  }
 }
 
 /** Public metadata, safe to commit: everything here is already on chain. */
@@ -425,10 +615,10 @@ export function loadMeta(id: number): (GrantedSession & { revokedAt?: string }) 
 
 /** Session-mode provider for an agent process: execute only, never grant. */
 export async function agentProvider(mandateId: number) {
-  const raw = loadRaw(mandateId);
+  const raw = (await loadSerialized(mandateSessionId(MARKET_ADDRESS, mandateId))) ?? loadRaw(mandateId);
   if (!raw) throw new Error(`no session for mandate ${mandateId}; grant one first`);
-  process.env.ALTANA_SESSION = raw;
-  return AltanaWalletProvider.sessionFromEnv();
+  const session = await deserializeSession(raw);
+  return new AltanaWalletProvider({ session });
 }
 
 export const describeAllowlist = (category: Category) =>

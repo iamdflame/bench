@@ -4,8 +4,8 @@
  * Wallet connection.
  *
  * Written against EIP-1193 directly rather than pulling in a connector kit.
- * The page needs one thing — an injected provider that can sign for this chain
- * — and a wallet library would add a few hundred kilobytes, a modal we would
+ * The page needs one thing, an injected provider that can sign for this chain
+ *, and a wallet library would add a few hundred kilobytes, a modal we would
  * then have to restyle, and a second source of truth about chain state.
  *
  * Everything here can be signing real BNB on BSC mainnet, so the flow is
@@ -55,7 +55,7 @@ const toHexChain = (id: number) => `0x${id.toString(16)}`;
  * Whether this browser has ever connected a wallet to this origin.
  *
  * Kept in `localStorage` rather than inferred, because the question is not
- * "does a wallet exist" — it is "has this person already agreed to talk to
+ * "does a wallet exist", it is "has this person already agreed to talk to
  * us", and only they can have answered that.
  */
 const CONNECTED_KEY = "mandate:wallet-connected";
@@ -116,8 +116,8 @@ export function useWallet() {
     This used to call `eth_accounts` on mount, on the reasoning that reading
     the authorised accounts is not a request for permission. That reasoning is
     correct about the JSON-RPC method and wrong about what actually happens:
-    several multi-chain wallets — Phantom among them, injected as
-    `window.ethereum` — surface their own connect overlay on the first provider
+    several multi-chain wallets, Phantom among them, injected as
+    `window.ethereum`, surface their own connect overlay on the first provider
     call from an unknown origin, whatever the method is. So opening the front
     page of an assay office threw a wallet popup at the reader, which for a
     site asking to be trusted with capital is the single worst first impression
@@ -126,7 +126,7 @@ export function useWallet() {
     The provider is only touched after a deliberate act. The presence check is
     a property read, which reaches no extension. If this browser has connected
     to this origin before, the silent `eth_accounts` reflection happens then
-    and only then — a returning user keeps the convenience and a first-time
+    and only then, a returning user keeps the convenience and a first-time
     visitor gets no dialogue at all.
   */
   useEffect(() => {
@@ -134,7 +134,7 @@ export function useWallet() {
       Extensions do not all arrive before React does.
 
       This checked `window.ethereum` exactly once, on mount, in an effect whose
-      only dependency is stable — so a wallet that injected two hundred
+      only dependency is stable, so a wallet that injected two hundred
       milliseconds later was invisible for the rest of the session, and the UI
       showed a buttonless "no wallet detected" to somebody who plainly had one.
 
@@ -142,8 +142,8 @@ export function useWallet() {
       Rabby, Coinbase and current MetaMask introduce themselves and the only
       way to see past whichever extension won the `window.ethereum` race; the
       legacy `ethereum#initialized` event; and a short poll for injectors that
-      announce nothing at all. None of them touches the provider — presence is
-      a property read — so the popup problem this file used to have does not
+      announce nothing at all. None of them touches the provider, presence is
+      a property read, so the popup problem this file used to have does not
       come back.
     */
     let cancelled = false;
@@ -260,8 +260,8 @@ export function useWallet() {
 /**
  * Which contract a write goes to, and which ABI describes it.
  *
- * This used to be implicit — every write went to `MARKET_ADDRESS` under
- * `MANDATE_MARKET_ABI` — and the two had drifted apart. `MARKET_ADDRESS` points
+ * This used to be implicit, every write went to `MARKET_ADDRESS` under
+ * `MANDATE_MARKET_ABI`, and the two had drifted apart. `MARKET_ADDRESS` points
  * at MandateMarket**V2**; `MANDATE_MARKET_ABI` describes **V1**. Their
  * signatures are not compatible: V2's `openMandate` takes twelve arguments
  * where V1's takes six, `bid` four where V1 takes two, `withdraw` one where V1
@@ -269,7 +269,7 @@ export function useWallet() {
  *
  * The consequence was total. `simulateContract` runs before the wallet is ever
  * asked for a signature, so every write reverted with `execution reverted: 0x`
- * — the chain saying "no such function" — and the user saw a dead button and no
+ *, the chain saying "no such function", and the user saw a dead button and no
  * wallet prompt. Not a degraded hire path: no hire path at all.
  *
  * Verified against mainnet: V1's `openMandate` selector reverts on
@@ -277,8 +277,8 @@ export function useWallet() {
  * `paused()` and `proposerStake()`, which only V2 has.
  *
  * So the target is now explicit at every call site. The book already carries a
- * `deploymentAddress` per row — mandates from three deployments share one table
- * — and passing it here is what stops a bid on a superseded row being sent to
+ * `deploymentAddress` per row, mandates from three deployments share one table
+ *, and passing it here is what stops a bid on a superseded row being sent to
  * the canonical contract against a different mandate with the same number.
  */
 export interface WriteTarget {
@@ -319,7 +319,7 @@ export async function sendMarketTx(
     Does this contract have this function at all?
 
     The outage this guard exists for was silent: the ABI described V1, the
-    address held V2, and `simulateContract` returned `execution reverted: 0x` —
+    address held V2, and `simulateContract` returned `execution reverted: 0x`,
     the chain's way of saying "no such function", which is indistinguishable
     from a business-logic rejection once it reaches a user. Every write in the
     product died that way and the failure read as a dead button.

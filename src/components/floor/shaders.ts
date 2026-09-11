@@ -2,8 +2,8 @@
  * GLSL for the floor.
  *
  * Written directly against WebGL2 rather than pulled from a scene library.
- * The floor has exactly two draw calls — a fullscreen field and one instanced
- * pass for every body on it — which keeps it inside the budget of the weakest
+ * The floor has exactly two draw calls, a fullscreen field and one instanced
+ * pass for every body on it, which keeps it inside the budget of the weakest
  * machine likely to open it, and keeps the visual specific to this product
  * instead of recognisably belonging to somebody's renderer.
  *
@@ -211,7 +211,7 @@ void main() {
   col = mix(col, uInk * 0.92, core);
 
   // Performance tints the core: gold when beating the benchmark, drained when
-  // trailing it. No red anywhere — losing is rendered as absence of light.
+  // trailing it. No red anywhere, losing is rendered as absence of light.
   float win = max(vAlpha, 0.0);
   float lose = max(-vAlpha, 0.0);
   col = mix(col, uGold, win * core * 0.55);

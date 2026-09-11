@@ -1,0 +1,104 @@
+{
+  "latest": {
+    "agent": "Range-1",
+    "principal": "0x54c06cC2623aAA2Dcc38B17fA07aD2e99b363C90",
+    "recipientBound": "0x5863edaede7394470db19395ca05b1439662952e",
+    "session": {
+      "id": "house:range-1:0x54c06cc2623aaa2dcc38b17fa07ad2e99b363c90",
+      "publicKey": "0x0413e22e7ea26ca8dcf9fbebc95cf378e2dd6788ff1e0cc305f7b6a48e3facf3e35509ffe3263079691784b08a62cfe746f3ad4aa8c1898998b295ae10898f1e8a",
+      "keyId": "0x0b9c11fe30fca26686db658b217236b5cdd31990c198b0a48fe9f703441fa84c",
+      "expiry": 1789701747,
+      "registrationTx": "0xce5a8d49235382bd08cb46d7f72034b9be7f5492398ac6a981a0f493e7e259d2",
+      "keystore": "matches"
+    },
+    "before": {
+      "tokenId": "7408924",
+      "range": [
+        -66080,
+        -65880
+      ],
+      "tick": -65673,
+      "liquidity": "812469418176569586",
+      "owner": "0x54c06cC2623aAA2Dcc38B17fA07aD2e99b363C90"
+    },
+    "after": {
+      "tokenId": "7409024",
+      "range": [
+        -65830,
+        -65620
+      ],
+      "tick": -65671,
+      "liquidity": "445772214497406864",
+      "owner": "0x54c06cC2623aAA2Dcc38B17fA07aD2e99b363C90",
+      "inRange": true
+    },
+    "sameOwnerThroughout": true,
+    "txs": {
+      "decreaseLiquidity": "0xf84b8de6ab4a0dd07e77caa2e211617897c81af7f699b36cbdb0ea28aff522f8",
+      "collect": "0x6388c47af21e4688cb8b689a7237a862c095e55d2dd8d631421edbe75e91060c",
+      "mint": "0x56374a2016954510aa951f834f016403c32e0a0012f1bb80ca4257f7dff36638"
+    },
+    "blocks": {
+      "decreaseLiquidity": 121189337,
+      "collect": 121189351,
+      "mint": 121189366
+    },
+    "at": "2026-09-11T03:23:12.405Z",
+    "verify": [
+      "cast call 0x46A15B0b27311cedF172AB29E4f4766fbE7F4364 \"ownerOf(uint256)(address)\" 7408924 --rpc-url https://bsc-rpc.publicnode.com",
+      "cast call 0x46A15B0b27311cedF172AB29E4f4766fbE7F4364 \"ownerOf(uint256)(address)\" 7409024 --rpc-url https://bsc-rpc.publicnode.com"
+    ]
+  },
+  "runs": [
+    {
+      "agent": "Range-1",
+      "principal": "0x54c06cC2623aAA2Dcc38B17fA07aD2e99b363C90",
+      "recipientBound": "0x5863edaede7394470db19395ca05b1439662952e",
+      "session": {
+        "id": "house:range-1:0x54c06cc2623aaa2dcc38b17fa07ad2e99b363c90",
+        "publicKey": "0x0413e22e7ea26ca8dcf9fbebc95cf378e2dd6788ff1e0cc305f7b6a48e3facf3e35509ffe3263079691784b08a62cfe746f3ad4aa8c1898998b295ae10898f1e8a",
+        "keyId": "0x0b9c11fe30fca26686db658b217236b5cdd31990c198b0a48fe9f703441fa84c",
+        "expiry": 1789701747,
+        "registrationTx": "0xce5a8d49235382bd08cb46d7f72034b9be7f5492398ac6a981a0f493e7e259d2",
+        "keystore": "matches"
+      },
+      "before": {
+        "tokenId": "7408924",
+        "range": [
+          -66080,
+          -65880
+        ],
+        "tick": -65673,
+        "liquidity": "812469418176569586",
+        "owner": "0x54c06cC2623aAA2Dcc38B17fA07aD2e99b363C90"
+      },
+      "after": {
+        "tokenId": "7409024",
+        "range": [
+          -65830,
+          -65620
+        ],
+        "tick": -65671,
+        "liquidity": "445772214497406864",
+        "owner": "0x54c06cC2623aAA2Dcc38B17fA07aD2e99b363C90",
+        "inRange": true
+      },
+      "sameOwnerThroughout": true,
+      "txs": {
+        "decreaseLiquidity": "0xf84b8de6ab4a0dd07e77caa2e211617897c81af7f699b36cbdb0ea28aff522f8",
+        "collect": "0x6388c47af21e4688cb8b689a7237a862c095e55d2dd8d631421edbe75e91060c",
+        "mint": "0x56374a2016954510aa951f834f016403c32e0a0012f1bb80ca4257f7dff36638"
+      },
+      "blocks": {
+        "decreaseLiquidity": 121189337,
+        "collect": 121189351,
+        "mint": 121189366
+      },
+      "at": "2026-09-11T03:23:12.405Z",
+      "verify": [
+        "cast call 0x46A15B0b27311cedF172AB29E4f4766fbE7F4364 \"ownerOf(uint256)(address)\" 7408924 --rpc-url https://bsc-rpc.publicnode.com",
+        "cast call 0x46A15B0b27311cedF172AB29E4f4766fbE7F4364 \"ownerOf(uint256)(address)\" 7409024 --rpc-url https://bsc-rpc.publicnode.com"
+      ]
+    }
+  ]
+}

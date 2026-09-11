@@ -66,7 +66,7 @@ const verdicts: Record<string, { verdict: "win" | "loss" | "mixed" | "inconclusi
   T4: {
     verdict: "win",
     line: T4
-      ? `Win. Being early costs $${n(T4.repayGasUsd, 4)}; being late costs ${pct(T4.penaltyPct)} of seized collateral — ${Math.round(T4.ratio).toLocaleString()}× more on the worked example.`
+      ? `Win. Being early costs $${n(T4.repayGasUsd, 4)}; being late costs ${pct(T4.penaltyPct)} of seized collateral, ${Math.round(T4.ratio).toLocaleString()}× more on the worked example.`
       : "not run",
   },
   T5: {
@@ -98,7 +98,7 @@ w(
   ``,
   `Six tasks run with an agent and without one. Two of them are security tasks.`,
   `Every no-agent arm is something observable on chain or something a person is`,
-  `actually shown — none of them is a guess at how long a human would take.`,
+  `actually shown, none of them is a guess at how long a human would take.`,
   ``,
   `The losses are in here, in bold, because they were named before the run.`,
   ``,
@@ -115,10 +115,10 @@ w(
   `| Committed on chain | [\`${a.txHash.slice(0, 20)}…\`](${tx}) |`,
   `| Anchor block | [${a.anchorBlock}](${bscBlock}) · ${a.lockedAt} |`,
   `| Measurement window | ${a.fromBlock} → ${a.anchorBlock} (${WINDOW_BLOCKS.toLocaleString()} blocks, ~${n((WINDOW_BLOCKS * 0.45) / 3600, 1)}h) |`,
-  `| Gas price used by every cost model | ${gasGwei} gwei — the median of the ${gasSampled} transactions in the anchor block |`,
+  `| Gas price used by every cost model | ${gasGwei} gwei, the median of the ${gasSampled} transactions in the anchor block |`,
   ``,
   `The specification in [\`src/advantage/lock.ts\`](../src/advantage/lock.ts) is`,
-  `deterministic — it reads nothing and depends on no clock — so anyone can`,
+  `deterministic, it reads nothing and depends on no clock, so anyone can`,
   `recompute its hash from that file alone and compare it with the calldata of`,
   `the transaction above. The transaction carries the hash and nothing else.`,
   ``,
@@ -150,7 +150,7 @@ for (const t of TASKS) {
 
 w(
   ``,
-  `${counts.win} ${counts.win === 1 ? "win" : "wins"}, ${counts.loss} outright ${counts.loss === 1 ? "loss" : "losses"}, ${counts.mixed} mixed — and one task whose`,
+  `${counts.win} ${counts.win === 1 ? "win" : "wins"}, ${counts.loss} outright ${counts.loss === 1 ? "loss" : "losses"}, ${counts.mixed} mixed, and one task whose`,
   `pre-registered metric turned out to be badly specified, which is published as`,
   `specified rather than quietly repaired. That distribution is the point. An`,
   `all-wins report from a product built on distrust of self-reporting would be`,
@@ -164,14 +164,14 @@ w(
 if (T1) {
   const t = TASKS[0]!;
   w(
-    `## T1 — ${t.title}`,
+    `## T1, ${t.title}`,
     ``,
     `**Category:** ${t.category}`,
     ``,
     `**No-agent arm.** ${t.humanArm}`,
     ``,
     `**Agent arm.** \`src/agents/rebalance.ts\`, through the exact predicate`,
-    `production uses — \`shouldRecentre()\` is exported and called by both, so the`,
+    `production uses, \`shouldRecentre()\` is exported and called by both, so the`,
     `report cannot be measuring a reimplementation that has drifted.`,
     ``,
     `### What was measured`,
@@ -182,7 +182,7 @@ if (T1) {
     `| Live in the locked pool at the anchor block | ${T1.sampled} |`,
     `| Out of range, earning nothing | ${T1.outOfRange} |`,
     `| Past the agent's ${T1.driftTicks}-tick trigger | ${T1.pastTrigger} |`,
-    `| Median blocks out of range | ${T1.medianBlocksIdle ?? "—"}${T1.medianBlocksIdle ? ` (~${n((T1.medianBlocksIdle * 0.45) / 60, 1)} min)` : ""} |`,
+    `| Median blocks out of range | ${T1.medianBlocksIdle ?? "-"}${T1.medianBlocksIdle ? ` (~${n((T1.medianBlocksIdle * 0.45) / 60, 1)} min)` : ""} |`,
     ``,
     `### **The loss**`,
     ``,
@@ -206,7 +206,7 @@ if (T1) {
   );
   if (EX) {
     w(
-      `### Exploratory — outside the lock`,
+      `### Exploratory, outside the lock`,
       ``,
       `Reported separately and never merged into the result above. The same`,
       `anchor block, but every PancakeSwap V3 pool rather than the one the lock`,
@@ -235,7 +235,7 @@ if (T1) {
       `About a quarter of the concentrated liquidity that someone actively`,
       `touched in those three hours was sitting outside its range, earning`,
       `nothing, at the anchor block. This is exploratory and is not the T1`,
-      `result — but it is the number worth chasing, and the pre-registered`,
+      `result, but it is the number worth chasing, and the pre-registered`,
       `version of this task should have been specified this way.`,
       ``,
     );
@@ -248,15 +248,15 @@ if (T2) {
   const t = TASKS[1]!;
   const won = T2.netAdvantageBnb > 0;
   w(
-    `## T2 — ${t.title}`,
+    `## T2, ${t.title}`,
     ``,
     `**Category:** ${t.category}`,
     ``,
     `**No-agent arm.** ${t.humanArm}`,
     ``,
     `**Agent arm.** \`src/agents/grid.ts\`. \`evaluate()\` reads nothing from the`,
-    `chain — it is a function of the price, the balances and its own carried`,
-    `state — so the production strategy itself was driven over the observed`,
+    `chain, it is a function of the price, the balances and its own carried`,
+    `state, so the production strategy itself was driven over the observed`,
     `path, not a copy of its logic.`,
     ``,
     `### What was measured`,
@@ -280,8 +280,8 @@ if (T2) {
       : `**The grid lost.** A directional window beats a ladder, which is the behaviour named as this task's loss before the run.`,
     ``,
     `**What this is not.** The fills are simulated against the observed price`,
-    `path. Each clip is ${n((T2.capitalBnb ?? 1) / 8, 4)} BNB — one eighth of the`,
-    `working capital — and the simulation assumes a clip that size does not move`,
+    `path. Each clip is ${n((T2.capitalBnb ?? 1) / 8, 4)} BNB, one eighth of the`,
+    `working capital, and the simulation assumes a clip that size does not move`,
     `the deepest WBNB/USDT pool on BSC. That is reasonable and it is still an`,
     `assumption rather than a measurement. **The gas and the pool fees charged`,
     `here are real; the fills are modelled.** A live grid would also pay spread`,
@@ -296,7 +296,7 @@ if (T2) {
 if (T3) {
   const t = TASKS[2]!;
   w(
-    `## T3 — ${t.title}`,
+    `## T3, ${t.title}`,
     ``,
     `**Category:** ${t.category}`,
     ``,
@@ -324,7 +324,7 @@ if (T3) {
     `it, so the flawed metric stands and the sensible reading is reported`,
     `beside it, labelled.`,
     ``,
-    `### Exploratory — markets holding at least $${(T3.liquid.minCashUsd / 1e6).toFixed(0)}M`,
+    `### Exploratory, markets holding at least $${(T3.liquid.minCashUsd / 1e6).toFixed(0)}M`,
     ``,
     `| | Market | APY | Cash |`,
     `|---|---|---:|---:|`,
@@ -343,7 +343,7 @@ if (T3) {
     ``,
     `Above about $${n(T3.breakEvenUsd, 0)} of capital, one rotation repays its own`,
     `gas inside a month. That number is low because BSC gas is cheap, and it is`,
-    `the number that decides whether this category is worth automating at all —`,
+    `the number that decides whether this category is worth automating at all , `,
     `which is why it was named as this task's loss condition in advance. It did`,
     `not become a loss, but it was allowed to.`,
     ``,
@@ -360,7 +360,7 @@ if (T4) {
   const t = TASKS[3]!;
   const liq = T4.liquidations;
   w(
-    `## T4 — ${t.title}`,
+    `## T4, ${t.title}`,
     ``,
     `**Category:** ${t.category}`,
     ``,
@@ -384,7 +384,7 @@ if (T4) {
     `### A note on where that number came from`,
     ``,
     `The Venus Comptroller is a Diamond proxy and **exposes no`,
-    `\`liquidationIncentiveMantissa()\`** — that selector and every variant of it`,
+    `\`liquidationIncentiveMantissa()\`**, that selector and every variant of it`,
     `revert with \`Diamond: Function does not exist\`. The value is still on`,
     `chain, in the Unitroller's storage, so it is read from slot 6.`,
     ``,
@@ -398,10 +398,10 @@ if (T4) {
     `### **The loss**`,
     ``,
     liq && "count" in liq && liq.count === 0
-      ? `**Zero liquidations occurred in the window** on the three markets the lock named. The economics above are real and the protocol charges them, but this run produced no observed event to point at — a three-hour window on three markets was too narrow to catch one. The count is reported as zero rather than the window being widened until it found some.`
+      ? `**Zero liquidations occurred in the window** on the three markets the lock named. The economics above are real and the protocol charges them, but this run produced no observed event to point at, a three-hour window on three markets was too narrow to catch one. The count is reported as zero rather than the window being widened until it found some.`
       : liq && "count" in liq
         ? `${liq.count} real liquidations in the window across the three locked markets.`
-        : `**Inconclusive on counts** — ${liq?.inconclusive ?? "log scan refused"}.`,
+        : `**Inconclusive on counts**, ${liq?.inconclusive ?? "log scan refused"}.`,
     ``,
     `---`,
     ``,
@@ -412,9 +412,9 @@ if (T4) {
 if (T5) {
   const t = TASKS[4]!;
   w(
-    `## T5 — ${t.title}`,
+    `## T5, ${t.title}`,
     ``,
-    `**Category:** ${t.category} — TermiX's weighted category, and this`,
+    `**Category:** ${t.category}, TermiX's weighted category, and this`,
     `marketplace's own competency.`,
     ``,
     `**No-agent arm.** ${t.humanArm}`,
@@ -431,14 +431,14 @@ if (T5) {
     ``,
     `Every one of the twenty presents as hireable. Not one of them clears the`,
     `lowest hallmarkable grade. The contradictions are not a single systematic`,
-    `check failing across the sample — they are four different findings:`,
+    `check failing across the sample, they are four different findings:`,
     ``,
     `| Contradiction | Agents |`,
     `|---|---:|`,
-    `| Identity — no endpoint of any kind | 20/20 |`,
-    `| Custody — agent wallet is the owner's wallet, byte for byte | 20/20 |`,
+    `| Identity, no endpoint of any kind | 20/20 |`,
+    `| Custody, agent wallet is the owner's wallet, byte for byte | 20/20 |`,
     `| Reputation | 19/20 |`,
-    `| Activity — never transacted | 9/20 |`,
+    `| Activity, never transacted | 9/20 |`,
     ``,
     `### **The loss**`,
     ``,
@@ -466,7 +466,7 @@ if (T5) {
 if (T6) {
   const t = TASKS[5]!;
   w(
-    `## T6 — ${t.title}`,
+    `## T6, ${t.title}`,
     ``,
     `**Category:** ${t.category}`,
     ``,
@@ -477,7 +477,7 @@ if (T6) {
     `| | |`,
     `|---|---:|`,
     `| Feedback records analysed | ${T6.feedbacksAnalysed.toLocaleString()} |`,
-    `| Pages returned | ${T6.pagesReturned}/${T6.pagesRequested}${T6.partial ? " (**partial — rate limited**)" : ""} |`,
+    `| Pages returned | ${T6.pagesReturned}/${T6.pagesRequested}${T6.partial ? " (**partial, rate limited**)" : ""} |`,
     `| **Distinct reviewer wallets behind them** | **${T6.distinctReviewers}** |`,
     `| Flagged as coordinated | ${T6.flaggedReviewers} (${pct((T6.flaggedReviewers / T6.distinctReviewers) * 100)}) |`,
     `| **Share of all feedback written by flagged wallets** | **${pct(T6.flaggedShareOfFeedback)}** |`,
@@ -504,7 +504,7 @@ if (T6) {
   for (const s of T6.sensitivity) w(`| ${s.jaccard} | ${s.flagged} | ${s.clean} |`);
   w(
     ``,
-    `The flag set does not move — ${T6.flaggedReviewers} wallets at every`,
+    `The flag set does not move, ${T6.flaggedReviewers} wallets at every`,
     `threshold from ${T6.sensitivity[0].jaccard} to ${T6.sensitivity[T6.sensitivity.length - 1].jaccard}.`,
     ``,
     `**Read that carefully rather than as a strength.** It means co-review`,

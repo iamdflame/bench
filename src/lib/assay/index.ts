@@ -63,7 +63,7 @@ const WEIGHTS = {
 } as const;
 
 // ---------------------------------------------------------------------------
-// 1. Identity — does the thing the registry points at actually exist?
+// 1. Identity, does the thing the registry points at actually exist?
 // ---------------------------------------------------------------------------
 
 function identityAssay(ctx: AssayContext): AssayResult {
@@ -134,7 +134,7 @@ function identityAssay(ctx: AssayContext): AssayResult {
 }
 
 // ---------------------------------------------------------------------------
-// 2. Custody — is it self-custodial, or wearing its owner's wallet?
+// 2. Custody, is it self-custodial, or wearing its owner's wallet?
 // ---------------------------------------------------------------------------
 
 function custodyAssay(ctx: AssayContext): AssayResult {
@@ -200,7 +200,7 @@ function custodyAssay(ctx: AssayContext): AssayResult {
 }
 
 // ---------------------------------------------------------------------------
-// 3. Activity — has it ever done anything at all?
+// 3. Activity, has it ever done anything at all?
 // ---------------------------------------------------------------------------
 
 function activityAssay(ctx: AssayContext): AssayResult {
@@ -273,7 +273,7 @@ function activityAssay(ctx: AssayContext): AssayResult {
 }
 
 // ---------------------------------------------------------------------------
-// 4. Capability — does the chain agree with the category it claims?
+// 4. Capability, does the chain agree with the category it claims?
 // ---------------------------------------------------------------------------
 
 async function capabilityAssay(ctx: AssayContext): Promise<AssayResult> {
@@ -406,7 +406,7 @@ async function capabilityAssay(ctx: AssayContext): Promise<AssayResult> {
 }
 
 // ---------------------------------------------------------------------------
-// 5. Reputation — is the feedback organic, or manufactured?
+// 5. Reputation, is the feedback organic, or manufactured?
 // ---------------------------------------------------------------------------
 
 function reputationAssay(ctx: AssayContext): AssayResult {
@@ -500,7 +500,7 @@ function reputationAssay(ctx: AssayContext): AssayResult {
 }
 
 // ---------------------------------------------------------------------------
-// 6. Performance — did it beat doing nothing?
+// 6. Performance, did it beat doing nothing?
 // ---------------------------------------------------------------------------
 
 function performanceAssay(ctx: AssayContext): AssayResult {

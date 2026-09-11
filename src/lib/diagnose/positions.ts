@@ -2,8 +2,8 @@
  * What is wrong with a position, read straight from the chain.
  *
  * This deliberately does not go through `valueWallet`. That engine refuses the
- * whole valuation if any single adapter cannot read — one unpriceable token,
- * one flaky provider — which is correct when the number will be used to slash
+ * whole valuation if any single adapter cannot read, one unpriceable token,
+ * one flaky provider, which is correct when the number will be used to slash
  * a bond, and useless when a stranger pastes an address and wants to know
  * whether their liquidity is earning anything. Here a position we cannot price
  * is still a position we can say is out of range.
@@ -22,8 +22,8 @@
  * worse than either answer.
  */
 
-import { createPublicClient, decodeAbiParameters, encodeFunctionData, http, parseAbi, type Address } from "viem";
-import { bsc } from "viem/chains";
+import { bscClient } from "@/lib/chain/rpc";
+import { decodeAbiParameters, encodeFunctionData, parseAbi, type Address } from "viem";
 
 const MULTICALL3 = "0xcA11bde05977b3631167028862bE2a173976CA11" as const;
 export const POSITION_MANAGER = "0x46A15B0b27311cedF172AB29E4f4766fbE7F4364" as const;
@@ -54,17 +54,9 @@ const VENUS = parseAbi([
   "function getAssetsIn(address) view returns (address[])",
 ]);
 
-const RPCS = [
-  process.env.MARKET_RPC_URL,
-  process.env.BSC_RPC_URL,
-  "https://bsc-dataseed1.binance.org",
-  "https://bsc-dataseed2.binance.org",
-].filter(Boolean) as string[];
-
-const client = createPublicClient({
-  chain: bsc,
-  transport: http(RPCS[0], { timeout: 15_000, batch: { wait: 12 } }),
-});
+// Ranked fallback over every configured provider: a dead node costs one
+// failed call, not the page.
+const client = bscClient();
 
 interface Call {
   target: Address;
@@ -254,9 +246,31 @@ export async function readPositions(ids: bigint[]): Promise<PositionReading[]> {
   });
 }
 
+export interface VenusMarket {
+  vToken: Address;
+  symbol: string;
+  collateralUsd: number;
+  borrowUsd: number;
+  /** Venus's collateral factor for this market, 0 to 1. */
+  collateralFactor: number;
+}
+
 export interface VenusReading {
   /** Comptroller error code; non-zero means it would not answer. */
   error: bigint;
+  /**
+   * Per market, priced by Venus's own oracle. Absent when the detail read
+   * failed; the liquidity figures above still stand on their own.
+   */
+  markets?: VenusMarket[];
+  collateralUsd?: number;
+  borrowUsd?: number;
+  /**
+   * Collateral weighted by collateral factor, over debt. Below 1 is
+   * liquidatable. Null when there is no debt, which is not the same as
+   * "healthy" and is not printed as a number.
+   */
+  healthFactor?: number | null;
   /** Spare borrowing capacity, in USD with 18 decimals. */
   liquidityUsd: number;
   /** How far underwater. Non-zero means already liquidatable. */
@@ -282,13 +296,113 @@ export async function readVenus(wallet: Address): Promise<VenusReading | null> {
         args: [wallet],
       }) as Promise<readonly Address[]>,
     ]);
-    return {
+    const base: VenusReading = {
       error: liq[0],
       liquidityUsd: Number(liq[1]) / 1e18,
       shortfallUsd: Number(liq[2]) / 1e18,
       assetsIn: assets.length,
       active: assets.length > 0,
     };
+    if (!assets.length) return base;
+    const detail = await readVenusMarkets(wallet, assets).catch(() => null);
+    return detail ? { ...base, ...detail } : base;
+  } catch {
+    return null;
+  }
+}
+
+const VTOKEN = parseAbi([
+  "function getAccountSnapshot(address) view returns (uint256,uint256,uint256,uint256)",
+  "function symbol() view returns (string)",
+]);
+const COMPTROLLER_DETAIL = parseAbi([
+  "function oracle() view returns (address)",
+  "function markets(address) view returns (bool,uint256,bool)",
+]);
+const ORACLE = parseAbi(["function getUnderlyingPrice(address) view returns (uint256)"]);
+
+/**
+ * The health factor, computed the way Venus computes solvency.
+ *
+ * `getAccountLiquidity` gives spare capacity and shortfall in dollars but not
+ * the ratio people ask about. The ratio needs each market's collateral and
+ * debt priced by the same oracle Venus liquidates with, and each market's
+ * collateral factor. Oracle prices are scaled to 36 minus the underlying's
+ * decimals, so `amount * price / 1e36` is dollars for every market.
+ */
+async function readVenusMarkets(wallet: Address, assets: readonly Address[]) {
+  const oracle = (await client.readContract({ address: COMPTROLLER, abi: COMPTROLLER_DETAIL, functionName: "oracle" })) as Address;
+  const markets = await Promise.all(
+    assets.map(async (vToken) => {
+      const [snap, symbol, market, price] = await Promise.all([
+        client.readContract({ address: vToken, abi: VTOKEN, functionName: "getAccountSnapshot", args: [wallet] }) as Promise<readonly [bigint, bigint, bigint, bigint]>,
+        client.readContract({ address: vToken, abi: VTOKEN, functionName: "symbol" }).catch(() => "vToken") as Promise<string>,
+        client.readContract({ address: COMPTROLLER, abi: COMPTROLLER_DETAIL, functionName: "markets", args: [vToken] }) as Promise<readonly [boolean, bigint, boolean]>,
+        client.readContract({ address: oracle, abi: ORACLE, functionName: "getUnderlyingPrice", args: [vToken] }) as Promise<bigint>,
+      ]);
+      const [, vBalance, borrow, exchangeRate] = snap;
+      const underlying = (vBalance * exchangeRate) / 10n ** 18n;
+      return {
+        vToken,
+        symbol,
+        collateralUsd: Number((underlying * price) / 10n ** 30n) / 1e6,
+        borrowUsd: Number((borrow * price) / 10n ** 30n) / 1e6,
+        collateralFactor: Number(market[1]) / 1e18,
+      } satisfies VenusMarket;
+    }),
+  );
+  const collateralUsd = markets.reduce((t, m) => t + m.collateralUsd, 0);
+  const borrowUsd = markets.reduce((t, m) => t + m.borrowUsd, 0);
+  const weighted = markets.reduce((t, m) => t + m.collateralUsd * m.collateralFactor, 0);
+  return { markets, collateralUsd, borrowUsd, healthFactor: borrowUsd > 0 ? weighted / borrowUsd : null };
+}
+
+/* ------------------------------------------------------------------ idle cash */
+
+const IDLE_TOKENS: { symbol: string; address: Address; stable: boolean }[] = [
+  { symbol: "USDT", address: "0x55d398326f99059fF775485246999027B3197955", stable: true },
+  { symbol: "USDC", address: "0x8AC76a51cc950d9822D68b83fE1Ad97B32Cd580d", stable: true },
+  { symbol: "USD1", address: "0x8d0D000Ee44948FC98c9B98A4FA4921476f08B0d", stable: true },
+  { symbol: "FDUSD", address: "0xc5f0f7b66764F6ec8C8Dff7BA683102295E16409", stable: true },
+  { symbol: "WBNB", address: "0xbb4CdB9CBd36B01bD1cBaEBF2De08d9173bc095c", stable: false },
+];
+const WBNB_USDT_POOL = "0x36696169C63e42cd08ce11f5deeBbCeBae652050" as const;
+const BALANCE = parseAbi(["function balanceOf(address) view returns (uint256)"]);
+
+export interface IdleReading {
+  holdings: { symbol: string; amount: number; usd: number }[];
+  totalUsd: number;
+  bnbUsd: number;
+}
+
+/**
+ * What the wallet holds and is doing nothing with.
+ *
+ * Stablecoins and BNB sitting in the wallet itself: not supplied, not pooled,
+ * not staked. Stables at a dollar, BNB at the WBNB/USDT 0.05% pool's own
+ * price (token0 is USDT, so the pool quotes WBNB per USDT and BNB's dollar
+ * price is its inverse). Native BNB is counted whole; a small amount is
+ * needed for gas and the page says so rather than subtracting a guess.
+ */
+export async function readIdle(wallet: Address): Promise<IdleReading | null> {
+  try {
+    const [native, slot, ...balances] = await Promise.all([
+      client.getBalance({ address: wallet }),
+      client.readContract({ address: WBNB_USDT_POOL, abi: POOL, functionName: "slot0" }) as Promise<readonly unknown[]>,
+      ...IDLE_TOKENS.map((t) =>
+        client.readContract({ address: t.address, abi: BALANCE, functionName: "balanceOf", args: [wallet] }).catch(() => 0n) as Promise<bigint>,
+      ),
+    ]);
+    const sqrt = Number(slot[0] as bigint) / 2 ** 96;
+    const bnbUsd = sqrt > 0 ? 1 / (sqrt * sqrt) : 0;
+    const holdings = [
+      { symbol: "BNB", amount: Number(native) / 1e18, usd: (Number(native) / 1e18) * bnbUsd },
+      ...IDLE_TOKENS.map((t, i) => {
+        const amount = Number(balances[i]) / 1e18;
+        return { symbol: t.symbol, amount, usd: t.stable ? amount : amount * bnbUsd };
+      }),
+    ].filter((h) => h.amount > 0);
+    return { holdings, totalUsd: holdings.reduce((t, h) => t + h.usd, 0), bnbUsd };
   } catch {
     return null;
   }

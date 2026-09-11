@@ -1,6 +1,6 @@
 # mandate-client
 
-Client for the **MANDATE public assay API** — assay any ERC-8004 agent on BNB
+Client for the **MANDATE public assay API**, assay any ERC-8004 agent on BNB
 Smart Chain, read the trust ladder, browse the register.
 
 Free. Unauthenticated. Rate limited. No key, no account, no permission.
@@ -64,7 +64,7 @@ findings only its own front end could read would be a trade association.
 The API is open to everyone, including the projects competing with the one that
 runs it. If a rival marketplace wants to show fineness on its own listings, the
 data is here and it costs nothing. The argument this project makes is stronger
-the more people can check it — and a measurement nobody else can obtain is
+the more people can check it, and a measurement nobody else can obtain is
 indistinguishable from one nobody else can falsify.
 
 MIT.

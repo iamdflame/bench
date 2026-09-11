@@ -2,7 +2,7 @@
  * What a wallet was worth at a past block, re-derived from public chain state.
  *
  * Written separately from the application's engine on purpose. The point of
- * this package is that it can *disagree* with the operator — a verifier that
+ * this package is that it can *disagree* with the operator, a verifier that
  * imported the operator's arithmetic would be checking our sums against our
  * sums, and the isolation check exists to stop exactly that. Same sources,
  * same semantics, different code.
@@ -216,7 +216,7 @@ export async function rederiveValue(
     }
 
     // V3 positions: capital that has left the wallet entirely and reappeared
-    // as liquidity between two ticks. Uncollected fees included — they are
+    // as liquidity between two ticks. Uncollected fees included, they are
     // earned and claimable, and omitting them measures a profitable position
     // as flat.
     const count = (await c.readContract({
@@ -255,7 +255,7 @@ export async function rederiveValue(
 
     // Venus: supply is an asset, borrow is a liability. `Stored` rather than
     // `Current` because the Current variants accrue as a side effect, so their
-    // answer depends on when they are called and not only on the block — and
+    // answer depends on when they are called and not only on the block, and
     // this has to re-derive identically for anyone reading the same state.
     const entered = (await c.readContract({
       address: COMPTROLLER, abi: COMP, functionName: "getAssetsIn", args: [wallet], blockNumber,

@@ -32,7 +32,7 @@ export interface SessionView {
  *
  * The withheld list is the interesting half. `granted ⊆ proven` means the
  * allowlist is the intersection of what the category permits with what the
- * assay actually observed on chain — so a call the category allows and the
+ * assay actually observed on chain, so a call the category allows and the
  * agent has never made is *absent*, and showing what was taken away is how a
  * principal sees the narrowing happened rather than taking it on trust.
  */
@@ -140,7 +140,7 @@ export default function SessionScope({
           One table, with the state as a column.
 
           Granted and withheld sat in two columns side by side, and the withheld
-          column is empty for most sessions — so half of every panel was the
+          column is empty for most sessions, so half of every panel was the
           words "nothing withheld" and a great deal of ground. Read as one list
           they also compare properly: the point is not that two calls were
           allowed, it is that these two were allowed and that one beside them

@@ -10,6 +10,7 @@ import { reviewSample } from "@/lib/market/reviews";
 import { censusAge } from "@/lib/market/listing";
 import { WORKED_EXAMPLE, tx } from "@/lib/market/worked-example";
 import { readAgentIndex } from "@/lib/data/agents";
+import { live } from "@/lib/data/live";
 
 export const metadata: Metadata = {
   title: "Mandate | Hire an agent to run a position on BNB Chain",
@@ -18,6 +19,8 @@ export const metadata: Metadata = {
 };
 
 export const revalidate = 300;
+// Room for the census slice that runs after the response (see lib/census/refresh).
+export const maxDuration = 60;
 
 /**
  * What a plain sentence has to do here.
@@ -25,7 +28,7 @@ export const revalidate = 300;
  * The person this page is written for has not heard of ERC-8004, does not know
  * what a session key is, and has never used a marketplace that pays a piece of
  * software. Every heading below is therefore a sentence they could say out
- * loud, and every technical object — the bond, the benchmark, the registry —
+ * loud, and every technical object, the bond, the benchmark, the registry,
  * is introduced by what it does for them before it is named.
  */
 
@@ -48,6 +51,7 @@ const HOW = [
 ];
 
 export default async function Home() {
+  await live();
   const hires = await hireCounts();
   const all = listings(hires.byTokenId);
   const counts = categoryCounts();
@@ -342,7 +346,7 @@ export default async function Home() {
         <div className="m-tape">
           <iframe
             src="https://www.youtube-nocookie.com/embed/7l_Ppu_V44o"
-            title="Mandate: 311,300 AI agents on BNB Chain. Six answer the phone."
+            title="Mandate: the judge walk (an earlier version of the path on /judges)"
             loading="lazy"
             allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
             referrerPolicy="strict-origin-when-cross-origin"

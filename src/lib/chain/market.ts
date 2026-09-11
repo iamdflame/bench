@@ -2,15 +2,13 @@
  * Client for MandateMarket.
  *
  * The floor reads from here. Every figure it renders is a contract call or a
- * log — nothing on the floor is a number this codebase made up.
+ * log, nothing on the floor is a number this codebase made up.
  */
 
 import {
   createPublicClient,
   createWalletClient,
   http,
-  webSocket,
-  fallback,
   formatEther,
   type Address,
   type Hex,
@@ -21,6 +19,7 @@ import { bsc, bscTestnet, foundry } from "viem/chains";
 import { MANDATE_MARKET_ABI } from "./abi";
 import { MANDATE_MARKET_V2_ABI } from "./abiV2";
 import { MARKET_V2 } from "./deployments";
+import { bscTransport } from "./rpc";
 
 /**
  * The market this site reads and writes by default.
@@ -28,7 +27,7 @@ import { MARKET_V2 } from "./deployments";
  * This used to fall back to the empty string, and production had an env var
  * still pointing at the first deployment. Between them the footer linked
  * `bscscan.com/address/` with no address at all on one page and a superseded
- * contract on another — a "verify this yourself" link that verified nothing,
+ * contract on another, a "verify this yourself" link that verified nothing,
  * on the site whose entire argument is that claims must be checkable.
  *
  * There is no empty fallback now. An unset environment resolves to the
@@ -59,11 +58,14 @@ const MARKET_RPC =
 export const marketChain =
   MARKET_CHAIN_ID === 56 ? bsc : MARKET_CHAIN_ID === 97 ? bscTestnet : foundry;
 
+/*
+  Every read in the app goes through a ranked fallback over several providers
+  (see ./rpc.ts). This used to be one `http(MARKET_RPC)`; a single public node
+  going quiet took `/diagnose`, the book and the keeper down with it.
+*/
 export const marketClient: PublicClient = createPublicClient({
   chain: marketChain,
-  transport: MARKET_RPC.startsWith("ws")
-    ? fallback([webSocket(MARKET_RPC), http()])
-    : http(MARKET_RPC, { timeout: 20_000, batch: { wait: 12 } }),
+  transport: bscTransport({ timeout: 20_000 }),
 });
 
 /**
@@ -98,7 +100,7 @@ export function walletFor(privateKey: Hex) {
   return createWalletClient({
     account: privateKeyToAccount(privateKey),
     chain: marketChain,
-    transport: http(MARKET_RPC),
+    transport: bscTransport({ timeout: 20_000, batch: false }),
   });
 }
 

@@ -17,7 +17,7 @@ export const revalidate = 600;
  * The way into the technical record.
  *
  * Rule 22 of the rebuild brief is that depth must not be destroyed, only
- * reorganised — and the archive it points at is the strongest work in this
+ * reorganised, and the archive it points at is the strongest work in this
  * project: the six-test assay with per-test evidence, the review-farming
  * autopsy, the public restatement of our own measurement error. None of it is
  * deleted or rewritten.
@@ -68,7 +68,7 @@ const ARCHIVE = [
     p: "Put any agent id through the same tests, live, and watch each one resolve against the chain.",
   },
   {
-    href: "/authority",
+    href: "/evidence",
     t: "The review-farming autopsy",
     p: "Who leaves feedback on this registry, how often, and to whom. The reason we treat review counts as activity rather than quality.",
   },

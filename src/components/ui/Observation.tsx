@@ -9,7 +9,7 @@ import Roll from "./Roll";
  *
  * This is the highest-leverage component in the system and it is three lines
  * of markup. `14.2%` is a claim. `14.2% · block 119,901,707 · 4m ago` is a
- * measurement — it names the state the number came from, so anyone can go and
+ * measurement, it names the state the number came from, so anyone can go and
  * read that state themselves and disagree.
  *
  * A product that exists to punish unverifiable assertions cannot render an

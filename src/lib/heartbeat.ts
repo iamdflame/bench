@@ -2,7 +2,7 @@
  * Whether anything is actually running.
  *
  * The market's case is that mandates settle, agents are slashed and dismissals
- * revoke a key — all of which happen because a process is running somewhere,
+ * revoke a key, all of which happen because a process is running somewhere,
  * not because a page was loaded. There was no way to tell from the site
  * whether that process was alive. `npm run floor` in a terminal and a keeper
  * on a schedule produce identical-looking books, and only one of them is a
@@ -12,7 +12,7 @@
  * properties matter:
  *
  *   A missing heartbeat is reported as missing. Not as "starting", not as a
- *   quiet absence of a badge — the floor says the keeper is down and gives the
+ *   quiet absence of a badge, the floor says the keeper is down and gives the
  *   last time it was not, because a market with no keeper is a fact a buyer is
  *   entitled to before they escrow anything.
  *
@@ -34,7 +34,7 @@ export interface Heartbeat {
   at: string;
   /** Cycles completed since the process started. */
   cycles: number;
-  /** Whatever the process wants on the record — blocks scanned, rows written. */
+  /** Whatever the process wants on the record, blocks scanned, rows written. */
   detail: Record<string, unknown> | null;
   /** How long ago, in seconds. */
   ageSeconds: number;
@@ -46,7 +46,7 @@ export interface Heartbeat {
  * How stale a stamp may be before the process counts as down.
  *
  * Generous multiples of each interval, so a slow cycle is not reported as a
- * dead process — but finite, because "we have not heard from it in an hour"
+ * dead process, but finite, because "we have not heard from it in an hour"
  * and "it is running" are not the same claim.
  */
 const TOLERANCE_MS: Record<Process, number> = {
@@ -109,7 +109,7 @@ async function readOne(process: Process): Promise<Heartbeat | null> {
 /**
  * The heartbeats, memoised briefly.
  *
- * Null for a process means no stamp has ever been written — which is a
+ * Null for a process means no stamp has ever been written, which is a
  * different statement from a stale one, and the floor renders it differently.
  */
 export function readHeartbeats(): Promise<Record<Process, Heartbeat | null>> {

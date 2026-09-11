@@ -7,7 +7,7 @@ const Q96 = 2n ** 96n;
  * The reference values are from Uniswap's own TickMath test suite.
  *
  * This maths decides what a rebalancing agent's position is worth, and an
- * error here is indistinguishable from the agent having lost money — which is
+ * error here is indistinguishable from the agent having lost money, which is
  * precisely the failure that made the old gauge slash agents for working. It
  * gets checked against the canonical implementation rather than eyeballed.
  */

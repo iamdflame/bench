@@ -19,6 +19,7 @@ next-env.d.ts
 # import. The README meanwhile claimed a passing test suite. Build artefacts
 # are still ignored; the sources the build needs are not.
 contracts/out/
+contracts/out-recipientbound/
 contracts/cache/
 contracts/broadcast/
 .env.local

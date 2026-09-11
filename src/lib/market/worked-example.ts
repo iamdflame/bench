@@ -4,8 +4,8 @@
  * Hardcoded on purpose, and this is the only hardcoded figure on the site.
  * These are three transaction hashes on BNB Smart Chain mainnet; they cannot
  * change, they cannot go stale, and re-deriving them from logs on every page
- * load would be slower and no more true. Everything they *describe* — the
- * mandate's state, its capital, its bond — is still read from the chain.
+ * load would be slower and no more true. Everything they *describe*, the
+ * mandate's state, its capital, its bond, is still read from the chain.
  */
 
 export const WORKED_EXAMPLE = {

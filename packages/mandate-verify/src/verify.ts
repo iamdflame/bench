@@ -4,7 +4,7 @@
  * The rule this file exists to honour: it reads nothing but the chain. No
  * database, no API, no file the operator controls. If verification needed
  * anything from us, it would be the same unverifiable claim the whole product
- * was built to reject — so the package lives outside the application and has no
+ * was built to reject, so the package lives outside the application and has no
  * dependency on it, and that is enforced rather than promised.
  */
 
@@ -52,7 +52,7 @@ const POOL_ABI = parseAbi([
 ]);
 const ERC20_ABI = parseAbi(["function balanceOf(address) view returns (uint256)"]);
 
-/** The deepest WBNB/USDT V3 pool on BSC — the reference the operator prices with. */
+/** The deepest WBNB/USDT V3 pool on BSC, the reference the operator prices with. */
 const WBNB_USDT_POOL = "0x36696169C63e42cd08ce11f5deeBbCeBae652050" as const;
 const USDT = "0x55d398326f99059fF775485246999027B3197955" as const;
 
@@ -67,7 +67,7 @@ export const OPEN_EPOCH = 4_294_967_295;
  * There are three live deployments on BNB Smart Chain and all three hold
  * mandates with settled epochs. The site linked one in its footer, printed a
  * second on another page, named a third in its README, and this file defaulted
- * to a fourth answer — so "the market contract" meant something different
+ * to a fourth answer, so "the market contract" meant something different
  * depending on where you read it.
  *
  * Naming them is the fix. `--deployment v1` is the short form; `--market` still
@@ -97,7 +97,7 @@ export const DEFAULT_MARKET: Record<number, Address> = {
  * Most public BSC nodes refuse `eth_getLogs` over any real range, and the ones
  * that serve it change: publicnode answered these queries happily and now
  * returns "Archive requests require a personal token" for anything a few hours
- * old. So there is a list rather than an endpoint, and — more importantly — a
+ * old. So there is a list rather than an endpoint, and, more importantly, a
  * provider that refuses is never allowed to look like an empty answer.
  */
 export const DEFAULT_RPCS: Record<number, string[]> = {
@@ -118,7 +118,7 @@ export const DEFAULT_RPCS: Record<number, string[]> = {
  * ranges it declines to serve, dataseed refuses outright, publicnode and
  * blockrazor reject the parameters. drpc also rate-limits a public caller
  * within a handful of requests, so it leads this list and does not appear in
- * the call list at all — put it in front of `mandateCount()` and the rate limit
+ * the call list at all, put it in front of `mandateCount()` and the rate limit
  * arrives before the verification does.
  */
 export const DEFAULT_LOG_RPCS: Record<number, string[]> = {
@@ -169,7 +169,7 @@ export interface Check {
    * a failed state check is a finding: the chain positively says otherwise.
    *
    * `log` is an event. A failed log check means "we did not find it", and on
-   * BSC that is not the same sentence as "it was not emitted" — of the public
+   * BSC that is not the same sentence as "it was not emitted", of the public
    * providers one refuses `eth_getLogs` over any range, one rejects the
    * parameters outright, and one answers an empty array for windows that
    * demonstrably contain events. An empty answer from a provider that will not
@@ -237,7 +237,7 @@ export function hashObservation(o: Observation): `0x${string}` {
     v2 added `benchmarkWei` to the observation, which changes both the event
     topic and the preimage. Hashing a v2 observation with the v1 layout
     produces a hash that matches nothing, and the verifier would report that a
-    committed value had been altered — the most serious accusation it can make,
+    committed value had been altered, the most serious accusation it can make,
     against a contract that had done nothing wrong.
 
     The shape is chosen by what the log actually carried, never by which
@@ -280,8 +280,8 @@ export function makeClient(chainId: number, rpc?: string): PublicClient {
  * Log readers, tried in order until one returns something.
  *
  * An explicitly named node is used alone. Someone passing `--rpc` has told the
- * verifier which node to trust — usually their own, often precisely because
- * they do not want the query going anywhere else — and quietly asking four
+ * verifier which node to trust, usually their own, often precisely because
+ * they do not want the query going anywhere else, and quietly asking four
  * public providers alongside it would both contradict that instruction and
  * broadcast which mandate is being examined. Without the flag, the public list
  * is used, because no single public BSC endpoint answers reliably.
@@ -302,7 +302,7 @@ export function makeClients(chainId: number, rpc?: string): PublicClient[] {
  * is rather than trusting log ordering.
  *
  * When nothing matches, the first is returned so the mismatch is reported
- * against a concrete value rather than vanishing into "not found" — a
+ * against a concrete value rather than vanishing into "not found", a
  * contradicted commitment is a finding and must stay one.
  */
 function pickPreimage(
@@ -328,13 +328,13 @@ const check = (
  * Only possible where the node still serves that state. A node that pruned it
  * errors, and the caller stays at tier 1 rather than pretending otherwise.
  *
- * The valuation lives in `./valuation.ts` and is this package's own — native,
+ * The valuation lives in `./valuation.ts` and is this package's own, native,
  * every tracked token, V3 positions with their uncollected fees, and Venus
  * supply *and borrow*. It replaced a version that read native BNB and USDT
  * and nothing else, whose comment said it mirrored the operator's conversion.
  * It did, and that was the flaw: it would have confirmed every settlement the
  * operator's blind spots produced. A verifier that reproduces the bug it
- * exists to catch does not fail to help — it certifies the error.
+ * exists to catch does not fail to help, it certifies the error.
  */
 async function rederive(
   client: PublicClient,
@@ -366,8 +366,8 @@ async function readAttestation(
 /**
  * Collects this mandate's observations and settlements from the logs.
  *
- * The window is derived from the attestations themselves — the first mark's
- * block to a little past the last — so nothing has to be configured and the
+ * The window is derived from the attestations themselves, the first mark's
+ * block to a little past the last, so nothing has to be configured and the
  * scan stays small however old the market gets.
  */
 /**
@@ -392,7 +392,7 @@ async function windowLogs(
     answer.
 
     This returned whatever the first provider said, and the first provider on
-    BSC answers an empty array for ranges it has decided not to serve — no
+    BSC answers an empty array for ranges it has decided not to serve, no
     error, no indication that it declined. So a window that demonstrably
     contains an Observed event came back empty, the loop stopped, and the
     verifier went on to report that a mandate had no preimage behind a
@@ -437,7 +437,7 @@ async function collectLogs(
   /**
    * Every observation seen for an epoch, not just the last.
    *
-   * An epoch can carry more than one Observed log — a re-observation, a
+   * An epoch can carry more than one Observed log, a re-observation, a
    * retried transaction, or an event deliberately emitted to muddy the record.
    * Keeping one arbitrarily and comparing it against the commitment made the
    * verifier accuse a contract of tampering because a duplicate existed.
@@ -559,7 +559,7 @@ export async function verifyMandate(opts: VerifyOptions): Promise<VerifyResult> 
       On an awarded mandate it is the worst finding the verifier has: capital
       is being managed against nothing, so no settlement can ever be checked.
       On a mandate nobody has bid for, it is simply what an unstarted mandate
-      looks like — there is no agent to have committed anything.
+      looks like, there is no agent to have committed anything.
 
       Reporting the second as FAILED is what this did, on two of the four live
       mandates, and it costs more than a wrong word. The exit code is the whole
@@ -619,10 +619,10 @@ export async function verifyMandate(opts: VerifyOptions): Promise<VerifyResult> 
     for (const c of checks) {
       if (c.ok) continue;
       if (c.evidence === "log") {
-        unresolved.push(`opening: ${c.name} — ${c.detail}`);
+        unresolved.push(`opening: ${c.name}, ${c.detail}`);
         continue;
       }
-      failures.push(`opening: ${c.name} — ${c.detail}`);
+      failures.push(`opening: ${c.name}, ${c.detail}`);
     }
     opening = { attestation: openAtt, observation: obs, checks };
   }
@@ -679,7 +679,7 @@ export async function verifyMandate(opts: VerifyOptions): Promise<VerifyResult> 
       /*
         There is nothing to compare against, which is a different sentence from
         "the comparison came out wrong". The settlement event is a log, so its
-        absence carries a log's authority — none. When the event is present and
+        absence carries a log's authority, none. When the event is present and
         the alpha contradicts what the marks imply, the same check convicts,
         which is how `--tamper` catches an inflated alpha.
       */
@@ -714,7 +714,7 @@ export async function verifyMandate(opts: VerifyOptions): Promise<VerifyResult> 
       if (rederivedWei === null) {
         notes.push(
           `epoch ${e}: state at block ${obs.blockNumber} is no longer served, so the valuation was not re-derived` +
-            (archiveClient ? "" : " — pass --archive <url> for tier 3"),
+            (archiveClient ? "" : ", pass --archive <url> for tier 3"),
         );
       } else {
         // A wei or two of drift is the price conversion's rounding, not a lie.
@@ -741,10 +741,10 @@ export async function verifyMandate(opts: VerifyOptions): Promise<VerifyResult> 
     for (const c of checks) {
       if (c.ok) continue;
       if (c.evidence === "log") {
-        unresolved.push(`epoch ${e}: ${c.name} — ${c.detail}`);
+        unresolved.push(`epoch ${e}: ${c.name}, ${c.detail}`);
         continue;
       }
-      failures.push(`epoch ${e}: ${c.name} — ${c.detail}`);
+      failures.push(`epoch ${e}: ${c.name}, ${c.detail}`);
     }
     if (tier < weakest) weakest = tier;
 

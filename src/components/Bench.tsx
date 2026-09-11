@@ -4,7 +4,7 @@
  * The bench.
  *
  * Streams a live assay and renders each test as it resolves. The waiting is
- * the content here — a judge watching an agent's claims fail against the chain
+ * the content here, a judge watching an agent's claims fail against the chain
  * one line at a time is the whole argument, so nothing is hidden behind a
  * spinner and no result is revealed before the chain has actually answered.
  */

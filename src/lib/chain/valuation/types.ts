@@ -53,7 +53,7 @@ export interface Adapter {
   /**
    * What this adapter can see of `wallet` at `block`.
    *
-   * Returns null when it cannot see clearly — an unknown token, a call that
+   * Returns null when it cannot see clearly, an unknown token, a call that
    * reverted, a market it could not enumerate. Null propagates: the whole
    * valuation refuses rather than reporting a partial total as if it were
    * complete.

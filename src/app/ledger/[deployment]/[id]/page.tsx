@@ -1,7 +1,7 @@
 import type { Metadata } from "next";
 import { notFound } from "next/navigation";
-import { createPublicClient, http, formatEther } from "viem";
-import { bsc } from "viem/chains";
+import { formatEther } from "viem";
+import { bscClient } from "@/lib/chain/rpc";
 import SiteHeader from "@/components/shell/SiteHeader";
 import SiteFooter from "@/components/shell/SiteFooter";
 import Observation from "@/components/ui/Observation";
@@ -17,7 +17,7 @@ export const revalidate = 0;
  * A ledger on a deployment that is no longer canonical.
  *
  * This office has run three markets and every one of them still holds mandates
- * with settled epochs — including the grid mandate that lost 21%. The register
+ * with settled epochs, including the grid mandate that lost 21%. The register
  * and the office pages link to all of them, so those links needed somewhere to
  * land; without this page they were dead ends, which is the one thing the
  * front of this site is not allowed to have.
@@ -54,12 +54,7 @@ export default async function SupersededLedger({
   // the same mandate two addresses on this site.
   if (d.status === "canonical") notFound();
 
-  const client = createPublicClient({
-    chain: bsc,
-    transport: http(process.env.MARKET_RPC_URL || "https://bsc-dataseed1.binance.org", {
-      timeout: 12_000,
-    }),
-  });
+  const client = bscClient();
 
   interface MandateRead {
     principal: `0x${string}`;
@@ -79,7 +74,7 @@ export default async function SupersededLedger({
     `notFound()` signals by throwing, so it must not sit inside the catch that
     handles an unreachable node. It did, and the catch swallowed it: a request
     for mandate 99 on a contract holding four rendered a page of blanks with a
-    200 rather than a 404. The two outcomes are kept apart — a mandate that does
+    200 rather than a 404. The two outcomes are kept apart, a mandate that does
     not exist, and a chain that would not answer.
   */
   let exists: boolean | null = null;

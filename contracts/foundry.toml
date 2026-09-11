@@ -13,3 +13,17 @@ evm_version = "cancun"
 line_length = 100
 tab_width = 4
 bracket_spacing = false
+
+# RecipientBound at 0x5863edae…952e was compiled without the IR pipeline
+# (its runtime matches d4c6504 built with via_ir = false, immutables masked).
+# Verification of that address uses this profile; the market uses default.
+[profile.recipientbound]
+src = "src"
+test = "test"
+out = "out-recipientbound"
+libs = ["lib"]
+solc = "0.8.28"
+optimizer = true
+optimizer_runs = 200
+via_ir = false
+evm_version = "cancun"

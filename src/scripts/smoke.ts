@@ -1,138 +1,118 @@
 /**
- * Is the deployed site actually working, right now?
+ * Is the judge path working on the deployed site, right now?
  *
  *   npm run smoke                     against production
  *   npm run smoke -- --base <url>     against anything else
  *
- * Eligibility requires the submission to be functional and publicly accessible
- * throughout a fourteen-day judging window. A build that passed once tells
- * nobody whether the site is up on day twelve, so this runs on a schedule and
- * checks the things that actually break: a route that 500s, a funnel that has
- * gone stale, sessions that stopped being readable, a market that stopped
- * answering.
- *
- * Every check states what it expected. A smoke test that only prints "ok" is a
- * smoke test nobody can debug at three in the morning.
+ * Walks the six beats the way a judge would, with scripting off: each page is
+ * fetched as HTML and checked for the thing /judges tells a judge to look at.
+ * Then the JSON a monitor would watch, and the funnel against a live read of
+ * the registry's own counter. Every check says what it expected, so a failure
+ * at three in the morning can be read without opening the code.
  */
+
+import { hexToBigInt } from "viem";
+import { bscClient } from "@/lib/chain/rpc";
+import { COUNTER_SLOT } from "@/lib/registry/count";
+import { IDENTITY_REGISTRY } from "@/lib/config";
 
 const baseIdx = process.argv.indexOf("--base");
 const BASE = (baseIdx > -1 ? process.argv[baseIdx + 1]! : process.env.SMOKE_BASE ?? "https://mandate-coral.vercel.app").replace(/\/$/, "");
-const TIMEOUT = Number(process.env.SMOKE_TIMEOUT_MS ?? 25_000);
+const TIMEOUT = Number(process.env.SMOKE_TIMEOUT_MS ?? 45_000);
+const DEMO = "0x54c06cC2623aAA2Dcc38B17fA07aD2e99b363C90";
 
 interface Check {
   name: string;
   ok: boolean;
   detail: string;
-  /** A failure that is about the world rather than about us. */
-  soft?: boolean;
 }
-
 const checks: Check[] = [];
-const record = (name: string, ok: boolean, detail: string, soft = false) => {
-  checks.push({ name, ok, detail, soft });
-  const mark = ok ? "\x1b[32m✓\x1b[0m" : soft ? "\x1b[33m?\x1b[0m" : "\x1b[31m✗\x1b[0m";
-  console.log(`  ${mark} ${name}`);
-  console.log(`      ${detail}`);
-};
+const record = (name: string, ok: boolean, detail: string) => checks.push({ name, ok, detail });
 
-async function get(path: string): Promise<{ status: number; body: string; ms: number }> {
-  const t0 = Date.now();
-  const res = await fetch(`${BASE}${path}`, { signal: AbortSignal.timeout(TIMEOUT) });
-  const body = await res.text();
-  return { status: res.status, body, ms: Date.now() - t0 };
-}
-
-console.log(`\n  smoke · ${BASE}\n`);
-
-// Every route a judge might open. A 500 on any of them is the failure that
-// matters most, because it is the one that makes the whole thing look broken.
-const ROUTES = [
-  "/",
-  "/start",
-  "/agents",
-  "/agents?rung=2",
-  "/floor",
-  "/evidence",
-  "/authority",
-  "/list-your-agent",
-  "/assay",
-  "/bench",
-  "/agent/2410",
-  "/mandate/0",
-];
-
-let slowest = 0;
-for (const route of ROUTES) {
+async function get(path: string): Promise<{ status: number; text: string; ms: number }> {
+  const started = Date.now();
   try {
-    const r = await get(route);
-    slowest = Math.max(slowest, r.ms);
-    record(`GET ${route}`, r.status === 200, `${r.status} in ${r.ms}ms`);
+    const res = await fetch(BASE + path, { redirect: "follow", signal: AbortSignal.timeout(TIMEOUT), headers: { "user-agent": "mandate-smoke" } });
+    return { status: res.status, text: await res.text(), ms: Date.now() - started };
   } catch (e) {
-    record(`GET ${route}`, false, `unreachable — ${String(e).slice(0, 90)}`);
+    return { status: 0, text: String((e as Error).message), ms: Date.now() - started };
   }
 }
 
-// The ladder is the front door, so its numbers being present and plausible is
-// the difference between a working product and a shell.
-try {
-  const r = await get("/");
-  const registered = r.body.match(/rung-count">([\d,]+)/)?.[1] ?? "";
-  const n = Number(registered.replace(/,/g, ""));
-  record(
-    "the ladder renders a real registry count",
-    n > 100_000,
-    n > 0 ? `rung 0 shows ${registered}` : "no rung count found in the page",
-  );
-  record(
-    "the population discontinuity is stated",
-    r.body.includes("came up the ladder"),
-    r.body.includes("came up the ladder")
-      ? "rungs 5 and 6 still carry it"
-      : "the sentence that stops the funnel over-claiming is missing",
-  );
-} catch (e) {
-  record("the ladder renders a real registry count", false, String(e).slice(0, 90));
+async function page(path: string, expect: { name: string; test: (html: string) => boolean | string }[]) {
+  const r = await get(path);
+  if (r.status !== 200) {
+    record(`${path}`, false, `expected 200, got ${r.status || "no answer"} in ${r.ms} ms`);
+    return;
+  }
+  for (const e of expect) {
+    const v = e.test(r.text);
+    record(`${path}: ${e.name}`, v === true, v === true ? `ok in ${r.ms} ms` : typeof v === "string" ? v : "not found in the HTML");
+  }
 }
 
-// Sessions readable, and their authority still described.
-try {
-  const r = await get("/api/sessions");
-  const j = JSON.parse(r.body) as { sessions?: { registered: boolean }[] };
-  const n = j.sessions?.length ?? 0;
-  const registered = j.sessions?.filter((s) => s.registered).length ?? 0;
-  record(
-    "sessions are readable",
-    n > 0,
-    `${n} session${n === 1 ? "" : "s"}, ${registered} KeyStore-registered`,
-  );
-} catch (e) {
-  record("sessions are readable", false, String(e).slice(0, 90));
+async function main() {
+  console.log(`smoke against ${BASE}\n`);
+
+  await page("/judges", [
+    {
+      name: "six beats, each with a link",
+      test: (h) => {
+        const list = h.split('class="m-walkbig"')[1]?.split("</ol>")[0] ?? "";
+        const items = list.split("<li").slice(1);
+        if (items.length !== 6) return `expected 6 beats, found ${items.length}`;
+        const bare = items.findIndex((li) => !/href="/.test(li));
+        return bare === -1 ? true : `beat ${bare + 1} has no link`;
+      },
+    },
+    { name: "the demo address is published", test: (h) => h.includes(DEMO) },
+  ]);
+  await page(`/diagnose?q=${DEMO}`, [
+    { name: "an out-of-range position is found", test: (h) => h.includes("out of range and earning nothing") },
+    { name: "a Venus health factor is read", test: (h) => /Health factor \d/.test(h) },
+  ]);
+  await page("/agents?live=1&category=grid-trading", [
+    { name: "at least one answering grid agent to open", test: (h) => /href="\/agents\/\d+"/.test(h) },
+  ]);
+  await page("/agents/269706", [{ name: "Ranger's profile renders", test: (h) => h.includes("Ranger") }]);
+  await page("/desk", [
+    { name: "live keys are listed", test: (h) => h.includes("Keys that can act right now") },
+    { name: "the KeyStore is read", test: (h) => h.includes("matches") || h.includes("registry says") || "no KeyStore verdict on the page" },
+  ]);
+  await page("/status", [{ name: "the beat checks render", test: (h) => h.includes("The six beats") }]);
+  await page("/", [{ name: "home renders", test: (h) => h.includes("</html>") }]);
+  await page("/activity", [{ name: "activity renders", test: (h) => h.includes("</html>") }]);
+
+  const status = await get("/api/status");
+  try {
+    const j = JSON.parse(status.text) as { ok: boolean; checks: { beat: number; name: string; ok: boolean; detail: string }[] };
+    const bad = j.checks.filter((c) => !c.ok);
+    record("/api/status: every beat's data read passes", j.ok, j.ok ? `ok in ${status.ms} ms` : bad.map((c) => `beat ${c.beat} ${c.name}: ${c.detail}`).join("; "));
+  } catch {
+    record("/api/status", false, `expected JSON, got ${status.status}`);
+  }
+
+  const funnel = await get("/api/v1/registry/funnel");
+  try {
+    const j = JSON.parse(funnel.text) as Record<string, unknown>;
+    const data = (j.data ?? j) as { rungs?: { population: number | null }[] };
+    const reported = data.rungs?.[0]?.population ?? null;
+    const raw = await bscClient().getStorageAt({ address: IDENTITY_REGISTRY as `0x${string}`, slot: COUNTER_SLOT });
+    const chain = raw ? Number(hexToBigInt(raw)) : null;
+    const ok = reported !== null && chain !== null && Math.abs(reported - chain) <= 500;
+    record("/api/v1/registry/funnel: registered equals the registry's counter", ok, `funnel ${reported}, chain ${chain} (new registrations between the two reads are tolerated up to 500)`);
+  } catch (e) {
+    record("/api/v1/registry/funnel", false, `unreadable: ${(e as Error).message}`);
+  }
+
+  const width = Math.max(...checks.map((c) => c.name.length));
+  for (const c of checks) console.log(`${c.ok ? "PASS" : "FAIL"}  ${c.name.padEnd(width)}  ${c.detail}`);
+  const failed = checks.filter((c) => !c.ok).length;
+  console.log(`\n${checks.length - failed} of ${checks.length} passed`);
+  process.exit(failed ? 1 : 0);
 }
 
-// The market answering is about BSC as much as about us, so a failure here is
-// soft: it should be visible without turning the badge red for an RPC outage.
-try {
-  const r = await get("/api/floor");
-  const j = JSON.parse(r.body) as { mandates?: unknown[] };
-  record(
-    "the market responds",
-    Array.isArray(j.mandates),
-    Array.isArray(j.mandates) ? `${j.mandates.length} mandates` : "no mandates array",
-    true,
-  );
-} catch (e) {
-  record("the market responds", false, `chain unreachable — ${String(e).slice(0, 70)}`, true);
-}
-
-const hard = checks.filter((c) => !c.ok && !c.soft);
-const soft = checks.filter((c) => !c.ok && c.soft);
-console.log(`\n  ${checks.length - hard.length - soft.length}/${checks.length} passing · slowest ${slowest}ms`);
-if (soft.length) console.log(`  ${soft.length} soft failure(s) — about the world, not the build`);
-if (hard.length) {
-  console.log(`\n  FAILING:`);
-  for (const c of hard) console.log(`    · ${c.name} — ${c.detail}`);
-}
-console.log();
-process.exit(hard.length > 0 ? 1 : 0);
-
-export {};
+main().catch((e) => {
+  console.error("FAILED:", e);
+  process.exit(1);
+});

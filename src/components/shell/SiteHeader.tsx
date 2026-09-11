@@ -16,7 +16,7 @@ const NAV = [
   { href: "/verify", label: "How we check" },
   { href: "/assay", label: "Method" },
   { href: "/bench", label: "Bench" },
-  { href: "/authority", label: "Authority" },
+  { href: "/desk", label: "Desk" },
   { href: "/evidence", label: "Evidence" },
   { href: "/offices", label: "Categories" },
   { href: "/api", label: "API" },
@@ -27,8 +27,8 @@ const NAV = [
     It was, as "Us", and it was the worst link in the product: token 336161 is
     unclassified, has no card the index will resolve and has never posted a
     bond, so the face of the office was an agent the office would refuse. It
-    stays listed in the register at whatever rung it earns — which is the
-    point of registering it — but the header of a market does not advertise
+    stays listed in the register at whatever rung it earns, which is the
+    point of registering it, but the header of a market does not advertise
     its own unmarked entry as though it were the exhibit.
   */
 ];
@@ -93,7 +93,7 @@ export default function SiteHeader({
           The wallet lives here, on every page that does not opt out.
 
           Browsing still needs no wallet and nothing is asked of an extension
-          until somebody asks for one — see the hook. But the control has to be
+          until somebody asks for one, see the hook. But the control has to be
           findable *before* the moment of signing, because somebody who has just
           read a certificate and decided to act should not have to guess which
           page carries the button.

@@ -3,7 +3,7 @@
  *
  * Rung 2 says "its endpoint answered a call we made". It has been serving
  * `5` for as long as the site has existed, and that five came from 8004scan's
- * `is_endpoint_verified` flag — somebody else's probe, at some time they do
+ * `is_endpoint_verified` flag, somebody else's probe, at some time they do
  * not publish, with a method they do not describe. The rung's own sentence was
  * not true of the number underneath it.
  *
@@ -16,7 +16,7 @@
  *      status and the latency.
  *
  * A non-200 is recorded with its status rather than being dropped. Half the
- * value of a census is knowing which agents are failing and how — SMEAI dims
+ * value of a census is knowing which agents are failing and how, SMEAI dims
  * theirs rather than hiding them, and an endpoint that answers 402 is a very
  * different finding from one that times out.
  *

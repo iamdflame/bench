@@ -2,7 +2,7 @@ import { CATEGORY_DEVICE } from "./geometry";
 import { CATEGORY_LABEL, type Category } from "@/lib/config";
 
 /**
- * The assay office that struck it — four offices, four devices.
+ * The assay office that struck it, four offices, four devices.
  *
  * Each device is what the strategy physically does, not an abstract icon: a
  * liquidity band and its midpoint, the rungs of a ladder, a compounding

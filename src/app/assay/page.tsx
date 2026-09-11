@@ -19,7 +19,7 @@ export const metadata: Metadata = {
  *
  * Published because a scoring rubric nobody can read is the same unaccountable
  * verdict as a five-star rating. The weights are the ones the code actually
- * uses — they are imported nowhere and stated here, so if they drift the page
+ * uses, they are imported nowhere and stated here, so if they drift the page
  * is wrong and someone can say so.
  */
 const TESTS: { id: string; title: string; weight: number; asks: string; fails: string }[] = [
@@ -79,7 +79,7 @@ export default function MethodPage() {
           The method on the left, the instrument on the right.
 
           The heading, the lede and the lookup ran down a single narrow column
-          — the median run of ink on this page reached 53% of the viewport. The
+, the median run of ink on this page reached 53% of the viewport. The
           page describes a test; the control that runs that test on any agent
           belongs beside the description of it, not underneath.
         */}

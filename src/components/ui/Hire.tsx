@@ -3,20 +3,20 @@ import BuyCall from "./BuyCall";
 import { CATEGORY_LABEL, EXPLORER, type Category } from "@/lib/config";
 
 /**
- * How to put this agent to work — and, more often, what it would take before
+ * How to put this agent to work, and, more often, what it would take before
  * anyone could.
  *
  * The brief asks for one venue to browse agents, see how they have performed,
  * and put them to work. Browsing and performance were built; hiring was
- * reachable only from the floor, which meant an agent's own page — the page
- * you land on having decided you might want it — had no way to act on that
+ * reachable only from the floor, which meant an agent's own page, the page
+ * you land on having decided you might want it, had no way to act on that
  * decision. A marketplace you cannot buy from is a directory.
  *
  * The correction to that overshot. Every agent, at every rung, was offered
  * "Open a mandate with this agent named" as its primary action, including our
  * own registration on the day it was minted with no card, no endpoint and no
  * bond. That button was an instruction to escrow capital against an agent the
- * market would refuse to let bid — a dead end dressed as the product, on the
+ * market would refuse to let bid, a dead end dressed as the product, on the
  * one page where a judge is deciding whether any of this is real.
  *
  * So the action is derived from the rung, the way every other figure on this
@@ -125,7 +125,7 @@ export default function Hire({
                   The refusal is named, in the present tense, with the thing
                   that would change it. PositionCrew puts the failed condition
                   on the ticket rather than in a toast; this is the same move
-                  one step earlier — before a button exists to be pressed.
+                  one step earlier, before a button exists to be pressed.
                 */}
                 <p className="small hire__what">
                   This agent cannot take a mandate. The market requires a bond, and
@@ -179,7 +179,7 @@ export default function Hire({
             <a className="link-underline" href="/assay">
               How the six tests work →
             </a>{" "}
-           , what each one asks of the chain, and what makes it fail.
+          , what each one asks of the chain, and what makes it fail.
           </p>
         ) : null}
 

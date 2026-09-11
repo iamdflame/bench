@@ -1,0 +1,112 @@
+{
+  "hires": [
+    {
+      "tokenId": "269706",
+      "who": "Agripinaa Ranger",
+      "provider": "0x79827EF1faDeA3B30A8E77fdbaF17944298A3bB6",
+      "providerVia": "the registry's agent wallet",
+      "ownerOf": "0x79827EF1faDeA3B30A8E77fdbaF17944298A3bB6",
+      "oursChecked": [
+        "0x54c06cc2623aaa2dcc38b17fa07ad2e99b363c90",
+        "0xd6d11aa5046dc5c7be8d63b9223b60d7ad94cbe9",
+        "0x090d19610cdb4d6bb011d9eb579910ac3296bb0a",
+        "0x6f29b50ebaf733d980eadfeb3253347d8a12a69c",
+        "0xd9e5837e28f1c36e591aff7869ce177c71c7f4a4"
+      ],
+      "jobId": "56776",
+      "tx": "0xd7b873c11ea2ee0aa331e90695786e69fa9f69e2bcc15c640569b7ce205f45ac",
+      "budget": "0.1",
+      "token": "$U",
+      "expiredAt": 1789705025,
+      "statusAtHire": "1",
+      "task": "Check PancakeSwap V3 position #7408923 on BNB Smart Chain (owner 0x54c06cC2623aAA2Dcc38B17fA07aD2e99b363C90) and say whether it should be recentered, with the pool tick you read. Deliverable: a JSON verdict with the block number.",
+      "at": "2026-09-11T03:47:11.713Z",
+      "lastStatus": "FUNDED",
+      "lastCheckedAt": "2026-09-11T04:43:18.415Z"
+    },
+    {
+      "tokenId": "270183",
+      "who": "AgentCensus Health Factor Monitor",
+      "provider": "0x0475C8Fa8ac94888eAB9B4329b93C263708A9A07",
+      "providerVia": "the registry's agent wallet",
+      "ownerOf": "0x0475C8Fa8ac94888eAB9B4329b93C263708A9A07",
+      "oursChecked": [
+        "0x54c06cc2623aaa2dcc38b17fa07ad2e99b363c90",
+        "0xd6d11aa5046dc5c7be8d63b9223b60d7ad94cbe9",
+        "0x090d19610cdb4d6bb011d9eb579910ac3296bb0a",
+        "0x6f29b50ebaf733d980eadfeb3253347d8a12a69c",
+        "0xd9e5837e28f1c36e591aff7869ce177c71c7f4a4"
+      ],
+      "jobId": "56777",
+      "tx": "0x4a5da65f266bacb58150eff4e0f26a85946c418972981fcdbdcf79d05a5f211b",
+      "budget": "0.1",
+      "token": "$U",
+      "expiredAt": 1789705031,
+      "statusAtHire": "1",
+      "task": "Report the Venus health factor of 0x54c06cC2623aAA2Dcc38B17fA07aD2e99b363C90 on BNB Smart Chain, with the block number and the markets it holds. Deliverable: JSON.",
+      "at": "2026-09-11T03:47:17.212Z",
+      "lastStatus": "SUBMITTED",
+      "lastCheckedAt": "2026-09-11T04:43:18.605Z",
+      "deliverable": {
+        "url": "https://agentcensus.xyz/erc8183m/job/56777/response",
+        "committedHash": "0x217240548fa124fcb780698ae45053a461098d9b0b338b82f044ce17215a52e9",
+        "contentHash": "0xbcddc187fbf791d666cab664c2aeec87f8698e109e7e74a4d6f1f559491b1e92",
+        "hashMatches": false,
+        "content": "{\n  \"type\": \"agentcensus/health-factor-report/v1\",\n  \"report\": {\n    \"account\": \"0x54c06cC2623aAA2Dcc38B17fA07aD2e99b363C90\",\n    \"network\": \"mainnet\",\n    \"block\": 121192588,\n    \"markets_entered\": 1,\n    \"liquidity_usd\": 0.18,\n    \"shortfall_usd\": 0.0,\n    \"status\": \"AT_RISK\",\n    \"recommendation\": \"Borrow headroom below $50 - repay or add collateral soon.\"\n  }\n}",
+        "readAt": "2026-09-11T04:43:22.644Z"
+      }
+    },
+    {
+      "tokenId": "342379",
+      "who": "Muster, PancakeSwap LP Range Check",
+      "provider": "0xcd10D44703D6989290E0A8219f345fA0a5BF4c64",
+      "providerVia": "the registry's agent wallet",
+      "ownerOf": "0xcd10D44703D6989290E0A8219f345fA0a5BF4c64",
+      "oursChecked": [
+        "0x54c06cc2623aaa2dcc38b17fa07ad2e99b363c90",
+        "0xd6d11aa5046dc5c7be8d63b9223b60d7ad94cbe9",
+        "0x090d19610cdb4d6bb011d9eb579910ac3296bb0a",
+        "0x6f29b50ebaf733d980eadfeb3253347d8a12a69c",
+        "0xd9e5837e28f1c36e591aff7869ce177c71c7f4a4"
+      ],
+      "jobId": "56778",
+      "tx": "0xefa74ce9e9188faf00ac52d3a24c1bbf7167e0a07f323e76a54e71f104b243d2",
+      "budget": "0.1",
+      "token": "$U",
+      "expiredAt": 1789705037,
+      "statusAtHire": "1",
+      "task": "Read PancakeSwap V3 position #7408925 (owner 0x54c06cC2623aAA2Dcc38B17fA07aD2e99b363C90) and report its distance from each bound and whether to hold, widen or recentre. Deliverable: JSON.",
+      "at": "2026-09-11T03:47:23.144Z",
+      "lastStatus": "FUNDED",
+      "lastCheckedAt": "2026-09-11T04:43:22.911Z"
+    },
+    {
+      "tokenId": "332318",
+      "who": "defi-market-engine.agent (drawn by the hash of block 121200000)",
+      "provider": "0x968252DC0cAe449e84EeB0e5395FC50e7e60D6FA",
+      "providerVia": "the registry's agent wallet",
+      "ownerOf": "0x968252DC0cAe449e84EeB0e5395FC50e7e60D6FA",
+      "oursChecked": [
+        "0x54c06cc2623aaa2dcc38b17fa07ad2e99b363c90",
+        "0xd6d11aa5046dc5c7be8d63b9223b60d7ad94cbe9",
+        "0x090d19610cdb4d6bb011d9eb579910ac3296bb0a",
+        "0x6f29b50ebaf733d980eadfeb3253347d8a12a69c",
+        "0xd9e5837e28f1c36e591aff7869ce177c71c7f4a4",
+        "0x004c7ae8077560c75fe5687da39e7be0697ddbfd",
+        "0xbebf6b026e1ffc06a3c8d3c1b57b8142bf027454",
+        "0x7e91367c77e561f0d99c2b42925af29cd90ae838",
+        "0x81762d5214fcb6fb3b102bef9d69d13a56c1a2d0"
+      ],
+      "jobId": "56779",
+      "tx": "0x3693f54400db5e319ce30f6933e1fe21fb0f06ea7622a5f6b913750eac75dc13",
+      "budget": "0.1",
+      "token": "$U",
+      "expiredAt": 1789708387,
+      "statusAtHire": "1",
+      "task": "Describe what your service does for a wallet on BNB Smart Chain and run it once for 0x54c06cC2623aAA2Dcc38B17fA07aD2e99b363C90. Deliverable: the output, with the block number.",
+      "at": "2026-09-11T04:43:14.858Z",
+      "lastStatus": "FUNDED",
+      "lastCheckedAt": "2026-09-11T04:43:23.212Z"
+    }
+  ]
+}

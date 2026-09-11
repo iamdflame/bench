@@ -13,9 +13,9 @@ import Observation from "./Observation";
  * A mandate was openable before this, from a panel on the floor with the terms
  * written into the source as six positional arguments and restated underneath
  * in a sentence. That is a form, not a ticket. What a principal is actually
- * agreeing to — which contracts the agent may call, which calls are withheld
+ * agreeing to, which contracts the agent may call, which calls are withheld
  * from it and why, what fraction of the bond a failing epoch costs, and what
- * ends the mandate — was nowhere on the screen where they signed.
+ * ends the mandate, was nowhere on the screen where they signed.
  *
  * Everything that governs the money is on the ticket, above the button, before
  * the wallet opens. Two things follow from that and both are deliberate:
@@ -27,7 +27,7 @@ import Observation from "./Observation";
  *
  *   The withheld calls are shown too. A permission list that only shows what
  *   was granted reads as generous; the same list beside what was refused, with
- *   the reason, reads as what it is — a boundary drawn from evidence.
+ *   the reason, reads as what it is, a boundary drawn from evidence.
  *
  * A refusal is named on the ticket rather than thrown as a toast: the failed
  * condition sits next to the field that caused it and stays there.
@@ -61,7 +61,7 @@ export interface TicketScope {
  * as a dead button rather than as a rejected value.
  *
  *   `epochLength` must exceed `challengeWindow`, which is 300 on the live
- *   market — an epoch shorter than the window in which it can be contested
+ *   market, an epoch shorter than the window in which it can be contested
  *   cannot be settled, and the contract says so with `ChallengeWindowTooLong`.
  *
  *   `strikes` must not be zero. Zero strikes means an agent is dismissed on
@@ -69,7 +69,7 @@ export interface TicketScope {
  *   than a policy.
  *
  *   `catastrophic` must be *negative*. It is the alpha at which a mandate ends
- *   immediately, and a non-negative value would end it on success — so the
+ *   immediately, and a non-negative value would end it on success, so the
  *   natural default of 0 is exactly the one that reverts.
  *
  *   `bondFloorBps` ties the bond to the size of the capital. A flat floor is
@@ -129,7 +129,7 @@ export default function Ticket({
 
     It used to read 0.05 BNB. The largest mandate this market has ever held is
     0.00006, so anybody accepting the prefill was signing for roughly eight
-    hundred times the market's entire history — on a page whose whole purpose
+    hundred times the market's entire history, on a page whose whole purpose
     is a stranger's first transaction. A default in a money field is a
     recommendation, and the honest recommendation for a first hire is the
     smallest amount that is still real.
@@ -153,7 +153,7 @@ export default function Ticket({
     /*
       The floor is set by what an agent can actually bid, not by what the
       field can hold. A mandate takes a bond of at least a fifth of its
-      capital, and the market's flat minimum is 0.00004 BNB — so under 0.0002
+      capital, and the market's flat minimum is 0.00004 BNB, so under 0.0002
       the required bond falls below that minimum and no agent could bid on the
       mandate at all. Opening one would cost gas to create something nobody
       can take.
@@ -319,8 +319,8 @@ export default function Ticket({
             {/*
               The reason sits in its own column rather than trailing the
               selector. Run together they made one cell long enough to push the
-              whole page sideways, and the selector — the thing that makes the
-              grant specific — was the part that got pushed off screen.
+              whole page sideways, and the selector, the thing that makes the
+              grant specific, was the part that got pushed off screen.
             */}
             {scope.withheld.map((c) => (
               <tr key={`w-${c.signature}`} data-withheld="1">
@@ -336,7 +336,7 @@ export default function Ticket({
           The key is scoped per selector, not per contract. An agent allowed to swap
           through the V3 router still cannot call <span className="num">sweepToken</span>{" "}
           on the same address. Registered in the Altana Keystore, and revocable by you
-          from <a className="link-underline" href="/authority">Authority</a> at any time.
+          from <a className="link-underline" href="/desk">the desk</a> at any time.
         </p>
       </div>
 

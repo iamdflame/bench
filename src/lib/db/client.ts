@@ -4,7 +4,7 @@
  * Optional by design. With DATABASE_URL set the app reads the materialised
  * index; without it, it falls back to the committed snapshot. That keeps the
  * site deployable and demoable before any infrastructure exists, and keeps it
- * up when 8004scan returns DATABASE_ERROR — which it does under load.
+ * up when 8004scan returns DATABASE_ERROR, which it does under load.
  */
 
 import { drizzle } from "drizzle-orm/postgres-js";
@@ -22,6 +22,9 @@ if (url) {
     idle_timeout: 20,
     connect_timeout: 15,
     prepare: false, // pooled connections (Neon/Supabase pgbouncer)
+    // `create table if not exists` answers with a NOTICE on every cold start;
+    // postgres.js prints notices by default, which buried script output.
+    onnotice: () => undefined,
   });
   dbInstance = drizzle(sql, { schema });
 }

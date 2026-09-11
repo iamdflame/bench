@@ -20,9 +20,8 @@
  * dense without being misleading.
  */
 
-import { readFileSync } from "node:fs";
-import { join } from "node:path";
 import { CATEGORY_LABEL, type Category } from "@/lib/config";
+import { getProbes } from "@/lib/data/probes";
 import { getAgentIndex, type IndexedAgent } from "@/lib/data/agents";
 import { reviewQuality, type ReviewQuality } from "@/lib/market/reviews";
 import { assayFor } from "@/lib/market/assays";
@@ -122,37 +121,23 @@ interface ProbeRow {
 }
 
 let probeIndex: Map<string, ProbeRow> | null = null;
-let quoteIndex: Record<string, Quote> | null = null;
+let probeIndexAt: string | null = null;
 
 /** Prices read from the agents' own 402 responses during the census. */
 function quotes(): Record<string, Quote> {
-  if (quoteIndex) return quoteIndex;
-  try {
-    const raw = JSON.parse(
-      readFileSync(join(process.cwd(), "src/data/probe.json"), "utf8"),
-    ) as { quotes?: Record<string, Quote> };
-    quoteIndex = raw.quotes ?? {};
-  } catch {
-    quoteIndex = {};
-  }
-  return quoteIndex;
+  return getProbes().quotes ?? {};
 }
 
 function probes(): Map<string, ProbeRow> {
-  if (probeIndex) return probeIndex;
+  const current = getProbes();
+  if (probeIndex && probeIndexAt === current.at) return probeIndex;
   probeIndex = new Map();
-  try {
-    const raw = JSON.parse(
-      readFileSync(join(process.cwd(), "src/data/probe.json"), "utf8"),
-    ) as { results?: ProbeRow[] };
-    for (const r of raw.results ?? []) {
-      const prev = probeIndex.get(r.tokenId);
-      // Keep the best result per agent: an endpoint that answered once is
-      // reported as answering, with the latency of the call that succeeded.
-      if (!prev || (r.answered && !prev.answered)) probeIndex.set(r.tokenId, r);
-    }
-  } catch {
-    /* the file is optional; absence means "untested", which is a valid grade */
+  probeIndexAt = current.at;
+  for (const r of current.results ?? []) {
+    const prev = probeIndex.get(r.tokenId);
+    // Keep the best result per agent: an endpoint that answered once is
+    // reported as answering, with the latency of the call that succeeded.
+    if (!prev || (r.answered && !prev.answered)) probeIndex.set(r.tokenId, r);
   }
   return probeIndex;
 }
@@ -163,7 +148,7 @@ function probes(): Map<string, ProbeRow> {
  * Thirty-two of the fifty-three addresses leaving feedback on this registry
  * post at a rate consistent with self-review. We cannot attribute individual
  * reviews to individual reviewers from the index, so the honest move is not to
- * silently discount some agents' review counts — it is to carry the caveat
+ * silently discount some agents' review counts, it is to carry the caveat
  * with every review count on the site.
  */
 export const REVIEW_CAVEAT =
@@ -389,16 +374,10 @@ export function listingFor(tokenId: string, hires = 0): Listing | null {
  * older number as though it were current.
  */
 export function censusAge(): { at: string | null; minutes: number | null; stale: boolean } {
-  try {
-    const raw = JSON.parse(
-      readFileSync(join(process.cwd(), "src/data/probe.json"), "utf8"),
-    ) as { at?: string };
-    if (!raw.at) return { at: null, minutes: null, stale: true };
-    const minutes = Math.max(0, Math.round((Date.now() - new Date(raw.at).getTime()) / 60_000));
-    return { at: raw.at, minutes, stale: minutes > 30 };
-  } catch {
-    return { at: null, minutes: null, stale: true };
-  }
+  const at = getProbes().at;
+  if (!at || at === new Date(0).toISOString()) return { at: null, minutes: null, stale: true };
+  const minutes = Math.max(0, Math.round((Date.now() - new Date(at).getTime()) / 60_000));
+  return { at, minutes, stale: minutes > 30 };
 }
 
 /** Live counts per category, computed rather than written down. */

@@ -76,8 +76,8 @@ async function attempt<T>(fn: () => Promise<T>, tries = 2): Promise<T | null> {
  * The crawler's last count, out of its own stats table.
  *
  * The indexer asks 8004scan for these three numbers at the top of every cycle
- * and records them. When the upstream refuses a page render — which it does
- * several times an hour — that recorded count is minutes old, and serving a
+ * and records them. When the upstream refuses a page render, which it does
+ * several times an hour, that recorded count is minutes old, and serving a
  * two-day-old file instead was throwing away the better answer.
  */
 async function fromIndexer(chainId: number): Promise<RegistryTotals | null> {
@@ -114,11 +114,11 @@ async function readTotalsUncached(chainId: number): Promise<RegistryTotals> {
     bounds this whole thing at 2.5 seconds so a cold instance cannot block a
     page. Two retries against a failing upstream spend that budget on their own
     backoff, so the fast local read that was meant to be the fallback never got
-    to start — and every such render fell through to a file that was two days
+    to start, and every such render fell through to a file that was two days
     old while the answer sat in a table one query away.
 
     In parallel, the upstream still wins when it answers and the crawler's row
-    is already in hand when it does not — but only if the upstream leg is
+    is already in hand when it does not, but only if the upstream leg is
     itself bounded. `Promise.all` waits for the slowest branch, so running the
     fast local read alongside an unbounded retry loop still spent the caller's
     whole budget waiting for the branch that was failing, and still fell
@@ -160,7 +160,7 @@ async function readTotalsUncached(chainId: number): Promise<RegistryTotals> {
  * Memoised for ten minutes fresh, an hour stale.
  *
  * The registry grows by roughly a thousand entries a day, so a ten-minute-old
- * count is accurate to within a handful of registrations — and the alternative
+ * count is accurate to within a handful of registrations, and the alternative
  * is two calls against a 30-per-minute anonymous tier on every page render,
  * which is how the front door would start rate-limiting itself.
  */

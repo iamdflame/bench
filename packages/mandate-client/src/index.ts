@@ -1,7 +1,7 @@
 /**
  * A client for the MANDATE public assay API.
  *
- * Free, unauthenticated, rate limited. No key, no account, no permission —
+ * Free, unauthenticated, rate limited. No key, no account, no permission,
  * including for the projects competing with the one that runs it. An assay
  * office whose findings only its own front end could read would be a trade
  * association, and the argument this makes is stronger the more people can

@@ -32,7 +32,7 @@ const MC_ABI = [
 /**
  * V3 positions staked into MasterChef, and the CAKE they have earned.
  *
- * A staked position leaves the wallet entirely — MasterChef holds the NFT —
+ * A staked position leaves the wallet entirely, MasterChef holds the NFT,
  * so to a gauge reading the position manager it has simply vanished. It is the
  * same failure as the unstaked case, one indirection further out.
  *

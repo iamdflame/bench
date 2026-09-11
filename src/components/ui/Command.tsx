@@ -8,7 +8,7 @@ import { useState } from "react";
  * Every claim in this product ships with its check, and this is how the check
  * arrives: not a link to documentation, but the exact line, copyable, that
  * re-derives the number printed beside it. Used constantly and deliberately
- * plain — a terminal line dressed up as a UI component stops reading as
+ * plain, a terminal line dressed up as a UI component stops reading as
  * something you can actually run.
  */
 export default function Command({

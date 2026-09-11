@@ -4,8 +4,8 @@ import type { Category } from "@/lib/config";
  * Four drawn marks, one per category.
  *
  * A marketplace of three hundred agents rendered as three hundred identical
- * tiles is unreadable, and the usual fixes — a coloured pill, an emoji, a
- * generic icon set — are the reason every project in this field looks like the
+ * tiles is unreadable, and the usual fixes, a coloured pill, an emoji, a
+ * generic icon set, are the reason every project in this field looks like the
  * one next to it. So each category gets a picture of what the strategy
  * actually does, built from one stroke weight in one 48-unit box:
  *

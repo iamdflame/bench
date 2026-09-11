@@ -1,0 +1,16 @@
+{
+  "market": "0x6052C0ab83a99Fb37aC598c23b8E369fB21C71B2",
+  "chainId": 56,
+  "owner": "0x54c06cC2623aAA2Dcc38B17fA07aD2e99b363C90",
+  "adjudicator": "0x6F29B50ebaF733D980EadfeB3253347d8a12A69C",
+  "ownerIsSafe": false,
+  "split": true,
+  "txs": {
+    "fund": "0x7e2edce693c3ed138d85479eda971a7c9861c3232593e56809443e6d0095aecd",
+    "nominate": "0x3a6d2620d19edce49aada58509555c31c0e8241a2824845e49daa12cc5e7d302",
+    "accept": "0xf681bf3894dc2af65f34b82c78420445bc610e3838fb33721a85ca138c38eb82"
+  },
+  "block": 121180934,
+  "at": "2026-09-11T02:19:52.092Z",
+  "verify": "cast call 0x6052C0ab83a99Fb37aC598c23b8E369fB21C71B2 \"adjudicator()(address)\" --rpc-url https://bsc-rpc.publicnode.com && cast call 0x6052C0ab83a99Fb37aC598c23b8E369fB21C71B2 \"owner()(address)\" --rpc-url https://bsc-rpc.publicnode.com"
+}

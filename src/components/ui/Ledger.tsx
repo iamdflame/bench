@@ -1,7 +1,7 @@
 import { EXPLORER } from "@/lib/config";
 
 export interface LedgerEvent {
-  /** Wall clock, when known. Rendered HH:MM — the day is in the header. */
+  /** Wall clock, when known. Rendered HH:MM, the day is in the header. */
   at?: string | number | Date | null;
   block?: number | string | bigint | null;
   /** What happened. Two to four words. */

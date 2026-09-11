@@ -6,7 +6,7 @@ import { CATEGORIES } from "@/lib/config";
  * The MCP surface is the office as an agent reaches it, and the thing that
  * matters most about it is what it refuses to do.
  *
- * Three tools are named for actions — opening a mandate, hiring, revoking —
+ * Three tools are named for actions, opening a mandate, hiring, revoking,
  * that this server cannot perform, because performing them needs keys it does
  * not hold. Each returns what the action would take instead. A regression that
  * made one of them report success would be exactly the unverifiable claim this
@@ -14,13 +14,14 @@ import { CATEGORIES } from "@/lib/config";
  * the tool descriptions.
  */
 
-const WRITE_TOOLS = ["open_mandate", "hire_over_x402", "revoke_session"] as const;
+const WRITE_TOOLS = ["open_mandate", "hire_over_x402", "revoke_session", "hire_erc8183"] as const;
 const READ_TOOLS = [
   "list_offices",
   "assay_agent",
   "read_ladder",
   "search_register",
   "check_duplication",
+  "read_receipt",
 ] as const;
 
 describe("the tool table", () => {
@@ -49,7 +50,7 @@ describe("the tool table", () => {
     }
   });
 
-  it("says in the description of each write tool that it does not write", () => {
+  it("says in the description of each write tool that the hosted endpoint does not write", () => {
     for (const name of WRITE_TOOLS) {
       const spec = TOOL_SPECS.find((t) => t.name === name)!;
       expect(spec.description, name).toMatch(/PREPARES|does NOT|DOES NOT/);
@@ -62,15 +63,18 @@ describe("the tool table", () => {
 });
 
 describe("the write tools never claim to have acted", () => {
-  it("open_mandate prepares and does not execute", async () => {
+  it("open_mandate prepares and does not execute over the hosted endpoint", async () => {
     const r = (await callTool("open_mandate", { category: "rebalancing" })) as {
       executed: boolean;
       reason: string;
-      command: string;
+      transaction: { to: string; value: string; data: string };
+      terms: { category: string };
     };
     expect(r.executed).toBe(false);
-    expect(r.reason).toMatch(/holds no keys/i);
-    expect(r.command).toContain("rebalancing");
+    expect(r.reason).toMatch(/never signs/i);
+    expect(r.transaction.data).toMatch(/^0x[0-9a-f]{8}/);
+    expect(r.transaction.value).toBe("200000000000000");
+    expect(r.terms.category).toBe("rebalancing");
   });
 
   it("open_mandate rejects a category that is not an office", async () => {
@@ -80,13 +84,15 @@ describe("the write tools never claim to have acted", () => {
     await expect(callTool("open_mandate", {})).rejects.toThrow(/category must be one of/);
   });
 
-  it("revoke_session prepares and does not execute", async () => {
+  it("revoke_session prepares and does not execute over the hosted endpoint", async () => {
     const r = (await callTool("revoke_session", { mandateId: 3 })) as {
       executed: boolean;
-      command: string;
+      httpAlternative: { url: string };
+      web: string;
     };
     expect(r.executed).toBe(false);
-    expect(r.command).toContain("revoke 3");
+    expect(r.httpAlternative.url).toContain("/api/desk/revoke");
+    expect(r.web).toContain("/desk");
   });
 
   it("revoke_session requires a real mandate id", async () => {
@@ -104,6 +110,32 @@ describe("the write tools never claim to have acted", () => {
     for (const [name, args] of calls) {
       const r = (await callTool(name, args)) as { executed: boolean };
       expect(r.executed, name).toBe(false);
+    }
+  });
+});
+
+describe("only the local signer signs", () => {
+  it("the hosted context never signs, even with a signer key in the environment", async () => {
+    const before = process.env.MCP_SIGNER_KEY;
+    process.env.MCP_SIGNER_KEY = "0x" + "11".repeat(32);
+    try {
+      const r = (await callTool("open_mandate", { category: CATEGORIES[0] })) as { executed: boolean; transaction: { data: string } };
+      expect(r.executed).toBe(false);
+      expect(r.transaction.data).toMatch(/^0x[0-9a-f]+$/);
+    } finally {
+      if (before === undefined) delete process.env.MCP_SIGNER_KEY;
+      else process.env.MCP_SIGNER_KEY = before;
+    }
+  });
+
+  it("the stdio context without a key does not sign either", async () => {
+    const before = process.env.MCP_SIGNER_KEY;
+    delete process.env.MCP_SIGNER_KEY;
+    try {
+      const r = (await callTool("revoke_session", { mandateId: 0 }, { canSign: true })) as { executed: boolean };
+      expect(r.executed).toBe(false);
+    } finally {
+      if (before !== undefined) process.env.MCP_SIGNER_KEY = before;
     }
   });
 });

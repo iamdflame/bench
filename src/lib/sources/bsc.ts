@@ -43,7 +43,7 @@ export interface WalletFacts {
   nonce: number;
   /** Native BNB balance in wei. */
   balanceWei: bigint;
-  /** True when the wallet has code — an agent whose "wallet" is a contract. */
+  /** True when the wallet has code, an agent whose "wallet" is a contract. */
   isContract: boolean;
   /** Cheap composite: a wallet that has never sent a tx and holds nothing. */
   isDormant: boolean;
@@ -140,7 +140,7 @@ const logClients = LOG_ENDPOINTS.map((url) =>
  * filter quietly excludes every event with fewer.
  *
  * This scanner built a four-element array and filled one slot, so every
- * capability query it has ever made carried trailing nulls — and silently
+ * capability query it has ever made carried trailing nulls, and silently
  * under-reported. Nothing errored; the answers were just smaller than the
  * truth, which is the worst way for a check like this to be wrong.
  */
@@ -233,12 +233,12 @@ export async function findProtocolTouches(
     for (const logs of positionResults) {
       if (logs === null) {
         // Every provider refused this window. That is "unknown", never "no
-        // evidence" — the distinction the whole assay rests on.
+        // evidence", the distinction the whole assay rests on.
         //
         // It used to end the scan outright, which was right when there was one
         // provider and every wide range failed. With failover, one refused
         // window is usually a rate limit, and abandoning the scan turned a
-        // momentary 429 into "this agent has no capability" — which, now that
+        // momentary 429 into "this agent has no capability", which, now that
         // `granted ⊆ proven` reads this, is a silent denial of authority.
         failures += 1;
         if (failures > MAX_FAILED_WINDOWS) {

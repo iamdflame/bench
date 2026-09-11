@@ -45,7 +45,7 @@ const NPM_ABI = [
 /**
  * What one position is holding, valued.
  *
- * Exported because a staked position is the same position — MasterChef holds
+ * Exported because a staked position is the same position, MasterChef holds
  * the NFT but the liquidity, the range and the fees are unchanged. Valuing it
  * through a second code path would be a second chance to disagree with
  * ourselves.

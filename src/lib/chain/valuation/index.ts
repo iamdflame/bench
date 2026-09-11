@@ -155,8 +155,8 @@ export interface LegacyValuation {
  * A wallet whose debts exceed its assets cannot be committed.
  *
  * The observation commits the total as a `uint96`, which has no room for a
- * negative. Rather than clamping to zero — which would report an insolvent
- * wallet as merely empty, and hand its holder a free floor — this is a
+ * negative. Rather than clamping to zero, which would report an insolvent
+ * wallet as merely empty, and hand its holder a free floor, this is a
  * refusal, and settlement defers.
  */
 export class NegativeNetValue extends Error {

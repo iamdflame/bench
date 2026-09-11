@@ -45,7 +45,7 @@ export interface AssayResult {
    *
    * Only the capability assay sets this, and it is the input to the session
    * scope: authority is derived from it rather than from the category the
-   * agent claims. `complete` matters as much as the list — a scan the provider
+   * agent claims. `complete` matters as much as the list, a scan the provider
    * refused proves nothing, and must never be read as "touched nothing".
    */
   proven?: {
@@ -56,7 +56,7 @@ export interface AssayResult {
 }
 
 /**
- * Millesimal fineness — the real assay-office unit. 999 is pure; 375 is the
+ * Millesimal fineness, the real assay-office unit. 999 is pure; 375 is the
  * lowest grade that may legally carry a hallmark in the UK. We use the same
  * ladder because it is honest about what most of the registry is: base metal.
  */

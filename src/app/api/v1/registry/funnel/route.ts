@@ -9,6 +9,7 @@
 import { readLadder } from "@/lib/ladder";
 import { gate, ok, preflight } from "@/lib/api/respond";
 import { CHAIN_ID } from "@/lib/config";
+import { live } from "@/lib/data/live";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
@@ -20,6 +21,7 @@ export function OPTIONS() {
 }
 
 export async function GET(request: Request) {
+  await live();
   const g = gate(request, LIMIT, CHAIN_ID);
   if (!g.allowed) return g.response;
 
@@ -39,6 +41,8 @@ export async function GET(request: Request) {
       */
       registrySource: reading.registrySource,
       registryCapturedAt: reading.registryAt,
+      registryBlock: reading.registryBlock ?? null,
+      registryVerify: reading.registryVerify ?? null,
       rungs: reading.rungs.map((r) => ({
         rung: r.n,
         name: r.name,

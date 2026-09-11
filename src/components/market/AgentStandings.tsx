@@ -4,8 +4,8 @@
  * Agent standings, rendered inline as a section rather than hidden in a drawer.
  *
  * This is the half of the brief a directory cannot answer honestly, so burying
- * it behind a button was the wrong call. The two right-hand columns — own
- * capital lost, and times fired — are reconstructed from contract logs and
+ * it behind a button was the wrong call. The two right-hand columns, own
+ * capital lost, and times fired, are reconstructed from contract logs and
  * cannot be edited by the agent they describe.
  */
 

@@ -7,8 +7,8 @@ import { useWallet } from "@/lib/chain/wallet";
  * What an agent is allowed to do with a wallet, and the button that stops it.
  *
  * A session key is the part of this that a person most needs to see and least
- * wants to read about, so the panel leads with the two facts that matter — how
- * much it can spend and when it dies — and only then lists the calls.
+ * wants to read about, so the panel leads with the two facts that matter, how
+ * much it can spend and when it dies, and only then lists the calls.
  *
  * The `withheld` list is the interesting half and it is deliberately shown.
  * The allowlist is the intersection of what the category permits with what the

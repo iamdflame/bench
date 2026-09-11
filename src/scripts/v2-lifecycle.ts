@@ -17,6 +17,7 @@
 import { formatEther, parseEther, type Address, type Hex } from "viem";
 import { MANDATE_MARKET_V2_ABI } from "@/lib/chain/abiV2";
 import { marketChain, marketClient, walletFor } from "@/lib/chain/market";
+import { adjudicatorWallet } from "@/lib/chain/marketV2";
 import { valueWallet } from "@/lib/chain/prices";
 
 const V2 = (process.env.NEXT_PUBLIC_MARKET_V2_ADDRESS ??
@@ -25,6 +26,8 @@ const V2 = (process.env.NEXT_PUBLIC_MARKET_V2_ADDRESS ??
 const norm = (k?: string) => (k?.startsWith("0x") ? k : `0x${k}`) as Hex;
 const owner = walletFor(norm(process.env.PRIVATE_KEY));
 const agent = walletFor(norm(process.env.AGENT_A_KEY));
+// Epochs are proposed and finalised by the adjudicator, a different key.
+const adjudicator = adjudicatorWallet();
 
 const CAPITAL = parseEther("0.00006");
 const BOND = parseEther("0.00008");
@@ -151,7 +154,7 @@ await new Promise((r) => setTimeout(r, (EPOCH_SECONDS + 5) * 1000));
 const obs0 = await observe(agent.account!.address as Address, opening.valuationWei);
 const agentReturn =
   (obs0.valuationWei * 10_000n) / opening.valuationWei - 10_000n;
-const proposeHash = await send(owner, "proposeEpoch", [BigInt(id), agentReturn, obs0], STAKE);
+const proposeHash = await send(adjudicator, "proposeEpoch", [BigInt(id), agentReturn, obs0], STAKE);
 log(`    proposed ${Number(agentReturn) / 100}% with a ${bnb(STAKE)} BNB stake`);
 log(`    https://bscscan.com/tx/${proposeHash}`);
 
@@ -179,13 +182,13 @@ const prev = (await read("epochAttestation", [BigInt(id), 0])) as unknown as rea
 const obs1 = await observe(agent.account!.address as Address, prev[4]);
 const r1 = (obs1.valuationWei * 10_000n) / prev[1] - 10_000n;
 const b1 = (obs1.benchmarkWei * 10_000n) / prev[4] - 10_000n;
-await send(owner, "proposeEpoch", [BigInt(id), r1 - b1, obs1], STAKE);
+await send(adjudicator, "proposeEpoch", [BigInt(id), r1 - b1, obs1], STAKE);
 log(`    proposed ${Number(r1 - b1) / 100}%`);
 
 log(`    waiting out the 300s challenge window…`);
 await new Promise((r) => setTimeout(r, 310_000));
 
-const finalHash = await send(owner, "finaliseEpoch", [BigInt(id), 1]);
+const finalHash = await send(adjudicator, "finaliseEpoch", [BigInt(id), 1]);
 log(`    finalised · stake returned`);
 log(`    https://bscscan.com/tx/${finalHash}`);
 

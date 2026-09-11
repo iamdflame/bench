@@ -8,8 +8,8 @@ import { MARKET_ABI, verifyMandate } from "./verify.js";
  * The verdict, tested where it actually lives.
  *
  * The shipped v0.2.0 reported FAILED on two of the four live mandates on BNB
- * Smart Chain. Both were simply unawarded — no agent had bid, so no agent
- * could have committed an opening mark — and the verifier read that absence as
+ * Smart Chain. Both were simply unawarded, no agent had bid, so no agent
+ * could have committed an opening mark, and the verifier read that absence as
  * the gravest finding it has. The cost is not the wrong word on a terminal: a
  * CI job that greps for a non-zero exit learns to ignore this one the first
  * time it fires on a healthy mandate, and then it will not be read on the day
@@ -17,7 +17,7 @@ import { MARKET_ABI, verifyMandate } from "./verify.js";
  *
  * The distinction is worth a test rather than a careful reading, so these run
  * `verifyMandate` unchanged against a local node that answers with a canned
- * mandate. No seam was added to the verifier to make this possible — `--rpc`
+ * mandate. No seam was added to the verifier to make this possible, `--rpc`
  * is the same public option anyone pointing it at their own node would use,
  * which means the path under test is exactly the shipped one.
  */
@@ -134,8 +134,8 @@ test("an awarded mandate with nothing committed still fails", async () => {
  * contract state can convict, a missing event cannot.
  *
  * This must not be mistaken for the verifier going quiet. Tampering is caught
- * by comparing values that are present — the hash against its commitment, the
- * settled alpha against what the marks imply — and those still fail loudly.
+ * by comparing values that are present, the hash against its commitment, the
+ * settled alpha against what the marks imply, and those still fail loudly.
  * `--tamper` rejects 8 of 8 perturbations on mandate 0 with this change in.
  */
 test("a log nobody will serve is unresolved, never a failure", async () => {

@@ -2,7 +2,7 @@
  * The reputation autopsy.
  *
  * The registry shows a score. This shows the same score, what survives when
- * coordinated reviewers are removed, and the wallets responsible — with the
+ * coordinated reviewers are removed, and the wallets responsible, with the
  * command to reproduce it.
  *
  * It exists because the Sybil finding was buried in a research file nobody
@@ -57,7 +57,7 @@ export interface Autopsy {
    * Whether that sample could actually be read.
    *
    * The registry-wide feedback endpoint returns `DATABASE_ERROR` under load,
-   * and when it does the profiles fall back to this agent's own reviewers —
+   * and when it does the profiles fall back to this agent's own reviewers,
    * a corpus of one or two wallets. De-duplication judged against that is not
    * de-duplication, and reporting it as though it were would be exactly the
    * unearned confidence this page exists to expose. So it is stated, and no
@@ -74,8 +74,8 @@ const mean = (xs: number[]) => (xs.length ? xs.reduce((a, b) => a + b, 0) / xs.l
  * The rating on a feedback record.
  *
  * `score` is null on every record the BSC registry actually holds; the number
- * a reader sees lives in `value`, as a string. Reading `score ?? 0` — which
- * this did — scored every agent at zero and made the de-duplicated figure
+ * a reader sees lives in `value`, as a string. Reading `score ?? 0`, which
+ * this did, scored every agent at zero and made the de-duplicated figure
  * meaningless while looking entirely plausible.
  */
 const rating = (f: ScanFeedback): number | null => {
@@ -121,7 +121,7 @@ async function population(chainId: number, pages: number): Promise<Map<string, R
  *
  * It costs eighteen or so calls against an API that allows twenty-five a
  * minute anonymously, and the agent page was timing out before it ever
- * rendered — which meant the single highest-value component in the product was
+ * rendered, which meant the single highest-value component in the product was
  * one nobody had actually seen. The corpus moves slowly; the reading does not
  * need recomputing for every visitor inside the same few minutes.
  */
@@ -145,7 +145,7 @@ async function readAutopsyUncached(
   /*
     The registry-wide sample and this agent's own corpus are fetched together.
 
-    They were sequential, and the population walk is the expensive half — so
+    They were sequential, and the population walk is the expensive half, so
     every agent page paid for the whole registry before it started reading the
     agent it was actually about. Started here, the population is usually
     already cached by the time it is needed, and on a cold cache the two walks

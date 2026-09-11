@@ -9,10 +9,10 @@
  *
  * Four signals, in descending order of how hard they are to argue with:
  *
- *   1. Self-review     — the reviewer is the agent's owner or its own wallet.
- *   2. Cardinality     — distinct wallets with near-identical activity profiles.
- *   3. Co-review       — reviewer sets that overlap far beyond chance (Jaccard).
- *   4. Burst           — feedback arriving in machine-tight time windows.
+ *   1. Self-review, the reviewer is the agent's owner or its own wallet.
+ *   2. Cardinality, distinct wallets with near-identical activity profiles.
+ *   3. Co-review, reviewer sets that overlap far beyond chance (Jaccard).
+ *   4. Burst, feedback arriving in machine-tight time windows.
  *
  * Every flag records why it fired. Nothing here is a black box, because the
  * whole point of the product is that a judge can check our work.

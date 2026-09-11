@@ -5,7 +5,7 @@
  * `categories: []` across the whole ERC-8004 registry means every consumer of
  * it must classify for themselves, so classification quality is a real
  * differentiator rather than plumbing. Everyone else classifies from the text
- * an agent wrote about itself — which is the same self-report this project
+ * an agent wrote about itself, which is the same self-report this project
  * spends the rest of its time refusing to take at face value.
  *
  * So the chain gets a vote, and it outweighs the text. An agent describing
@@ -176,7 +176,7 @@ export function exclusionsFor(a: ExclusionInput): Exclusion[] {
   }
 
   // MandateX reported that some registrations carry an endpoint which is still
-  // a literal template — never substituted, so it points at nothing for every
+  // a literal template, never substituted, so it points at nothing for every
   // agent sharing it. The check is implemented here because it is cheap and
   // the failure is real if present.
   //
@@ -184,7 +184,7 @@ export function exclusionsFor(a: ExclusionInput): Exclusion[] {
   // call per agent against a 25/min anonymous limit, and it was refusing most
   // requests when this was written: 11 agents came back out of 100 attempted.
   //
-  // Of those 11, zero carried a template — and all 11 carried no endpoint at
+  // Of those 11, zero carried a template, and all 11 carried no endpoint at
   // all, which is the more striking number and matches the ladder's 5 verified
   // endpoints in 303,391 registrations. Eleven is far too small to confirm or
   // refute anything, so this stays their finding, implemented and untested,

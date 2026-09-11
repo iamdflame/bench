@@ -6,6 +6,7 @@ import { CATEGORIES, CATEGORY_LABEL, type Category } from "@/lib/config";
 import { listings, listingFor, type Listing } from "@/lib/market/listing";
 import { hireCounts } from "@/lib/market/hires";
 import { reviewSample } from "@/lib/market/reviews";
+import { live } from "@/lib/data/live";
 
 export const metadata: Metadata = {
   title: "Compare agents | Mandate",
@@ -14,6 +15,8 @@ export const metadata: Metadata = {
 };
 
 export const revalidate = 300;
+// Room for the census slice that runs after the response (see lib/census/refresh).
+export const maxDuration = 60;
 
 /**
  * Two or three agents, side by side, rendered on the server.
@@ -133,6 +136,7 @@ export default async function ComparePage({
 }: {
   searchParams: Promise<Record<string, string | string[] | undefined>>;
 }) {
+  await live();
   const sp = await searchParams;
   const one = (k: string) => (Array.isArray(sp[k]) ? sp[k][0] : sp[k]) as string | undefined;
 

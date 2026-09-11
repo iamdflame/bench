@@ -3,7 +3,7 @@
  *
  * The agent never holds the principal's keys. It holds a session whose
  * permissions were compiled on-chain when the mandate was awarded, so an
- * action outside its allowlist does not need to be caught here — it fails at
+ * action outside its allowlist does not need to be caught here, it fails at
  * the wallet. This module's job is narrower and more useful: send what the
  * strategy decided, record what actually happened, and check the result
  * against what the strategy said it expected.

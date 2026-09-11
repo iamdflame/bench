@@ -15,7 +15,7 @@
  * different capability, and at least one public endpoint does serve those. So
  * the rungs split:
  *
- *   REPLAYABLE. Rung 0, from the identity registry's mint events — token ids
+ *   REPLAYABLE. Rung 0, from the identity registry's mint events, token ids
  *   are assigned in sequence, so the highest one minted at or before a block
  *   is the registration count at that block. Rungs 5 and 6 from the market's
  *   own events, which are few and bounded.
@@ -24,7 +24,7 @@
  *   on chain. "Its card parses", "its endpoint answered", "its wallet touched
  *   the protocol" are things we probed off chain at a moment in time, and we
  *   kept no historical record of the probe. They are reported as unavailable
- *   with the reason, rather than back-filled from today's answer — which would
+ *   with the reason, rather than back-filled from today's answer, which would
  *   be authoring history, precisely the accusation this feature exists to
  *   answer.
  */
@@ -88,7 +88,7 @@ function client(url = LOG_RPC): PublicClient {
  * Token ids are assigned in sequence, so the highest id minted at or before
  * the block is the count at that block. Found by walking back in windows until
  * a mint appears, rather than scanning three hundred thousand events from
- * genesis — the answer is the same and it costs two or three queries.
+ * genesis, the answer is the same and it costs two or three queries.
  */
 async function registeredAt(
   c: PublicClient,
@@ -148,7 +148,7 @@ async function marketAt(
 
   /*
     This walked the range itself, one chunk at a time, against the single
-    client it was handed — and that client is the read node, which refuses
+    client it was handed, and that client is the read node, which refuses
     `eth_getLogs` outright. So the page printed the provider's own words at the
     reader: "market log scan refused: Invalid parameters were provided to the
     RPC method". The shared scanner tries every provider that serves logs and

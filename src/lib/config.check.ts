@@ -3,7 +3,7 @@
  *
  * `granted ⊆ proven` intersects a category's canonical calls with the
  * protocols its evidence list searches for. A call target absent from that
- * evidence list is therefore unprovable *forever* — the agent can perform the
+ * evidence list is therefore unprovable *forever*, the agent can perform the
  * action all day and the scan will never look at the contract it performed it
  * on. That is a silent, permanent denial, and it was true of Venus vBNB under
  * yield-optimisation.

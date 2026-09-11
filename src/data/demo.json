@@ -1,0 +1,59 @@
+{
+  "address": "0x54c06cC2623aAA2Dcc38B17fA07aD2e99b363C90",
+  "pool": "0x36696169C63e42cd08ce11f5deeBbCeBae652050",
+  "positions": {
+    "outOfRangeBelow": {
+      "tokenId": 7408923,
+      "tx": "0x71f01734fdeff69ab98f306b382a4dfbf709fc69b9b12726e0b4ecf4b485e29a",
+      "range": {
+        "lower": -67380,
+        "upper": -67180
+      }
+    },
+    "recenterTarget": {
+      "tokenId": 7408924,
+      "tx": "0xbeacd38018e5c3145af0b17934bbffec6bf4298730dedbf9fc81a49d263bf7f8",
+      "range": {
+        "lower": -66080,
+        "upper": -65880
+      }
+    },
+    "outOfRangeAbove": {
+      "tokenId": 7408925,
+      "tx": "0x86e0514b76254057aa88f429be2e015b6e3818cf06d5d475c6f4dab564a8571e",
+      "range": {
+        "lower": -64180,
+        "upper": -63980
+      }
+    }
+  },
+  "txs": {
+    "usdt-from-keeper-a": "0x5213c0e5eb3a93ceaa659de0bfa20a8d3e657c8a8aed0639f2e600b656849418",
+    "wrap": "0x13c61259381dd6863a9c77eb1abea29fba8a60ee519a6b4d01eb0273918d7262",
+    "approve-wbnb": "0x7f9a0ee7856ef1894d8cd44c106afe664f19af81ccc39c13ed80b14fddf27340",
+    "approve-usdt": "0x189f8bb5c7fade330ec6a0754143013802b3d85ec560962c010d229442be34ec",
+    "mint-nft-a": "0x71f01734fdeff69ab98f306b382a4dfbf709fc69b9b12726e0b4ecf4b485e29a",
+    "mint-nft-b": "0xbeacd38018e5c3145af0b17934bbffec6bf4298730dedbf9fc81a49d263bf7f8",
+    "mint-nft-c": "0x86e0514b76254057aa88f429be2e015b6e3818cf06d5d475c6f4dab564a8571e",
+    "approve-usdt-venus": "0x075aae030f86e52ec11f457a711d1d34e94d2c64afe79b725abfd8545fe43b09",
+    "venus-supply": "0xfe2466a16f829e6bb5898aade5826525760d089dbae1f0d8f72e1b1ac508dc29",
+    "venus-enter": "0x57cb9fb5d80f95f869fcc05e2c3ef8520fbba60f73de02434a0429924b7f3823",
+    "venus-borrow": "0xbf9f0c66176563959493af14195d32ce667007142f17f0dfbc408872604bcac6"
+  },
+  "tickAtMint": -65676,
+  "findings": {
+    "eip7702NativeReceive": "The demo address is an EIP-7702 delegated account; receiving native BNB costs about 26,300 gas, above the 2,300 stipend of Solidity's transfer(). vBNB.borrow and vBNB.redeemUnderlying pay out with transfer(), so both revert for this account. The Venus leg borrows USDT instead."
+  },
+  "venus": {
+    "opened": true,
+    "collateral": "USDT (vUSDT)",
+    "suppliedUsdt": "0.25",
+    "debt": "USDT",
+    "borrowedUsdt": "0.08",
+    "liquidityUsd": "0.119950784796892515",
+    "shortfallUsd": "0"
+  },
+  "block": 121187149,
+  "at": "2026-09-11T03:06:28.843Z",
+  "verify": "cast call 0x46A15B0b27311cedF172AB29E4f4766fbE7F4364 \"positions(uint256)\" 7408923 --rpc-url https://bsc-rpc.publicnode.com"
+}

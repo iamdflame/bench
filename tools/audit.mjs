@@ -2,13 +2,17 @@ import { chromium } from 'playwright-core';
 const B = process.env.BASE || 'http://localhost:3311';
 const WALLET = process.env.WALLET || '';
 const OUT = process.env.SHOT;
-const PAGES = [
+// PAGES="name:/path,name:/path" audits just those.
+const ONLY = (process.env.PAGES || '').split(',').filter(Boolean).map((x) => { const i = x.indexOf(':'); return [x.slice(0, i), x.slice(i + 1)]; });
+const ALL = [
   ['home','/'], ['agents','/agents'], ['agent','/agents/43129'], ['hire','/hire/43129'],
   ['dashboard','/dashboard'], ['jobs','/jobs'], ['activity','/activity'],
   ['verify','/verify'], ['compare','/compare?category=rebalancing'],
   ['diagnose','/diagnose'], ['diagnosed','/diagnose?q=7331221'], ['receipt','/receipts/1'],
   ['judges','/judges'], ['grid','/agents?live=1&category=grid-trading'], ['priced','/agents/342379'],
+  ['desk','/desk'], ['status','/status'],
 ];
+const PAGES = ONLY.length ? ONLY : ALL;
 const inject = `
 window.ethereum = { isMetaMask:true,
   request: async ({method}) => method==='eth_requestAccounts'||method==='eth_accounts' ? ['${WALLET}'] : method==='eth_chainId' ? '0x38' : null,

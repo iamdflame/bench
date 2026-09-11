@@ -34,6 +34,20 @@ const ENDPOINTS = [
     what: "The register, filterable. Carries coverage, so a small answer can always be told apart from a small registry.",
     example: `curl "${HOST}/api/v1/agents?rung=2&limit=5"`,
   },
+  {
+    method: "GET",
+    path: "/api/status",
+    limit: "none",
+    what: "Whether the six beats of the judge walk work right now: each beat's data read, graded. 200 when all pass, 503 when any fails, so an uptime monitor can watch it.",
+    example: `curl ${HOST}/api/status`,
+  },
+  {
+    method: "GET",
+    path: "/api/x402/house/{grid-1|range-1|yield-1|guard-1}",
+    limit: "paid, 0.05 USD1",
+    what: "Our reference agents over x402. Unpaid, it answers 402 with the terms and the inputs it needs; with a signed EIP-3009 authorization in X-PAYMENT, the seller settles on chain and returns the work.",
+    example: `curl -i ${HOST}/api/x402/house/grid-1`,
+  },
 ];
 
 export default function ApiPage() {
@@ -55,7 +69,7 @@ export default function ApiPage() {
         <section className="section" aria-labelledby="ep">
           <div className="section__head">
             <h2 id="ep" className="section-title">
-              Three endpoints
+              Five endpoints
             </h2>
             <span className="mark-label">CORS open · JSON · no auth</span>
           </div>

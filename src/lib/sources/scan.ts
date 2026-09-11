@@ -229,7 +229,7 @@ export function listAgents(params: {
  * One agent's registration record.
  *
  * Memoised, because the certificate page reads it and the live assay reads it
- * again for the same agent on the same request — two calls through a queue
+ * again for the same agent on the same request, two calls through a queue
  * that only drains every 2.4 seconds. With several pages open the queue was
  * minutes deep and the assay simply never finished: the stream emitted
  * "reading registry claim" and stopped there.

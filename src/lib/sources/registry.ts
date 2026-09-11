@@ -21,7 +21,7 @@
  * against a public node, needs no key, cannot be rate-limited away, and is the
  * same source anyone verifying us would use.
  *
- * `totalSupply` is not among them — this registry does not implement
+ * `totalSupply` is not among them, this registry does not implement
  * ERC721Enumerable, so the population count still comes from an index and is
  * still stamped as such. Everything about an *individual* agent comes from
  * here.

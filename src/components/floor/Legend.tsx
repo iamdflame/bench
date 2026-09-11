@@ -4,7 +4,7 @@
  * Everything moving on that canvas is a field of a mandate. Without this
  * panel it reads as a generative background; with it, a viewer can name what
  * they are looking at and check it against the table. The WebGL was always
- * the strongest image in the product and always the worst front door — the
+ * the strongest image in the product and always the worst front door, the
  * legend is the difference.
  */
 export default function Legend({ compact = false }: { compact?: boolean }) {
