@@ -13,6 +13,8 @@ import { previewFor } from "@/lib/market/quotes";
 import { live } from "@/lib/data/live";
 import { describeStatus, strangerHiresLive } from "@/lib/market/stranger-hires";
 import { hirePath } from "@/lib/market/hire-law";
+import SponsoredHire from "@/components/v2/agent/SponsoredHire";
+import { SPONSORED } from "@/lib/market/sponsored-targets";
 
 export const revalidate = 300;
 // Room for the census slice that runs after the response (see lib/census/refresh).
@@ -61,6 +63,7 @@ export default async function AgentPage({ params }: { params: Promise<{ tokenId:
     agent. Whatever is not offered is explained in its place.
   */
   const verdict = hirePath(l);
+  const sponsored = verdict.ok ? SPONSORED[l.tokenId] : undefined;
   const jobRail = verdict.rails.some((r) => r.kind === "mandate");
   const perCall = verdict.rails.find((r) => r.kind === "x402");
 
@@ -403,6 +406,17 @@ export default async function AgentPage({ params }: { params: Promise<{ tokenId:
                   <p className="m-label">No hire offered</p>
                   <p className="m-small" style={{ marginTop: "0.6rem" }}>{verdict.reason}</p>
                 </div>
+              ) : null}
+
+              {sponsored ? (
+                <SponsoredHire
+                  tokenId={l.tokenId}
+                  name={l.name}
+                  price={l.priceLabel}
+                  asks={sponsored.asks}
+                  checkWith={sponsored.checkWith}
+                  takesSubject={sponsored.takesSubject}
+                />
               ) : null}
 
               <CallNow

@@ -8,6 +8,7 @@ import { readBook } from "@/lib/chain/book";
 import { mandatePath } from "@/lib/chain/deployments";
 import { WORKED_EXAMPLE, tx } from "@/lib/market/worked-example";
 import { describeStatus, strangerHiresLive } from "@/lib/market/stranger-hires";
+import { listPaidCalls } from "@/lib/market/paid-calls";
 import { OPERATED_WALLETS } from "@/lib/market/hires";
 
 export const metadata: Metadata = {
@@ -42,6 +43,7 @@ const short = (a: string) => `${a.slice(0, 6)}…${a.slice(-4)}`;
  */
 export default async function ActivityPage() {
   const strangers = await strangerHiresLive().catch(() => []);
+  const paid = await listPaidCalls().catch(() => []);
   const book = await readBook().catch(() => null);
 
   return (
@@ -173,6 +175,88 @@ export default async function ActivityPage() {
             )}
           </>
         )}
+
+        {/*
+          Per-call payments, including the ones that went nowhere. A marketplace
+          that only shows the calls that worked is a brochure; the refusals and
+          the take-the-money-and-error cases are the reason the hire law exists.
+        */}
+        <section className="m-section" id="paid">
+          <div className="m-head">
+            <h2 className="m-h2">Calls we paid for, one at a time</h2>
+            <p className="m-head__note">
+              x402 payments to agents we do not operate, settled on BNB Smart Chain. Every exchange is kept byte for
+              byte, including the ones where the seller took the money and answered with an error.
+            </p>
+          </div>
+          {paid.length === 0 ? (
+            <div className="m-absent">
+              <p className="m-absent__t">No per-call payment has been made yet.</p>
+            </div>
+          ) : (
+            <div className="m-scroll">
+              <table className="m-table">
+                <thead>
+                  <tr>
+                    <th>Agent</th>
+                    <th>Paid</th>
+                    <th>To</th>
+                    <th>What came back</th>
+                    <th>Settlement</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {paid.map((c) => (
+                    <tr key={c.id}>
+                      <td>
+                        <Link className="m-link" href={`/agents/${c.tokenId}`}>{c.name}</Link>
+                        <div className="m-note">
+                          #{c.tokenId} · {c.category} · {new Date(c.at).toISOString().slice(0, 16).replace("T", " ")} UTC
+                        </div>
+                      </td>
+                      <td className="m-num">
+                        {c.amount ? `${(Number(c.amount) / 1e18).toFixed(2)}` : "nothing"}
+                        <div className="m-note">{c.method ?? "no rail"}</div>
+                      </td>
+                      <td className="m-mono m-note">{c.payTo ? short(c.payTo) : "nobody"}</td>
+                      <td className="m-note">
+                        {c.delivered
+                          ? "its work, in the response"
+                          : c.paid
+                            ? "nothing: it settled our payment and answered with an error"
+                            : "nothing: it refused the payment"}
+                        {c.refused ? <div className="m-note">{c.refused.slice(0, 220)}</div> : null}
+                        {c.evidence ? (
+                          <div>
+                            <a
+                              className="m-link"
+                              href={`https://github.com/iamdflame/mandate-bnb/blob/main/${c.evidence}`}
+                              target="_blank"
+                              rel="noreferrer"
+                            >
+                              the whole exchange
+                            </a>
+                          </div>
+                        ) : null}
+                      </td>
+                      <td>
+                        {c.tx ? (
+                          <a className="m-link m-mono" href={tx(c.tx)} target="_blank" rel="noreferrer">{short(c.tx)}</a>
+                        ) : (
+                          <span className="m-note">nothing moved</span>
+                        )}
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+          )}
+          <p className="m-note" style={{ marginTop: "0.8rem", maxWidth: "70ch" }}>
+            An agent that takes a payment and returns an error is not offered as hireable anywhere on this site until it
+            delivers again, and the reason on its card is the sentence its own server sent us.
+          </p>
+        </section>
 
         <section className="m-section" id="strangers">
           <div className="m-head">

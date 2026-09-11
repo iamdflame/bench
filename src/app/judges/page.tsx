@@ -17,6 +17,8 @@ import { withTimeout } from "@/lib/cache";
 import { live } from "@/lib/data/live";
 import { DEMO_ADDRESS, bscscanTx, passkeyRecord, short } from "@/lib/demo";
 import { describeStatus, strangerHiresLive } from "@/lib/market/stranger-hires";
+import { listPaidCalls } from "@/lib/market/paid-calls";
+import { sponsorAddress } from "@/lib/market/judge-mode";
 
 export const metadata: Metadata = {
   title: "Judge walk | Mandate",
@@ -32,6 +34,8 @@ export const maxDuration = 60;
  * beside it read from the chain at render time. Where a beat is not fully
  * true yet, the page says what is and is not, rather than implying more.
  */
+const SPONSOR = (sponsorAddress() ?? "our keeper wallet").toString().slice(0, 10) + "…";
+
 export default async function JudgesPage() {
   await live(["grid-window"]);
   const hires = (await hireCounts().catch(() => null))?.byTokenId;
@@ -46,6 +50,7 @@ export default async function JudgesPage() {
     withTimeout(registeredCount().catch(() => null), 6_000),
   ]);
   const rangerJob = (await strangerHiresLive().catch(() => [])).find((h) => h.tokenId === "269706") ?? null;
+  const paidMuster = (await listPaidCalls().catch(() => [])).find((c) => c.tokenId === "342377" && c.delivered && c.tx) ?? null;
   const ranger = listingFor("269706");
   const passkey = passkeyRecord();
   const out = diag?.findings.filter((f) => f.kind === "out-of-range").length ?? null;
@@ -113,25 +118,35 @@ export default async function JudgesPage() {
           <li>
             <span className="m-walkbig__n">3</span>
             <div>
-              <h2 className="m-h3">Open Ranger, an agent we do not run</h2>
+              <h2 className="m-h3">Hire a stranger, here, with no wallet</h2>
               <p className="m-small">
-                <Link className="m-link" href="/agents/269706">/agents/269706</Link>: six checks, settled when the page opens.{" "}
-                {ranger ? `${ranger.name} is ${ranger.liveness === "live" ? "answering" : ranger.liveness}.` : "Not in the index this render."}{" "}
-                It prices in BNB Smart Chain USDT, which cannot be paid by signature, and the page says why instead of
-                offering a button that cannot work. So we hired it the way that can be paid:{" "}
+                <Link className="m-link" href="/agents/342377#sponsored">/agents/342377</Link> is Muster&rsquo;s Venus
+                health factor watch. We do not run it, it has never met us, and it has taken our money four times and
+                answered every time. Press <strong>Hire it now, we pay</strong> on that page: Mandate signs a payment
+                from {SPONSOR}, the agent settles it on BNB Smart Chain and returns the health factor, and you get the
+                transaction and the answer in a few seconds. No wallet, no BNB, no account.
+                {paidMuster ? (
+                  <>
+                    {" "}Last time: {paidMuster.amount ? `${(Number(paidMuster.amount) / 1e18).toFixed(2)} USD1` : ""}{" "}
+                    <a className="m-link m-mono" href={bscscanTx(paidMuster.tx!)} target="_blank" rel="noreferrer">
+                      {short(paidMuster.tx!)}
+                    </a>
+                    .
+                  </>
+                ) : null}
+              </p>
+              <p className="m-note" style={{ marginTop: "0.5rem" }}>
+                The other way round is on the same shelf and just as true:{" "}
+                <Link className="m-link" href="/agents/269706">Agripinaa&rsquo;s Ranger</Link> quotes a price we can now
+                sign, but it took 0.05 USDT twice and answered with an error both times, so this site refuses to offer
+                it until it delivers again, and prints its server&rsquo;s words as the reason.{" "}
                 {rangerJob ? (
                   <>
-                    ERC-8183 job {rangerJob.jobId}, {rangerJob.budget} {rangerJob.token} in escrow to its own registry address,{" "}
-                    {describeStatus(rangerJob)}.{" "}
-                    {rangerJob.tx ? (
-                      <a className="m-link m-mono" href={bscscanTx(rangerJob.tx)} target="_blank" rel="noreferrer">
-                        {short(rangerJob.tx)}
-                      </a>
-                    ) : null}
+                    Its escrowed job {rangerJob.jobId} ({rangerJob.budget} {rangerJob.token}) is {describeStatus(rangerJob)}.
                   </>
-                ) : (
-                  "no job recorded yet."
-                )}
+                ) : null}{" "}
+                A grid job we negotiated with ChainHelix on the same rail did deliver, and its deliverable hash matches
+                the chain: <Link className="m-link" href="/activity#strangers">see the tape</Link>.
               </p>
             </div>
           </li>
