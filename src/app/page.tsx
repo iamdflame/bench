@@ -160,13 +160,13 @@ export default async function Home() {
               a person who does not wants the shelves. Both are one click, and
               neither asks for a wallet connection: the form is a plain GET.
             */}
-            <form className="m-check" action="/diagnose" method="get">
-              <label className="m-label m-check__k" htmlFor="home-q">
+            <form className="m-paste" action="/diagnose" method="get">
+              <label className="m-label m-paste__k" htmlFor="home-q">
                 Paste a wallet and we will read what it holds
               </label>
-              <div className="m-check__row">
+              <div className="m-paste__row">
                 <input
-                  className="m-input m-check__in"
+                  className="m-input m-paste__in"
                   id="home-q"
                   name="q"
                   autoComplete="off"

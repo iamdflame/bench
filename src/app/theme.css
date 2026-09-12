@@ -1540,23 +1540,34 @@ a.m-mkt-cat.m-mkt-cat--on:hover {
   color: var(--ink-2);
 }
 
-/* Paste a position, or skip. A plain GET form: it works with scripting off. */
-.m-check {
-  margin: 0 0 1.2rem;
+/*
+  Paste a position, or skip. A plain GET form: it works with scripting off.
+
+  Named `m-paste`, not `m-check`: `.m-check` is already the six-checks grid on
+  an agent profile (22px mark, then the text), and reusing it put every word of
+  the label in a 22px column down the left of the home page.
+*/
+.m-paste {
+  display: block;
+  margin: 1.75rem 0 1.4rem;
   max-width: 40rem;
 }
-.m-check__k {
+.m-paste__k {
   display: block;
   margin-bottom: 0.5rem;
 }
-.m-check__row {
+.m-paste__row {
   display: flex;
   gap: 0.6rem;
   flex-wrap: wrap;
+  align-items: stretch;
 }
-.m-check__in {
+.m-paste__in {
   flex: 1 1 18rem;
   min-width: 0;
+}
+.m-paste .m-note {
+  margin-top: 0.55rem;
 }
 
 .m-hero__note {

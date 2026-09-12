@@ -33,7 +33,9 @@ export async function GET(request: Request) {
   }
 
   const only = url.searchParams.getAll("job");
-  const ran = await tick({ only: only.length ? only : undefined, force: url.searchParams.get("force") === "1" });
+  // The pinger's own timeout, so a call is never cut off mid-job.
+  const maxMs = Math.min(50_000, Math.max(5_000, Number(url.searchParams.get("maxMs")) || 22_000));
+  const ran = await tick({ only: only.length ? only : undefined, force: url.searchParams.get("force") === "1", maxMs });
   return NextResponse.json(
     { at: new Date().toISOString(), ran, schedule: await scheduleState() },
     { headers: { "cache-control": "no-store" } },
