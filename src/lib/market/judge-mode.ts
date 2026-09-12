@@ -25,6 +25,7 @@ import { parseAbi, parseEther, type Address, type Hex } from "viem";
 import { privateKeyToAccount } from "viem/accounts";
 import { marketClient } from "@/lib/chain/market";
 import { sql as pg } from "@/lib/db/client";
+import { ensureTables as ensure } from "@/lib/db/tables";
 
 /** The most a single sponsored call may cost, in token units (18 decimals). */
 export const MAX_CALL = parseEther(process.env.JUDGE_MAX_CALL ?? "0.05");
@@ -58,22 +59,6 @@ export function callerHash(request: Request): string {
     request.headers.get("x-real-ip") ??
     "unknown";
   return createHash("sha256").update(`${process.env.SESSION_SECRET ?? "mandate"}:${ip}`).digest("hex").slice(0, 32);
-}
-
-let ensured: Promise<boolean> | null = null;
-async function ensure(): Promise<boolean> {
-  if (!pg) return false;
-  ensured ??= pg`
-    create table if not exists sponsored_calls (
-      id bigserial primary key,
-      caller text not null,
-      token_id text not null,
-      at timestamptz not null default now()
-    )
-  `
-    .then(() => true)
-    .catch(() => false);
-  return ensured;
 }
 
 export interface Allowance {

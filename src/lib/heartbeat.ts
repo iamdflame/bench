@@ -25,7 +25,7 @@ import { CHAIN_ID } from "@/lib/config";
 import { and, eq } from "drizzle-orm";
 import { memo } from "@/lib/cache";
 
-export type Process = "keeper" | "worker" | "probe";
+export type Process = "keeper" | "worker" | "probe" | "cron";
 
 const KEY = (p: Process) => `heartbeat.${p}`;
 
@@ -53,6 +53,9 @@ const TOLERANCE_MS: Record<Process, number> = {
   keeper: 5 * 60_000,
   worker: 45 * 60_000,
   probe: 90 * 60_000,
+  // The tick is asked for every five minutes from outside; a gap of half an
+  // hour means the pinger, not the job, has stopped.
+  cron: 30 * 60_000,
 };
 
 /** Stamped by the process itself, after a cycle has actually completed. */
@@ -114,11 +117,12 @@ async function readOne(process: Process): Promise<Heartbeat | null> {
  */
 export function readHeartbeats(): Promise<Record<Process, Heartbeat | null>> {
   return memo("heartbeats", { freshMs: 15_000, staleMs: 120_000 }, async () => {
-    const [keeper, worker, probe] = await Promise.all([
+    const [keeper, worker, probe, cron] = await Promise.all([
       readOne("keeper"),
       readOne("worker"),
       readOne("probe"),
+      readOne("cron"),
     ]);
-    return { keeper, worker, probe };
+    return { keeper, worker, probe, cron };
   });
 }

@@ -21,8 +21,9 @@
 import { readFileSync } from "node:fs";
 import { join } from "node:path";
 import { sql as pg } from "@/lib/db/client";
+import { ensureTables } from "@/lib/db/tables";
 
-export type SnapshotName = "probe" | "agents" | "assays" | "census" | "demo" | "grid-window" | "grid-state" | "funnel";
+export type SnapshotName = "probe" | "agents" | "assays" | "census" | "demo" | "grid-window" | "grid-state" | "funnel" | "definition";
 
 interface Loaded {
   payload: unknown;
@@ -34,19 +35,9 @@ const memory = new Map<SnapshotName, Loaded>();
 const lastWarm = new Map<SnapshotName, number>();
 const WARM_TTL_MS = 60_000;
 
-let ensured: Promise<void> | null = null;
 async function ensure(): Promise<boolean> {
   if (!pg) return false;
-  if (!ensured) {
-    ensured = pg`
-      create table if not exists snapshots (
-        name text primary key,
-        payload jsonb not null,
-        captured_at timestamptz not null default now()
-      )
-    `.then(() => undefined);
-  }
-  await ensured.catch(() => undefined);
+  await ensureTables();
   return true;
 }
 
@@ -76,7 +67,7 @@ export function snapshot<T = unknown>(name: SnapshotName): { payload: T; capture
  * Loads newer readings from the database. Safe to call on every render:
  * it does nothing more than once a minute per snapshot per instance.
  */
-export const DEFAULT_WARM: SnapshotName[] = ["probe", "assays", "census", "demo", "grid-window", "grid-state"];
+export const DEFAULT_WARM: SnapshotName[] = ["probe", "assays", "census", "demo", "grid-window", "grid-state", "definition"];
 
 const warming = new Map<SnapshotName, Promise<void>>();
 

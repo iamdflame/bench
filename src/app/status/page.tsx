@@ -10,6 +10,10 @@ import { ageOf } from "@/lib/data/snapshots";
 import { roles } from "@/lib/chain/marketV2";
 import { withTimeout } from "@/lib/cache";
 import { bscscanAddress, short } from "@/lib/demo";
+import { definitionOfDone, score, type Box } from "@/lib/ops/definition-of-done";
+import { snapshot } from "@/lib/data/snapshots";
+import { scheduleState } from "@/lib/ops/schedule";
+import { uptime } from "@/lib/ops/history";
 
 export const metadata: Metadata = {
   title: "Status | Mandate",
@@ -22,12 +26,24 @@ export const maxDuration = 60;
 
 export default async function StatusPage() {
   await live();
-  const [checks, rpcs, beats, who] = await Promise.all([
+  const [checks, rpcs, beats, who, boxes, up, schedule] = await Promise.all([
     judgePathChecks(),
     health(),
     readHeartbeats().catch(() => null),
     withTimeout(roles().catch(() => null), 6_000),
+    /*
+      Read, never computed here. The definition asks the chain, the ladder and
+      the database, which took longer than this page's whole budget and turned
+      /status into a timeout. The scheduled tick computes it every five minutes
+      and stores it; if nothing is stored yet the page says so.
+    */
+    Promise.resolve(snapshot<Box[]>("definition")),
+    withTimeout(uptime(14).catch(() => null), 6_000),
+    withTimeout(scheduleState().catch(() => []), 6_000),
   ]);
+  const definition = boxes?.payload ?? [];
+  const definitionAt = boxes?.capturedAt ?? null;
+  const done = score(definition);
   const probes = getProbes();
   const ok = checks.every((c) => c.ok);
   const commit = process.env.VERCEL_GIT_COMMIT_SHA?.slice(0, 7) ?? "local build";
@@ -82,6 +98,123 @@ export default async function StatusPage() {
               </tbody>
             </table>
           </div>
+        </section>
+
+        {/*
+          The plan's Definition of Done, computed here rather than ticked by
+          hand. Anything open is open in our own words, on the page a judge is
+          most likely to read before they go looking.
+        */}
+        <section className="m-section--tight" id="definition">
+          <div className="m-head">
+            <h2 className="m-h2">Definition of done</h2>
+            <p className="m-head__note">
+              {done.done} of {done.total} true, {done.partly} part way, {done.open} not started. Each line is read from
+              the chain, the census or the routes that exist{definitionAt ? `, ${ageOf(definitionAt)}` : " on this request"}.
+            </p>
+          </div>
+          {definition.length === 0 ? (
+            <div className="m-absent">
+              <p className="m-absent__t">Not computed yet on this deployment.</p>
+              <p className="m-small">
+                The scheduled tick works this list out every five minutes and stores it. Until an external pinger is
+                calling <span className="m-mono">/api/cron/tick</span>, this page can show the six beats but not the
+                whole definition.
+              </p>
+            </div>
+          ) : (
+          <div className="m-scroll">
+            <table className="m-table">
+              <tbody>
+                {definition.map((b) => (
+                  <tr key={b.id}>
+                    <th style={{ width: "10rem" }}>
+                      <span className={b.state === "done" ? "m-ok" : b.state === "partly" ? "m-note" : "m-error"}>
+                        {b.state === "done" ? "true" : b.state === "partly" ? "part way" : "not yet"}
+                      </span>
+                    </th>
+                    <td>
+                      {b.link ? (
+                        <Link className="m-link" href={b.link}>{b.claim}</Link>
+                      ) : (
+                        b.claim
+                      )}
+                      <div className="m-note">{b.detail}</div>
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+          )}
+        </section>
+
+        <section className="m-section--tight" id="history">
+          <div className="m-head">
+            <h2 className="m-h2">History</h2>
+            <p className="m-head__note">
+              Samples taken every five minutes by the external pinger that calls this deployment&rsquo;s tick.
+            </p>
+          </div>
+          {up && up.samples > 0 ? (
+            <div className="m-scroll">
+              <table className="m-table">
+                <tbody>
+                  <tr>
+                    <th>Last fourteen days</th>
+                    <td className="m-note">
+                      {(100 * (up.ratio ?? 0)).toFixed(1)}% of {up.samples} samples had every beat green, since{" "}
+                      {up.since ? new Date(up.since).toISOString().slice(0, 16).replace("T", " ") : "unknown"} UTC.
+                    </td>
+                  </tr>
+                  <tr>
+                    <th>Incidents</th>
+                    <td className="m-note">
+                      {up.incidents.length === 0
+                        ? "None recorded."
+                        : up.incidents
+                            .map((i) => `${i.from.slice(5, 16).replace("T", " ")} to ${i.to.slice(11, 16)} UTC (${i.samples} samples)`)
+                            .join("; ")}
+                    </td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+          ) : (
+            <div className="m-absent">
+              <p className="m-absent__t">No history yet.</p>
+              <p className="m-small">
+                The site keeps a sample every five minutes once an external pinger calls{" "}
+                <span className="m-mono">/api/cron/tick</span> with this deployment&rsquo;s CRON_SECRET. Until then this
+                page can say what is true now, but not what was true yesterday.
+              </p>
+            </div>
+          )}
+          {schedule?.length ? (
+            <div className="m-scroll" style={{ marginTop: "1rem" }}>
+              <table className="m-table">
+                <thead>
+                  <tr>
+                    <th>Scheduled job</th>
+                    <th>Every</th>
+                    <th>Last run</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {schedule.map((j) => (
+                    <tr key={j.name}>
+                      <th>{j.name}</th>
+                      <td className="m-note">{j.everyMinutes} min</td>
+                      <td className={j.overdue ? "m-error" : "m-note"}>
+                        {j.lastRunAt ? `${ageOf(j.lastRunAt)}${j.ok === false ? ", and it failed" : ""}` : "never"}
+                        {j.overdue ? " (the clock has stopped)" : ""}
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+          ) : null}
         </section>
 
         <section className="m-section--tight">

@@ -22,6 +22,7 @@ import { createCipheriv, createDecipheriv, createHash, randomBytes } from "node:
 import { existsSync, mkdirSync, readFileSync, writeFileSync } from "node:fs";
 import { dirname } from "node:path";
 import { sql as pg } from "@/lib/db/client";
+import { ensureTables } from "@/lib/db/tables";
 
 export type SessionKind = "mandate" | "house" | "passkey" | "demo";
 
@@ -87,42 +88,10 @@ export function open(sealed: string): string {
 // Table
 // ---------------------------------------------------------------------------
 
-let ensured: Promise<void> | null = null;
-
 async function ensure(): Promise<boolean> {
   if (!pg) return false;
-  if (!ensured) {
-    ensured = pg`
-      create table if not exists sessions (
-        id text primary key,
-        kind text not null,
-        label text not null,
-        market text,
-        mandate_id integer,
-        category text,
-        wallet_address text not null,
-        public_key text not null,
-        key_id text not null,
-        permissions jsonb,
-        allowlist jsonb not null default '[]',
-        withheld jsonb,
-        cap_wei text not null default '0',
-        expiry integer not null,
-        registered boolean not null default false,
-        registration_tx text,
-        registration_block integer,
-        admin_signer text not null default 'private-key',
-        granted_at timestamptz not null default now(),
-        grant_tx text,
-        revoked_at timestamptz,
-        revoke_tx text,
-        revoked_because text,
-        meta jsonb,
-        secret text
-      )
-    `.then(() => undefined);
-  }
-  await ensured;
+  // Created with every other table, in one sequential pass: see lib/db/tables.
+  await ensureTables();
   return true;
 }
 

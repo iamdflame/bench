@@ -17,6 +17,7 @@ import { createHash } from "node:crypto";
 import { existsSync, mkdirSync, readFileSync, writeFileSync } from "node:fs";
 import { dirname, join } from "node:path";
 import { sql as pg } from "@/lib/db/client";
+import { ensureTables as ensure } from "@/lib/db/tables";
 import type { PaidCall } from "@/lib/x402/pay";
 
 export interface PaidCallRecord {
@@ -95,26 +96,6 @@ export function writeEvidence(call: PaidCall, tokenId: string): string {
   mkdirSync(dirname(abs), { recursive: true });
   writeFileSync(abs, `${JSON.stringify(call, null, 2)}\n`);
   return rel;
-}
-
-let ensured: Promise<boolean> | null = null;
-async function ensure(): Promise<boolean> {
-  if (!pg) return false;
-  ensured ??= pg`
-    create table if not exists paid_calls (
-      id text primary key,
-      token_id text not null,
-      category text not null,
-      paid boolean not null,
-      sponsored boolean not null default false,
-      tx text,
-      at timestamptz not null,
-      record jsonb not null
-    )
-  `
-    .then(() => true)
-    .catch(() => false);
-  return ensured;
 }
 
 function readFile(): PaidCallRecord[] {

@@ -15,6 +15,7 @@
 
 import { after } from "next/server";
 import { sql as pg } from "@/lib/db/client";
+import { ensureTables } from "@/lib/db/tables";
 import { getProbes } from "@/lib/data/probes";
 import { store, warm } from "@/lib/data/snapshots";
 import { beat } from "@/lib/heartbeat";
@@ -43,12 +44,10 @@ export interface RefreshOutcome {
   expiry has no session state to lose.
 */
 const LEASE_SECONDS = 90;
-let leaseTable: Promise<unknown> | null = null;
 
 async function withLock<T>(fn: () => Promise<T>): Promise<T | null> {
   if (!pg) return fn();
-  leaseTable ??= pg`create table if not exists leases (name text primary key, until timestamptz not null)`;
-  await leaseTable;
+  await ensureTables();
   const got = (await pg`
     insert into leases (name, until) values (${LEASE_NAME}, now() + ${`${LEASE_SECONDS} seconds`}::interval)
     on conflict (name) do update set until = excluded.until where leases.until < now()
